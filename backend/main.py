@@ -10,6 +10,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from backend.api.routes import upload
 from backend.api.routes import classify
 from backend.api.routes import template
+from backend.api.routes import mapping
 from backend.config import get_settings
 from backend.database import init_db
 
@@ -58,6 +59,7 @@ app.add_middleware(
 app.include_router(upload.router, prefix="/api/v1", tags=["Upload"])
 app.include_router(classify.router, prefix="/api/v1", tags=["Classification"])
 app.include_router(template.router, prefix="/api/v1", tags=["Template"])
+app.include_router(mapping.router, prefix="/api/v1", tags=["Mapping"])
 
 
 @app.on_event("startup")
