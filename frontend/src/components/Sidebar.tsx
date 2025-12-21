@@ -1,4 +1,3 @@
-```
 import React from 'react';
 import { NavLink } from 'react-router-dom';
 import {
@@ -28,10 +27,10 @@ const Sidebar: React.FC = () => {
     return (
         <aside
             className={`
-        fixed left - 0 top - 0 h - screen bg - dark - 900 border - r border - dark - 700
-transition - all duration - 300 ease -in -out z - 20
-        ${ sidebarOpen ? 'w-64' : 'w-20' }
-`}
+        fixed left-0 top-0 h-screen bg-dark-900 border-r border-dark-700
+        transition-all duration-300 ease-in-out z-20
+        ${sidebarOpen ? 'w-64' : 'w-20'}
+      `}
         >
             {/* Logo */}
             <div className="flex items-center justify-between h-16 px-4 border-b border-dark-700">
@@ -54,13 +53,12 @@ transition - all duration - 300 ease -in -out z - 20
                         key={item.path}
                         to={item.path}
                         className={({ isActive }) => `
-              flex items - center px - 3 py - 3 rounded - lg transition - all duration - 200
-              ${
-    isActive
-        ? 'bg-primary-500/10 text-primary-400 border-l-2 border-primary-500'
-        : 'text-dark-400 hover:text-dark-100 hover:bg-dark-800'
-}
-`}
+              flex items-center px-3 py-3 rounded-lg transition-all duration-200
+              ${isActive
+                                ? 'bg-primary-500/10 text-primary-400 border-l-2 border-primary-500'
+                                : 'text-dark-400 hover:text-dark-100 hover:bg-dark-800'
+                            }
+            `}
                     >
                         <item.icon className="w-5 h-5 flex-shrink-0" />
                         {sidebarOpen && (
