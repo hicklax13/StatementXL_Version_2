@@ -1,30 +1,1103 @@
-# Financial Line Item Ontology
-# Placeholder for Phase 2 - Semantic Classification
+# StatementXL Financial Ontology
+# Version 2.0.0 - Comprehensive financial line item taxonomy
 
-# This file will contain the financial line item taxonomy
-# with GAAP standard items and common variations.
+version: "2.0.0"
+description: "Financial line item ontology covering Income Statement, Balance Sheet, and Cash Flow Statement items per GAAP standards"
 
-version: "1.0.0"
-description: "StatementXL Financial Ontology - Phase 2"
+# =============================================================================
+# INCOME STATEMENT ITEMS
+# =============================================================================
+income_statement:
+  description: "Profit & Loss / Income Statement line items"
 
-# Categories will include:
-# - Income Statement items
-# - Balance Sheet items
-# - Cash Flow Statement items
-# - Common ratios and metrics
+  # Revenue Section
+  revenue:
+    - id: "is:revenue"
+      label: "Revenue"
+      aliases:
+        [
+          "Sales",
+          "Net Sales",
+          "Total Revenue",
+          "Net Revenue",
+          "Gross Revenue",
+          "Top Line",
+        ]
+      category: "revenue"
 
-categories:
-  income_statement:
-    description: "Income/Profit & Loss statement line items"
-    items: [] # To be populated in Phase 2
+    - id: "is:product_revenue"
+      label: "Product Revenue"
+      aliases: ["Product Sales", "Goods Revenue", "Merchandise Sales"]
+      category: "revenue"
+      parent: "is:revenue"
 
-  balance_sheet:
-    description: "Balance sheet line items"
-    items: [] # To be populated in Phase 2
+    - id: "is:service_revenue"
+      label: "Service Revenue"
+      aliases:
+        ["Services Revenue", "Fee Income", "Service Income", "Service Sales"]
+      category: "revenue"
+      parent: "is:revenue"
 
-  cash_flow:
-    description: "Cash flow statement line items"
-    items: [] # To be populated in Phase 2
+    - id: "is:subscription_revenue"
+      label: "Subscription Revenue"
+      aliases: ["Recurring Revenue", "SaaS Revenue", "ARR", "MRR"]
+      category: "revenue"
+      parent: "is:revenue"
 
-# Aliases and synonyms will be defined in Phase 2
-aliases: {}
+    - id: "is:licensing_revenue"
+      label: "Licensing Revenue"
+      aliases: ["License Revenue", "Royalty Revenue", "Royalties"]
+      category: "revenue"
+      parent: "is:revenue"
+
+    - id: "is:other_revenue"
+      label: "Other Revenue"
+      aliases:
+        ["Other Income", "Miscellaneous Revenue", "Non-Operating Revenue"]
+      category: "revenue"
+      parent: "is:revenue"
+
+  # Cost of Revenue Section
+  cost_of_revenue:
+    - id: "is:cogs"
+      label: "Cost of Goods Sold"
+      aliases:
+        [
+          "COGS",
+          "Cost of Sales",
+          "Cost of Revenue",
+          "Cost of Products Sold",
+          "COS",
+        ]
+      category: "cost_of_revenue"
+
+    - id: "is:cost_of_services"
+      label: "Cost of Services"
+      aliases: ["Service Costs", "Cost of Services Rendered"]
+      category: "cost_of_revenue"
+      parent: "is:cogs"
+
+    - id: "is:direct_materials"
+      label: "Direct Materials"
+      aliases: ["Raw Materials", "Materials Cost", "Direct Material Cost"]
+      category: "cost_of_revenue"
+      parent: "is:cogs"
+
+    - id: "is:direct_labor"
+      label: "Direct Labor"
+      aliases: ["Direct Labour", "Manufacturing Labor", "Production Labor"]
+      category: "cost_of_revenue"
+      parent: "is:cogs"
+
+    - id: "is:manufacturing_overhead"
+      label: "Manufacturing Overhead"
+      aliases: ["Factory Overhead", "Production Overhead", "MOH"]
+      category: "cost_of_revenue"
+      parent: "is:cogs"
+
+  # Gross Profit
+  gross_profit:
+    - id: "is:gross_profit"
+      label: "Gross Profit"
+      aliases: ["Gross Margin", "Gross Income", "Gross Earnings"]
+      category: "gross_profit"
+      formula: "revenue - cogs"
+
+  # Operating Expenses Section
+  operating_expenses:
+    - id: "is:opex"
+      label: "Operating Expenses"
+      aliases: ["OPEX", "Operating Costs", "Total Operating Expenses"]
+      category: "operating_expenses"
+
+    - id: "is:sga"
+      label: "Selling, General & Administrative"
+      aliases: ["SG&A", "S,G&A", "SGA", "Selling General and Administrative"]
+      category: "operating_expenses"
+      parent: "is:opex"
+
+    - id: "is:sales_marketing"
+      label: "Sales & Marketing"
+      aliases: ["S&M", "Marketing Expense", "Sales Expense", "Advertising"]
+      category: "operating_expenses"
+      parent: "is:sga"
+
+    - id: "is:general_admin"
+      label: "General & Administrative"
+      aliases: ["G&A", "Administrative Expenses", "Admin Expenses"]
+      category: "operating_expenses"
+      parent: "is:sga"
+
+    - id: "is:rd"
+      label: "Research & Development"
+      aliases: ["R&D", "Research and Development", "Development Costs"]
+      category: "operating_expenses"
+      parent: "is:opex"
+
+    - id: "is:depreciation"
+      label: "Depreciation"
+      aliases: ["Depreciation Expense", "Depr"]
+      category: "operating_expenses"
+      parent: "is:opex"
+
+    - id: "is:amortization"
+      label: "Amortization"
+      aliases: ["Amortization Expense", "Amort"]
+      category: "operating_expenses"
+      parent: "is:opex"
+
+    - id: "is:da"
+      label: "Depreciation & Amortization"
+      aliases: ["D&A", "Depreciation and Amortization"]
+      category: "operating_expenses"
+      parent: "is:opex"
+
+    - id: "is:salaries"
+      label: "Salaries & Wages"
+      aliases: ["Wages", "Payroll", "Employee Compensation", "Salaries"]
+      category: "operating_expenses"
+      parent: "is:opex"
+
+    - id: "is:benefits"
+      label: "Employee Benefits"
+      aliases: ["Benefits", "Fringe Benefits", "Health Insurance"]
+      category: "operating_expenses"
+      parent: "is:opex"
+
+    - id: "is:stock_compensation"
+      label: "Stock-Based Compensation"
+      aliases: ["SBC", "Share-Based Compensation", "Equity Compensation"]
+      category: "operating_expenses"
+      parent: "is:opex"
+
+    - id: "is:rent"
+      label: "Rent Expense"
+      aliases: ["Rent", "Lease Expense", "Occupancy Costs"]
+      category: "operating_expenses"
+      parent: "is:opex"
+
+    - id: "is:utilities"
+      label: "Utilities"
+      aliases: ["Utility Expense", "Electric", "Gas", "Water"]
+      category: "operating_expenses"
+      parent: "is:opex"
+
+    - id: "is:insurance"
+      label: "Insurance Expense"
+      aliases: ["Insurance", "Insurance Premiums"]
+      category: "operating_expenses"
+      parent: "is:opex"
+
+    - id: "is:professional_fees"
+      label: "Professional Fees"
+      aliases:
+        [
+          "Legal Fees",
+          "Accounting Fees",
+          "Consulting Fees",
+          "Professional Services",
+        ]
+      category: "operating_expenses"
+      parent: "is:opex"
+
+    - id: "is:travel"
+      label: "Travel & Entertainment"
+      aliases: ["T&E", "Travel Expense", "Business Travel"]
+      category: "operating_expenses"
+      parent: "is:opex"
+
+    - id: "is:bad_debt"
+      label: "Bad Debt Expense"
+      aliases:
+        [
+          "Provision for Doubtful Accounts",
+          "Credit Losses",
+          "Uncollectible Accounts",
+        ]
+      category: "operating_expenses"
+      parent: "is:opex"
+
+    - id: "is:restructuring"
+      label: "Restructuring Charges"
+      aliases: ["Restructuring Expense", "Severance", "Reorganization Costs"]
+      category: "operating_expenses"
+      parent: "is:opex"
+
+    - id: "is:impairment"
+      label: "Impairment Charges"
+      aliases: ["Impairment Loss", "Asset Impairment", "Goodwill Impairment"]
+      category: "operating_expenses"
+      parent: "is:opex"
+
+  # Operating Income
+  operating_income:
+    - id: "is:operating_income"
+      label: "Operating Income"
+      aliases:
+        [
+          "Operating Profit",
+          "EBIT",
+          "Income from Operations",
+          "Operating Earnings",
+        ]
+      category: "operating_income"
+      formula: "gross_profit - opex"
+
+    - id: "is:ebitda"
+      label: "EBITDA"
+      aliases: ["Earnings Before Interest Taxes Depreciation Amortization"]
+      category: "operating_income"
+      formula: "operating_income + da"
+
+  # Non-Operating Items
+  non_operating:
+    - id: "is:interest_income"
+      label: "Interest Income"
+      aliases: ["Interest Revenue", "Investment Income"]
+      category: "non_operating"
+
+    - id: "is:interest_expense"
+      label: "Interest Expense"
+      aliases: ["Interest Cost", "Finance Costs", "Borrowing Costs"]
+      category: "non_operating"
+
+    - id: "is:net_interest"
+      label: "Net Interest Expense"
+      aliases: ["Net Interest", "Interest Net"]
+      category: "non_operating"
+      formula: "interest_income - interest_expense"
+
+    - id: "is:dividend_income"
+      label: "Dividend Income"
+      aliases: ["Dividends Received"]
+      category: "non_operating"
+
+    - id: "is:gain_loss_investments"
+      label: "Gain/Loss on Investments"
+      aliases: ["Investment Gains", "Investment Losses", "Realized Gains"]
+      category: "non_operating"
+
+    - id: "is:gain_loss_sale_assets"
+      label: "Gain/Loss on Sale of Assets"
+      aliases: ["Gain on Disposal", "Loss on Disposal", "Asset Sale Gain"]
+      category: "non_operating"
+
+    - id: "is:fx_gain_loss"
+      label: "Foreign Exchange Gain/Loss"
+      aliases: ["FX Gain", "FX Loss", "Currency Translation"]
+      category: "non_operating"
+
+    - id: "is:other_income_expense"
+      label: "Other Income/Expense"
+      aliases: ["Other Non-Operating", "Miscellaneous Income"]
+      category: "non_operating"
+
+  # Pre-Tax Income
+  pretax_income:
+    - id: "is:ebt"
+      label: "Earnings Before Tax"
+      aliases:
+        ["EBT", "Pre-Tax Income", "Income Before Tax", "Profit Before Tax"]
+      category: "pretax_income"
+      formula: "operating_income + non_operating"
+
+  # Taxes
+  taxes:
+    - id: "is:income_tax"
+      label: "Income Tax Expense"
+      aliases: ["Tax Expense", "Provision for Income Taxes", "Income Taxes"]
+      category: "taxes"
+
+    - id: "is:current_tax"
+      label: "Current Tax Expense"
+      aliases: ["Current Income Tax"]
+      category: "taxes"
+      parent: "is:income_tax"
+
+    - id: "is:deferred_tax"
+      label: "Deferred Tax Expense"
+      aliases: ["Deferred Income Tax"]
+      category: "taxes"
+      parent: "is:income_tax"
+
+  # Net Income
+  net_income:
+    - id: "is:net_income"
+      label: "Net Income"
+      aliases:
+        ["Net Earnings", "Net Profit", "Bottom Line", "Profit After Tax", "PAT"]
+      category: "net_income"
+      formula: "ebt - income_tax"
+
+    - id: "is:net_income_attributable"
+      label: "Net Income Attributable to Common"
+      aliases: ["Net Income to Common Shareholders"]
+      category: "net_income"
+
+    - id: "is:minority_interest"
+      label: "Minority Interest"
+      aliases: ["Non-Controlling Interest", "NCI"]
+      category: "net_income"
+
+  # EPS
+  eps:
+    - id: "is:eps_basic"
+      label: "Basic EPS"
+      aliases: ["Earnings Per Share Basic", "EPS"]
+      category: "eps"
+
+    - id: "is:eps_diluted"
+      label: "Diluted EPS"
+      aliases: ["Earnings Per Share Diluted"]
+      category: "eps"
+
+    - id: "is:shares_basic"
+      label: "Basic Shares Outstanding"
+      aliases: ["Weighted Average Shares Basic", "Basic Shares"]
+      category: "eps"
+
+    - id: "is:shares_diluted"
+      label: "Diluted Shares Outstanding"
+      aliases: ["Weighted Average Shares Diluted", "Diluted Shares"]
+      category: "eps"
+
+# =============================================================================
+# BALANCE SHEET ITEMS
+# =============================================================================
+balance_sheet:
+  description: "Balance Sheet / Statement of Financial Position items"
+
+  # Current Assets
+  current_assets:
+    - id: "bs:current_assets"
+      label: "Total Current Assets"
+      aliases: ["Current Assets"]
+      category: "current_assets"
+
+    - id: "bs:cash"
+      label: "Cash and Cash Equivalents"
+      aliases: ["Cash", "Cash & Equivalents", "Cash and Equivalents"]
+      category: "current_assets"
+      parent: "bs:current_assets"
+
+    - id: "bs:restricted_cash"
+      label: "Restricted Cash"
+      aliases: ["Restricted Cash and Equivalents"]
+      category: "current_assets"
+      parent: "bs:current_assets"
+
+    - id: "bs:short_term_investments"
+      label: "Short-Term Investments"
+      aliases: ["Marketable Securities", "Trading Securities", "ST Investments"]
+      category: "current_assets"
+      parent: "bs:current_assets"
+
+    - id: "bs:accounts_receivable"
+      label: "Accounts Receivable"
+      aliases:
+        [
+          "A/R",
+          "AR",
+          "Trade Receivables",
+          "Receivables",
+          "Trade Accounts Receivable",
+        ]
+      category: "current_assets"
+      parent: "bs:current_assets"
+
+    - id: "bs:allowance_doubtful"
+      label: "Allowance for Doubtful Accounts"
+      aliases: ["Allowance for Credit Losses", "Bad Debt Reserve"]
+      category: "current_assets"
+      parent: "bs:accounts_receivable"
+
+    - id: "bs:inventory"
+      label: "Inventory"
+      aliases: ["Inventories", "Stock", "Merchandise Inventory"]
+      category: "current_assets"
+      parent: "bs:current_assets"
+
+    - id: "bs:raw_materials"
+      label: "Raw Materials"
+      aliases: ["Raw Materials Inventory"]
+      category: "current_assets"
+      parent: "bs:inventory"
+
+    - id: "bs:wip"
+      label: "Work in Progress"
+      aliases: ["WIP", "Work in Process"]
+      category: "current_assets"
+      parent: "bs:inventory"
+
+    - id: "bs:finished_goods"
+      label: "Finished Goods"
+      aliases: ["Finished Goods Inventory"]
+      category: "current_assets"
+      parent: "bs:inventory"
+
+    - id: "bs:prepaid_expenses"
+      label: "Prepaid Expenses"
+      aliases: ["Prepaids", "Prepaid Assets", "Prepayments"]
+      category: "current_assets"
+      parent: "bs:current_assets"
+
+    - id: "bs:other_current_assets"
+      label: "Other Current Assets"
+      aliases: ["Other CA", "Miscellaneous Current Assets"]
+      category: "current_assets"
+      parent: "bs:current_assets"
+
+    - id: "bs:assets_held_sale"
+      label: "Assets Held for Sale"
+      aliases: ["Discontinued Operations Assets"]
+      category: "current_assets"
+      parent: "bs:current_assets"
+
+  # Non-Current Assets
+  non_current_assets:
+    - id: "bs:non_current_assets"
+      label: "Total Non-Current Assets"
+      aliases: ["Long-Term Assets", "Fixed Assets Total"]
+      category: "non_current_assets"
+
+    - id: "bs:ppe_gross"
+      label: "Property, Plant & Equipment (Gross)"
+      aliases: ["PP&E Gross", "Gross PP&E", "Gross Fixed Assets"]
+      category: "non_current_assets"
+      parent: "bs:non_current_assets"
+
+    - id: "bs:accumulated_depreciation"
+      label: "Accumulated Depreciation"
+      aliases: ["Accum Depr", "AD"]
+      category: "non_current_assets"
+      parent: "bs:ppe_gross"
+
+    - id: "bs:ppe_net"
+      label: "Property, Plant & Equipment (Net)"
+      aliases:
+        ["PP&E", "Net PP&E", "Net Fixed Assets", "Property Plant Equipment"]
+      category: "non_current_assets"
+
+    - id: "bs:land"
+      label: "Land"
+      aliases: ["Land and Improvements"]
+      category: "non_current_assets"
+      parent: "bs:ppe_gross"
+
+    - id: "bs:buildings"
+      label: "Buildings"
+      aliases: ["Buildings and Improvements", "Structures"]
+      category: "non_current_assets"
+      parent: "bs:ppe_gross"
+
+    - id: "bs:machinery"
+      label: "Machinery & Equipment"
+      aliases: ["Equipment", "M&E", "Plant and Machinery"]
+      category: "non_current_assets"
+      parent: "bs:ppe_gross"
+
+    - id: "bs:furniture"
+      label: "Furniture & Fixtures"
+      aliases: ["F&F", "Office Equipment"]
+      category: "non_current_assets"
+      parent: "bs:ppe_gross"
+
+    - id: "bs:vehicles"
+      label: "Vehicles"
+      aliases: ["Motor Vehicles", "Fleet"]
+      category: "non_current_assets"
+      parent: "bs:ppe_gross"
+
+    - id: "bs:leasehold"
+      label: "Leasehold Improvements"
+      aliases: ["Tenant Improvements"]
+      category: "non_current_assets"
+      parent: "bs:ppe_gross"
+
+    - id: "bs:cip"
+      label: "Construction in Progress"
+      aliases: ["CIP", "Capital Projects"]
+      category: "non_current_assets"
+      parent: "bs:ppe_gross"
+
+    - id: "bs:rou_assets"
+      label: "Right-of-Use Assets"
+      aliases: ["ROU Assets", "Operating Lease Assets", "Finance Lease Assets"]
+      category: "non_current_assets"
+      parent: "bs:non_current_assets"
+
+    - id: "bs:goodwill"
+      label: "Goodwill"
+      aliases: ["GW"]
+      category: "non_current_assets"
+      parent: "bs:non_current_assets"
+
+    - id: "bs:intangibles"
+      label: "Intangible Assets"
+      aliases: ["Intangibles", "Other Intangible Assets"]
+      category: "non_current_assets"
+      parent: "bs:non_current_assets"
+
+    - id: "bs:patents"
+      label: "Patents"
+      aliases: ["Patent Assets"]
+      category: "non_current_assets"
+      parent: "bs:intangibles"
+
+    - id: "bs:trademarks"
+      label: "Trademarks"
+      aliases: ["Trademark Assets", "Brand Assets"]
+      category: "non_current_assets"
+      parent: "bs:intangibles"
+
+    - id: "bs:customer_relationships"
+      label: "Customer Relationships"
+      aliases: ["Customer Lists"]
+      category: "non_current_assets"
+      parent: "bs:intangibles"
+
+    - id: "bs:software"
+      label: "Software"
+      aliases: ["Capitalized Software", "Developed Technology"]
+      category: "non_current_assets"
+      parent: "bs:intangibles"
+
+    - id: "bs:lt_investments"
+      label: "Long-Term Investments"
+      aliases:
+        ["LT Investments", "Equity Investments", "Investment in Associates"]
+      category: "non_current_assets"
+      parent: "bs:non_current_assets"
+
+    - id: "bs:deferred_tax_asset"
+      label: "Deferred Tax Assets"
+      aliases: ["DTA", "Deferred Income Tax Asset"]
+      category: "non_current_assets"
+      parent: "bs:non_current_assets"
+
+    - id: "bs:other_non_current_assets"
+      label: "Other Non-Current Assets"
+      aliases: ["Other LT Assets", "Other Long-Term Assets"]
+      category: "non_current_assets"
+      parent: "bs:non_current_assets"
+
+  # Total Assets
+  total_assets:
+    - id: "bs:total_assets"
+      label: "Total Assets"
+      aliases: ["Assets Total"]
+      category: "total_assets"
+      formula: "current_assets + non_current_assets"
+
+  # Current Liabilities
+  current_liabilities:
+    - id: "bs:current_liabilities"
+      label: "Total Current Liabilities"
+      aliases: ["Current Liabilities"]
+      category: "current_liabilities"
+
+    - id: "bs:accounts_payable"
+      label: "Accounts Payable"
+      aliases: ["A/P", "AP", "Trade Payables", "Payables"]
+      category: "current_liabilities"
+      parent: "bs:current_liabilities"
+
+    - id: "bs:accrued_expenses"
+      label: "Accrued Expenses"
+      aliases: ["Accrued Liabilities", "Accruals"]
+      category: "current_liabilities"
+      parent: "bs:current_liabilities"
+
+    - id: "bs:accrued_wages"
+      label: "Accrued Wages"
+      aliases: ["Wages Payable", "Salaries Payable"]
+      category: "current_liabilities"
+      parent: "bs:accrued_expenses"
+
+    - id: "bs:accrued_taxes"
+      label: "Accrued Taxes"
+      aliases: ["Taxes Payable", "Income Tax Payable"]
+      category: "current_liabilities"
+      parent: "bs:accrued_expenses"
+
+    - id: "bs:accrued_interest"
+      label: "Accrued Interest"
+      aliases: ["Interest Payable"]
+      category: "current_liabilities"
+      parent: "bs:accrued_expenses"
+
+    - id: "bs:deferred_revenue_current"
+      label: "Deferred Revenue (Current)"
+      aliases: ["Unearned Revenue", "Contract Liabilities", "Customer Deposits"]
+      category: "current_liabilities"
+      parent: "bs:current_liabilities"
+
+    - id: "bs:short_term_debt"
+      label: "Short-Term Debt"
+      aliases: ["Current Portion of Long-Term Debt", "CPLTD", "Notes Payable"]
+      category: "current_liabilities"
+      parent: "bs:current_liabilities"
+
+    - id: "bs:current_lease_liabilities"
+      label: "Current Lease Liabilities"
+      aliases: ["Operating Lease Liabilities Current", "Finance Lease Current"]
+      category: "current_liabilities"
+      parent: "bs:current_liabilities"
+
+    - id: "bs:dividends_payable"
+      label: "Dividends Payable"
+      aliases: ["Declared Dividends"]
+      category: "current_liabilities"
+      parent: "bs:current_liabilities"
+
+    - id: "bs:other_current_liabilities"
+      label: "Other Current Liabilities"
+      aliases: ["Other CL"]
+      category: "current_liabilities"
+      parent: "bs:current_liabilities"
+
+  # Non-Current Liabilities
+  non_current_liabilities:
+    - id: "bs:non_current_liabilities"
+      label: "Total Non-Current Liabilities"
+      aliases: ["Long-Term Liabilities"]
+      category: "non_current_liabilities"
+
+    - id: "bs:long_term_debt"
+      label: "Long-Term Debt"
+      aliases: ["LT Debt", "Senior Debt", "Term Loans", "Bonds Payable"]
+      category: "non_current_liabilities"
+      parent: "bs:non_current_liabilities"
+
+    - id: "bs:revolving_credit"
+      label: "Revolving Credit Facility"
+      aliases: ["Revolver", "Credit Facility", "Line of Credit"]
+      category: "non_current_liabilities"
+      parent: "bs:long_term_debt"
+
+    - id: "bs:term_loan"
+      label: "Term Loan"
+      aliases: ["Term Debt", "Bank Loans"]
+      category: "non_current_liabilities"
+      parent: "bs:long_term_debt"
+
+    - id: "bs:bonds"
+      label: "Bonds Payable"
+      aliases: ["Notes", "Senior Notes", "Debentures"]
+      category: "non_current_liabilities"
+      parent: "bs:long_term_debt"
+
+    - id: "bs:convertible_debt"
+      label: "Convertible Debt"
+      aliases: ["Convertible Notes", "Convertible Bonds"]
+      category: "non_current_liabilities"
+      parent: "bs:long_term_debt"
+
+    - id: "bs:lt_lease_liabilities"
+      label: "Long-Term Lease Liabilities"
+      aliases: ["Operating Lease Liabilities", "Finance Lease Liabilities"]
+      category: "non_current_liabilities"
+      parent: "bs:non_current_liabilities"
+
+    - id: "bs:deferred_revenue_lt"
+      label: "Deferred Revenue (Long-Term)"
+      aliases: ["Long-Term Unearned Revenue"]
+      category: "non_current_liabilities"
+      parent: "bs:non_current_liabilities"
+
+    - id: "bs:deferred_tax_liability"
+      label: "Deferred Tax Liabilities"
+      aliases: ["DTL", "Deferred Income Tax Liability"]
+      category: "non_current_liabilities"
+      parent: "bs:non_current_liabilities"
+
+    - id: "bs:pension_liability"
+      label: "Pension Liabilities"
+      aliases: ["Defined Benefit Obligation", "Retirement Obligations"]
+      category: "non_current_liabilities"
+      parent: "bs:non_current_liabilities"
+
+    - id: "bs:other_lt_liabilities"
+      label: "Other Long-Term Liabilities"
+      aliases: ["Other Non-Current Liabilities"]
+      category: "non_current_liabilities"
+      parent: "bs:non_current_liabilities"
+
+  # Total Liabilities
+  total_liabilities:
+    - id: "bs:total_liabilities"
+      label: "Total Liabilities"
+      aliases: ["Liabilities Total"]
+      category: "total_liabilities"
+      formula: "current_liabilities + non_current_liabilities"
+
+  # Shareholders' Equity
+  equity:
+    - id: "bs:total_equity"
+      label: "Total Shareholders' Equity"
+      aliases:
+        ["Total Equity", "Stockholders Equity", "Net Worth", "Book Value"]
+      category: "equity"
+
+    - id: "bs:common_stock"
+      label: "Common Stock"
+      aliases: ["Common Shares", "Share Capital", "Capital Stock"]
+      category: "equity"
+      parent: "bs:total_equity"
+
+    - id: "bs:preferred_stock"
+      label: "Preferred Stock"
+      aliases: ["Preferred Shares", "Preference Shares"]
+      category: "equity"
+      parent: "bs:total_equity"
+
+    - id: "bs:apic"
+      label: "Additional Paid-In Capital"
+      aliases: ["APIC", "Capital Surplus", "Share Premium", "Paid-In Capital"]
+      category: "equity"
+      parent: "bs:total_equity"
+
+    - id: "bs:retained_earnings"
+      label: "Retained Earnings"
+      aliases: ["Accumulated Profits", "Earned Surplus", "Accumulated Earnings"]
+      category: "equity"
+      parent: "bs:total_equity"
+
+    - id: "bs:treasury_stock"
+      label: "Treasury Stock"
+      aliases: ["Treasury Shares", "Repurchased Shares"]
+      category: "equity"
+      parent: "bs:total_equity"
+
+    - id: "bs:aoci"
+      label: "Accumulated Other Comprehensive Income"
+      aliases: ["AOCI", "OCI", "Other Comprehensive Income"]
+      category: "equity"
+      parent: "bs:total_equity"
+
+    - id: "bs:nci"
+      label: "Non-Controlling Interest"
+      aliases: ["Minority Interest", "NCI"]
+      category: "equity"
+
+  # Total Liabilities & Equity
+  total_liabilities_equity:
+    - id: "bs:total_liabilities_equity"
+      label: "Total Liabilities & Equity"
+      aliases: ["Total Liabilities and Shareholders Equity"]
+      category: "total_liabilities_equity"
+      formula: "total_liabilities + total_equity"
+
+# =============================================================================
+# CASH FLOW STATEMENT ITEMS
+# =============================================================================
+cash_flow:
+  description: "Statement of Cash Flows items"
+
+  # Operating Activities
+  operating_activities:
+    - id: "cf:cfo"
+      label: "Cash Flow from Operations"
+      aliases:
+        [
+          "CFO",
+          "Operating Cash Flow",
+          "Cash from Operating Activities",
+          "Net Cash from Operations",
+        ]
+      category: "operating_activities"
+
+    - id: "cf:net_income_cf"
+      label: "Net Income"
+      aliases: ["Net Earnings", "Starting Net Income"]
+      category: "operating_activities"
+      parent: "cf:cfo"
+
+    - id: "cf:da_cf"
+      label: "Depreciation & Amortization"
+      aliases: ["D&A", "Add: D&A"]
+      category: "operating_activities"
+      parent: "cf:cfo"
+
+    - id: "cf:sbc_cf"
+      label: "Stock-Based Compensation"
+      aliases: ["SBC", "Share-Based Compensation"]
+      category: "operating_activities"
+      parent: "cf:cfo"
+
+    - id: "cf:deferred_taxes"
+      label: "Deferred Taxes"
+      aliases: ["Deferred Income Taxes"]
+      category: "operating_activities"
+      parent: "cf:cfo"
+
+    - id: "cf:change_ar"
+      label: "Change in Accounts Receivable"
+      aliases: ["(Inc)/Dec in A/R", "Accounts Receivable Change"]
+      category: "operating_activities"
+      parent: "cf:cfo"
+
+    - id: "cf:change_inventory"
+      label: "Change in Inventory"
+      aliases: ["(Inc)/Dec in Inventory", "Inventory Change"]
+      category: "operating_activities"
+      parent: "cf:cfo"
+
+    - id: "cf:change_prepaid"
+      label: "Change in Prepaid Expenses"
+      aliases: ["(Inc)/Dec in Prepaids"]
+      category: "operating_activities"
+      parent: "cf:cfo"
+
+    - id: "cf:change_ap"
+      label: "Change in Accounts Payable"
+      aliases: ["Inc/(Dec) in A/P", "Accounts Payable Change"]
+      category: "operating_activities"
+      parent: "cf:cfo"
+
+    - id: "cf:change_accrued"
+      label: "Change in Accrued Expenses"
+      aliases: ["Inc/(Dec) in Accruals"]
+      category: "operating_activities"
+      parent: "cf:cfo"
+
+    - id: "cf:change_deferred_revenue"
+      label: "Change in Deferred Revenue"
+      aliases: ["Inc/(Dec) in Deferred Revenue"]
+      category: "operating_activities"
+      parent: "cf:cfo"
+
+    - id: "cf:other_operating"
+      label: "Other Operating Activities"
+      aliases: ["Other CFO Adjustments"]
+      category: "operating_activities"
+      parent: "cf:cfo"
+
+  # Investing Activities
+  investing_activities:
+    - id: "cf:cfi"
+      label: "Cash Flow from Investing"
+      aliases: ["CFI", "Investing Cash Flow", "Cash from Investing Activities"]
+      category: "investing_activities"
+
+    - id: "cf:capex"
+      label: "Capital Expenditures"
+      aliases: ["CapEx", "PP&E Purchases", "Fixed Asset Purchases"]
+      category: "investing_activities"
+      parent: "cf:cfi"
+
+    - id: "cf:proceeds_ppe"
+      label: "Proceeds from Sale of PP&E"
+      aliases: ["Asset Sales", "Disposal Proceeds"]
+      category: "investing_activities"
+      parent: "cf:cfi"
+
+    - id: "cf:acquisitions"
+      label: "Acquisitions"
+      aliases: ["Business Acquisitions", "M&A Activity"]
+      category: "investing_activities"
+      parent: "cf:cfi"
+
+    - id: "cf:divestitures"
+      label: "Divestitures"
+      aliases: ["Business Disposals", "Asset Divestitures"]
+      category: "investing_activities"
+      parent: "cf:cfi"
+
+    - id: "cf:purchase_investments"
+      label: "Purchase of Investments"
+      aliases: ["Investment Purchases", "Securities Purchases"]
+      category: "investing_activities"
+      parent: "cf:cfi"
+
+    - id: "cf:sale_investments"
+      label: "Sale of Investments"
+      aliases: ["Investment Sales", "Securities Sales", "Maturities"]
+      category: "investing_activities"
+      parent: "cf:cfi"
+
+    - id: "cf:other_investing"
+      label: "Other Investing Activities"
+      aliases: ["Other CFI"]
+      category: "investing_activities"
+      parent: "cf:cfi"
+
+  # Financing Activities
+  financing_activities:
+    - id: "cf:cff"
+      label: "Cash Flow from Financing"
+      aliases: ["CFF", "Financing Cash Flow", "Cash from Financing Activities"]
+      category: "financing_activities"
+
+    - id: "cf:debt_proceeds"
+      label: "Proceeds from Debt"
+      aliases: ["Debt Issuance", "Borrowings", "Loan Proceeds"]
+      category: "financing_activities"
+      parent: "cf:cff"
+
+    - id: "cf:debt_repayment"
+      label: "Debt Repayments"
+      aliases: ["Debt Paydown", "Principal Payments", "Loan Repayments"]
+      category: "financing_activities"
+      parent: "cf:cff"
+
+    - id: "cf:equity_issuance"
+      label: "Equity Issuance"
+      aliases: ["Stock Issuance", "Share Issuance", "Capital Raise"]
+      category: "financing_activities"
+      parent: "cf:cff"
+
+    - id: "cf:share_repurchases"
+      label: "Share Repurchases"
+      aliases: ["Stock Buybacks", "Treasury Stock Purchases"]
+      category: "financing_activities"
+      parent: "cf:cff"
+
+    - id: "cf:dividends_paid"
+      label: "Dividends Paid"
+      aliases: ["Cash Dividends", "Dividend Payments"]
+      category: "financing_activities"
+      parent: "cf:cff"
+
+    - id: "cf:other_financing"
+      label: "Other Financing Activities"
+      aliases: ["Other CFF"]
+      category: "financing_activities"
+      parent: "cf:cff"
+
+  # Summary
+  summary:
+    - id: "cf:net_change_cash"
+      label: "Net Change in Cash"
+      aliases: ["Change in Cash", "Increase/Decrease in Cash"]
+      category: "summary"
+      formula: "cfo + cfi + cff"
+
+    - id: "cf:beginning_cash"
+      label: "Beginning Cash"
+      aliases: ["Cash at Beginning of Period", "Opening Cash"]
+      category: "summary"
+
+    - id: "cf:ending_cash"
+      label: "Ending Cash"
+      aliases: ["Cash at End of Period", "Closing Cash"]
+      category: "summary"
+      formula: "beginning_cash + net_change_cash"
+
+    - id: "cf:fcf"
+      label: "Free Cash Flow"
+      aliases: ["FCF", "Unlevered Free Cash Flow"]
+      category: "summary"
+      formula: "cfo - capex"
+
+    - id: "cf:levered_fcf"
+      label: "Levered Free Cash Flow"
+      aliases: ["LFCF", "Cash Flow to Equity"]
+      category: "summary"
+
+# =============================================================================
+# FINANCIAL RATIOS & METRICS
+# =============================================================================
+ratios:
+  description: "Common financial ratios and metrics"
+
+  profitability:
+    - id: "ratio:gross_margin"
+      label: "Gross Margin"
+      aliases: ["Gross Profit Margin", "GP Margin"]
+      formula: "gross_profit / revenue"
+
+    - id: "ratio:operating_margin"
+      label: "Operating Margin"
+      aliases: ["EBIT Margin", "Operating Profit Margin"]
+      formula: "operating_income / revenue"
+
+    - id: "ratio:ebitda_margin"
+      label: "EBITDA Margin"
+      formula: "ebitda / revenue"
+
+    - id: "ratio:net_margin"
+      label: "Net Profit Margin"
+      aliases: ["Net Margin", "Profit Margin"]
+      formula: "net_income / revenue"
+
+    - id: "ratio:roe"
+      label: "Return on Equity"
+      aliases: ["ROE"]
+      formula: "net_income / total_equity"
+
+    - id: "ratio:roa"
+      label: "Return on Assets"
+      aliases: ["ROA"]
+      formula: "net_income / total_assets"
+
+    - id: "ratio:roic"
+      label: "Return on Invested Capital"
+      aliases: ["ROIC"]
+
+  liquidity:
+    - id: "ratio:current_ratio"
+      label: "Current Ratio"
+      formula: "current_assets / current_liabilities"
+
+    - id: "ratio:quick_ratio"
+      label: "Quick Ratio"
+      aliases: ["Acid Test Ratio"]
+      formula: "(current_assets - inventory) / current_liabilities"
+
+    - id: "ratio:cash_ratio"
+      label: "Cash Ratio"
+      formula: "cash / current_liabilities"
+
+  leverage:
+    - id: "ratio:debt_equity"
+      label: "Debt-to-Equity Ratio"
+      aliases: ["D/E Ratio", "Leverage Ratio"]
+      formula: "total_debt / total_equity"
+
+    - id: "ratio:debt_assets"
+      label: "Debt-to-Assets Ratio"
+      formula: "total_debt / total_assets"
+
+    - id: "ratio:net_debt"
+      label: "Net Debt"
+      formula: "total_debt - cash"
+
+    - id: "ratio:interest_coverage"
+      label: "Interest Coverage Ratio"
+      aliases: ["Times Interest Earned", "TIE"]
+      formula: "ebit / interest_expense"
+
+    - id: "ratio:debt_ebitda"
+      label: "Debt-to-EBITDA"
+      aliases: ["Leverage Multiple"]
+      formula: "total_debt / ebitda"
+
+  efficiency:
+    - id: "ratio:asset_turnover"
+      label: "Asset Turnover"
+      formula: "revenue / total_assets"
+
+    - id: "ratio:inventory_turnover"
+      label: "Inventory Turnover"
+      formula: "cogs / inventory"
+
+    - id: "ratio:dso"
+      label: "Days Sales Outstanding"
+      aliases: ["DSO", "Receivables Days"]
+      formula: "(accounts_receivable / revenue) * 365"
+
+    - id: "ratio:dio"
+      label: "Days Inventory Outstanding"
+      aliases: ["DIO", "Inventory Days"]
+      formula: "(inventory / cogs) * 365"
+
+    - id: "ratio:dpo"
+      label: "Days Payables Outstanding"
+      aliases: ["DPO", "Payables Days"]
+      formula: "(accounts_payable / cogs) * 365"
+
+    - id: "ratio:ccc"
+      label: "Cash Conversion Cycle"
+      aliases: ["CCC"]
+      formula: "dso + dio - dpo"
