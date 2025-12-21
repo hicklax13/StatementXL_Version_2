@@ -20,10 +20,10 @@ from sqlalchemy import (
     Text,
     Boolean,
 )
-from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 
 from backend.database import Base
+from backend.models.types import UUID
 
 
 class MappingStatus(enum.Enum):
@@ -68,19 +68,19 @@ class MappingGraph(Base):
     __tablename__ = "mapping_graphs"
 
     id = Column(
-        UUID(as_uuid=True),
+        UUID(),
         primary_key=True,
         default=uuid.uuid4,
     )
 
     # Source references
     extract_id = Column(
-        UUID(as_uuid=True),
+        UUID(),
         ForeignKey("extracts.id", ondelete="SET NULL"),
         nullable=True,
     )
     template_id = Column(
-        UUID(as_uuid=True),
+        UUID(),
         ForeignKey("templates.id", ondelete="SET NULL"),
         nullable=True,
     )
@@ -104,7 +104,7 @@ class MappingGraph(Base):
     graph_data = Column(JSON, default=dict)
 
     # Metadata
-    metadata = Column(JSON, default=dict)
+    extra_data = Column(JSON, default=dict)
 
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
@@ -135,12 +135,12 @@ class MappingAssignment(Base):
     __tablename__ = "mapping_assignments"
 
     id = Column(
-        UUID(as_uuid=True),
+        UUID(),
         primary_key=True,
         default=uuid.uuid4,
     )
     mapping_graph_id = Column(
-        UUID(as_uuid=True),
+        UUID(),
         ForeignKey("mapping_graphs.id", ondelete="CASCADE"),
         nullable=False,
     )
@@ -186,12 +186,12 @@ class Conflict(Base):
     __tablename__ = "mapping_conflicts"
 
     id = Column(
-        UUID(as_uuid=True),
+        UUID(),
         primary_key=True,
         default=uuid.uuid4,
     )
     mapping_graph_id = Column(
-        UUID(as_uuid=True),
+        UUID(),
         ForeignKey("mapping_graphs.id", ondelete="CASCADE"),
         nullable=False,
     )

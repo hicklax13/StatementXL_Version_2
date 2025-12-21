@@ -20,10 +20,10 @@ from sqlalchemy import (
     Text,
     Boolean,
 )
-from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 
 from backend.database import Base
+from backend.models.types import UUID
 
 
 class TemplateStatus(enum.Enum):
@@ -54,7 +54,7 @@ class Template(Base):
     __tablename__ = "templates"
 
     id = Column(
-        UUID(as_uuid=True),
+        UUID(),
         primary_key=True,
         default=uuid.uuid4,
     )
@@ -69,7 +69,7 @@ class Template(Base):
     error_message = Column(Text)
 
     # Metadata from parsing
-    metadata = Column(JSON, default=dict)
+    extra_data = Column(JSON, default=dict)
 
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
@@ -96,12 +96,12 @@ class TemplateStructure(Base):
     __tablename__ = "template_structures"
 
     id = Column(
-        UUID(as_uuid=True),
+        UUID(),
         primary_key=True,
         default=uuid.uuid4,
     )
     template_id = Column(
-        UUID(as_uuid=True),
+        UUID(),
         ForeignKey("templates.id", ondelete="CASCADE"),
         nullable=False,
     )
@@ -145,12 +145,12 @@ class TemplateCell(Base):
     __tablename__ = "template_cells"
 
     id = Column(
-        UUID(as_uuid=True),
+        UUID(),
         primary_key=True,
         default=uuid.uuid4,
     )
     structure_id = Column(
-        UUID(as_uuid=True),
+        UUID(),
         ForeignKey("template_structures.id", ondelete="CASCADE"),
         nullable=False,
     )

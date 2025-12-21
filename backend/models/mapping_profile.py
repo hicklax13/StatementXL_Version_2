@@ -21,10 +21,10 @@ from sqlalchemy import (
     Boolean,
     Index,
 )
-from sqlalchemy.dialects.postgresql import UUID, TSVECTOR
 from sqlalchemy.orm import relationship
 
 from backend.database import Base
+from backend.models.types import UUID
 
 
 class FeedbackType(enum.Enum):
@@ -47,7 +47,7 @@ class MappingProfile(Base):
     __tablename__ = "mapping_profiles"
 
     id = Column(
-        UUID(as_uuid=True),
+        UUID(),
         primary_key=True,
         default=uuid.uuid4,
     )
@@ -59,7 +59,7 @@ class MappingProfile(Base):
 
     # Template association (optional)
     template_id = Column(
-        UUID(as_uuid=True),
+        UUID(),
         ForeignKey("templates.id", ondelete="SET NULL"),
         nullable=True,
     )
@@ -74,7 +74,7 @@ class MappingProfile(Base):
 
     # Metadata
     tags = Column(JSON, default=list)  # e.g., ["lbo", "dcf", "tech"]
-    metadata = Column(JSON, default=dict)
+    extra_data = Column(JSON, default=dict)
 
     is_active = Column(Boolean, default=True)
     created_at = Column(DateTime, default=datetime.utcnow)
@@ -101,17 +101,17 @@ class MappingFeedback(Base):
     __tablename__ = "mapping_feedback"
 
     id = Column(
-        UUID(as_uuid=True),
+        UUID(),
         primary_key=True,
         default=uuid.uuid4,
     )
     profile_id = Column(
-        UUID(as_uuid=True),
+        UUID(),
         ForeignKey("mapping_profiles.id", ondelete="CASCADE"),
         nullable=True,
     )
     mapping_graph_id = Column(
-        UUID(as_uuid=True),
+        UUID(),
         ForeignKey("mapping_graphs.id", ondelete="SET NULL"),
         nullable=True,
     )
@@ -164,12 +164,12 @@ class TemplateLibraryItem(Base):
     __tablename__ = "template_library"
 
     id = Column(
-        UUID(as_uuid=True),
+        UUID(),
         primary_key=True,
         default=uuid.uuid4,
     )
     template_id = Column(
-        UUID(as_uuid=True),
+        UUID(),
         ForeignKey("templates.id", ondelete="CASCADE"),
         nullable=False,
     )
@@ -184,8 +184,8 @@ class TemplateLibraryItem(Base):
     industry = Column(String(100), index=True)
     tags = Column(JSON, default=list)
 
-    # Search (for Postgres full-text search)
-    search_vector = Column(Text)  # Concatenated searchable text
+    # Search (concatenated text for full-text search)
+    search_vector = Column(Text)
 
     # Usage stats
     download_count = Column(Integer, default=0)

@@ -8,11 +8,11 @@ from datetime import datetime
 from decimal import Decimal
 from typing import Any, Dict, List, Optional
 
-from sqlalchemy import Column, DateTime, Float, ForeignKey, Integer, Numeric, String, Text
-from sqlalchemy.dialects.postgresql import ARRAY, JSON, UUID
+from sqlalchemy import Column, DateTime, Float, ForeignKey, Integer, Numeric, String, Text, JSON
 from sqlalchemy.orm import relationship
 
 from backend.database import Base
+from backend.models.types import UUID
 
 
 class LineItem(Base):
@@ -36,13 +36,13 @@ class LineItem(Base):
     __tablename__ = "line_items"
 
     id: uuid.UUID = Column(
-        UUID(as_uuid=True),
+        UUID(),
         primary_key=True,
         default=uuid.uuid4,
         index=True,
     )
     extract_id: uuid.UUID = Column(
-        UUID(as_uuid=True),
+        UUID(),
         ForeignKey("extracts.id", ondelete="CASCADE"),
         nullable=False,
         index=True,

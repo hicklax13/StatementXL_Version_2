@@ -7,11 +7,11 @@ import uuid
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
-from sqlalchemy import Column, DateTime, Float, ForeignKey, Text
-from sqlalchemy.dialects.postgresql import JSON, UUID
+from sqlalchemy import Column, DateTime, Float, ForeignKey, Text, JSON
 from sqlalchemy.orm import relationship
 
 from backend.database import Base
+from backend.models.types import UUID
 
 
 class Extract(Base):
@@ -30,20 +30,20 @@ class Extract(Base):
     __tablename__ = "extracts"
 
     id: uuid.UUID = Column(
-        UUID(as_uuid=True),
+        UUID(),
         primary_key=True,
         default=uuid.uuid4,
         index=True,
     )
     document_id: uuid.UUID = Column(
-        UUID(as_uuid=True),
+        UUID(),
         ForeignKey("documents.id", ondelete="CASCADE"),
         nullable=False,
         index=True,
     )
     tables_json: List[Dict[str, Any]] = Column(JSON, nullable=False, default=list)
     confidence_score: float = Column(Float, nullable=True)
-    metadata: Optional[Dict[str, Any]] = Column(JSON, nullable=True)
+    extra_data: Optional[Dict[str, Any]] = Column(JSON, nullable=True)
     created_at: datetime = Column(
         DateTime,
         default=datetime.utcnow,

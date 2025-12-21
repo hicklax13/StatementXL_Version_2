@@ -19,8 +19,8 @@ class Settings(BaseSettings):
         case_sensitive=False,
     )
 
-    # Database
-    database_url: str = "postgresql://statementxl:statementxl@localhost:5432/statementxl"
+    # Database (SQLite for local dev, PostgreSQL for production)
+    database_url: str = "sqlite:///./statementxl.db"
 
     # Redis
     redis_url: str = "redis://localhost:6379/0"
@@ -46,3 +46,6 @@ class Settings(BaseSettings):
 def get_settings() -> Settings:
     """Get cached settings instance."""
     return Settings()
+
+# Clear cache on module load
+get_settings.cache_clear()

@@ -9,10 +9,10 @@ from datetime import datetime
 from typing import Optional
 
 from sqlalchemy import Column, DateTime, Enum, Integer, String, Text
-from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 
 from backend.database import Base
+from backend.models.types import UUID
 
 
 class DocumentStatus(str, enum.Enum):
@@ -42,7 +42,7 @@ class Document(Base):
     __tablename__ = "documents"
 
     id: uuid.UUID = Column(
-        UUID(as_uuid=True),
+        UUID(),
         primary_key=True,
         default=uuid.uuid4,
         index=True,
