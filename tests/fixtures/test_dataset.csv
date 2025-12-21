@@ -1,0 +1,246 @@
+# StatementXL Test Dataset
+# 200 labeled financial line items for classifier accuracy testing
+# Format: "text|ontology_id|expected_label"
+
+# Income Statement - Revenue
+Revenue|is:revenue|Revenue
+Net Sales|is:revenue|Revenue
+Total Revenue|is:revenue|Revenue
+Gross Revenue|is:revenue|Revenue
+Sales|is:revenue|Revenue
+Product Revenue|is:product_revenue|Product Revenue
+Service Revenue|is:service_revenue|Service Revenue
+Subscription Revenue|is:subscription_revenue|Subscription Revenue
+Licensing Revenue|is:licensing_revenue|Licensing Revenue
+Other Revenue|is:other_revenue|Other Revenue
+
+# Income Statement - Cost of Revenue
+Cost of Goods Sold|is:cogs|Cost of Goods Sold
+COGS|is:cogs|Cost of Goods Sold
+Cost of Sales|is:cogs|Cost of Goods Sold
+Cost of Revenue|is:cogs|Cost of Goods Sold
+Cost of Services|is:cost_of_services|Cost of Services
+Direct Materials|is:direct_materials|Direct Materials
+Direct Labor|is:direct_labor|Direct Labor
+Manufacturing Overhead|is:manufacturing_overhead|Manufacturing Overhead
+
+# Income Statement - Gross Profit
+Gross Profit|is:gross_profit|Gross Profit
+Gross Margin|is:gross_profit|Gross Profit
+Gross Income|is:gross_profit|Gross Profit
+
+# Income Statement - Operating Expenses
+Operating Expenses|is:opex|Operating Expenses
+Total Operating Expenses|is:opex|Operating Expenses
+OPEX|is:opex|Operating Expenses
+Selling, General & Administrative|is:sga|Selling, General & Administrative
+SG&A|is:sga|Selling, General & Administrative
+S,G&A|is:sga|Selling, General & Administrative
+Sales & Marketing|is:sales_marketing|Sales & Marketing
+Marketing Expense|is:sales_marketing|Sales & Marketing
+General & Administrative|is:general_admin|General & Administrative
+G&A|is:general_admin|General & Administrative
+Research & Development|is:rd|Research & Development
+R&D|is:rd|Research & Development
+Depreciation|is:depreciation|Depreciation
+Depreciation Expense|is:depreciation|Depreciation
+Amortization|is:amortization|Amortization
+Amortization Expense|is:amortization|Amortization
+Depreciation & Amortization|is:da|Depreciation & Amortization
+D&A|is:da|Depreciation & Amortization
+Salaries & Wages|is:salaries|Salaries & Wages
+Payroll|is:salaries|Salaries & Wages
+Employee Benefits|is:benefits|Employee Benefits
+Stock-Based Compensation|is:stock_compensation|Stock-Based Compensation
+SBC|is:stock_compensation|Stock-Based Compensation
+Rent Expense|is:rent|Rent Expense
+Rent|is:rent|Rent Expense
+Utilities|is:utilities|Utilities
+Insurance Expense|is:insurance|Insurance Expense
+Professional Fees|is:professional_fees|Professional Fees
+Legal Fees|is:professional_fees|Professional Fees
+Travel & Entertainment|is:travel|Travel & Entertainment
+T&E|is:travel|Travel & Entertainment
+Bad Debt Expense|is:bad_debt|Bad Debt Expense
+Restructuring Charges|is:restructuring|Restructuring Charges
+Impairment Charges|is:impairment|Impairment Charges
+
+# Income Statement - Operating Income
+Operating Income|is:operating_income|Operating Income
+Operating Profit|is:operating_income|Operating Income
+EBIT|is:operating_income|Operating Income
+Income from Operations|is:operating_income|Operating Income
+EBITDA|is:ebitda|EBITDA
+
+# Income Statement - Non-Operating
+Interest Income|is:interest_income|Interest Income
+Interest Expense|is:interest_expense|Interest Expense
+Finance Costs|is:interest_expense|Interest Expense
+Dividend Income|is:dividend_income|Dividend Income
+Gain/Loss on Investments|is:gain_loss_investments|Gain/Loss on Investments
+Foreign Exchange Gain/Loss|is:fx_gain_loss|Foreign Exchange Gain/Loss
+Other Income/Expense|is:other_income_expense|Other Income/Expense
+
+# Income Statement - Taxes & Net Income
+Earnings Before Tax|is:ebt|Earnings Before Tax
+EBT|is:ebt|Earnings Before Tax
+Pre-Tax Income|is:ebt|Earnings Before Tax
+Income Tax Expense|is:income_tax|Income Tax Expense
+Provision for Income Taxes|is:income_tax|Income Tax Expense
+Net Income|is:net_income|Net Income
+Net Earnings|is:net_income|Net Income
+Net Profit|is:net_income|Net Income
+Basic EPS|is:eps_basic|Basic EPS
+Diluted EPS|is:eps_diluted|Diluted EPS
+
+# Balance Sheet - Current Assets
+Total Current Assets|bs:current_assets|Total Current Assets
+Cash and Cash Equivalents|bs:cash|Cash and Cash Equivalents
+Cash|bs:cash|Cash and Cash Equivalents
+Short-Term Investments|bs:short_term_investments|Short-Term Investments
+Marketable Securities|bs:short_term_investments|Short-Term Investments
+Accounts Receivable|bs:accounts_receivable|Accounts Receivable
+A/R|bs:accounts_receivable|Accounts Receivable
+Trade Receivables|bs:accounts_receivable|Accounts Receivable
+Inventory|bs:inventory|Inventory
+Inventories|bs:inventory|Inventory
+Raw Materials|bs:raw_materials|Raw Materials
+Work in Progress|bs:wip|Work in Progress
+WIP|bs:wip|Work in Progress
+Finished Goods|bs:finished_goods|Finished Goods
+Prepaid Expenses|bs:prepaid_expenses|Prepaid Expenses
+Prepaids|bs:prepaid_expenses|Prepaid Expenses
+Other Current Assets|bs:other_current_assets|Other Current Assets
+
+# Balance Sheet - Non-Current Assets
+Total Non-Current Assets|bs:non_current_assets|Total Non-Current Assets
+Property, Plant & Equipment (Net)|bs:ppe_net|Property, Plant & Equipment (Net)
+PP&E|bs:ppe_net|Property, Plant & Equipment (Net)
+Net Fixed Assets|bs:ppe_net|Property, Plant & Equipment (Net)
+Accumulated Depreciation|bs:accumulated_depreciation|Accumulated Depreciation
+Land|bs:land|Land
+Buildings|bs:buildings|Buildings
+Machinery & Equipment|bs:machinery|Machinery & Equipment
+Leasehold Improvements|bs:leasehold|Leasehold Improvements
+Construction in Progress|bs:cip|Construction in Progress
+CIP|bs:cip|Construction in Progress
+Right-of-Use Assets|bs:rou_assets|Right-of-Use Assets
+Goodwill|bs:goodwill|Goodwill
+Intangible Assets|bs:intangibles|Intangible Assets
+Intangibles|bs:intangibles|Intangible Assets
+Patents|bs:patents|Patents
+Trademarks|bs:trademarks|Trademarks
+Software|bs:software|Software
+Long-Term Investments|bs:lt_investments|Long-Term Investments
+Deferred Tax Assets|bs:deferred_tax_asset|Deferred Tax Assets
+DTA|bs:deferred_tax_asset|Deferred Tax Assets
+Other Non-Current Assets|bs:other_non_current_assets|Other Non-Current Assets
+
+# Balance Sheet - Total Assets
+Total Assets|bs:total_assets|Total Assets
+
+# Balance Sheet - Current Liabilities
+Total Current Liabilities|bs:current_liabilities|Total Current Liabilities
+Accounts Payable|bs:accounts_payable|Accounts Payable
+A/P|bs:accounts_payable|Accounts Payable
+Trade Payables|bs:accounts_payable|Accounts Payable
+Accrued Expenses|bs:accrued_expenses|Accrued Expenses
+Accrued Liabilities|bs:accrued_expenses|Accrued Expenses
+Accrued Wages|bs:accrued_wages|Accrued Wages
+Wages Payable|bs:accrued_wages|Accrued Wages
+Deferred Revenue (Current)|bs:deferred_revenue_current|Deferred Revenue (Current)
+Unearned Revenue|bs:deferred_revenue_current|Deferred Revenue (Current)
+Short-Term Debt|bs:short_term_debt|Short-Term Debt
+Current Portion of Long-Term Debt|bs:short_term_debt|Short-Term Debt
+CPLTD|bs:short_term_debt|Short-Term Debt
+Dividends Payable|bs:dividends_payable|Dividends Payable
+Other Current Liabilities|bs:other_current_liabilities|Other Current Liabilities
+
+# Balance Sheet - Non-Current Liabilities
+Total Non-Current Liabilities|bs:non_current_liabilities|Total Non-Current Liabilities
+Long-Term Debt|bs:long_term_debt|Long-Term Debt
+LT Debt|bs:long_term_debt|Long-Term Debt
+Senior Debt|bs:long_term_debt|Long-Term Debt
+Revolving Credit Facility|bs:revolving_credit|Revolving Credit Facility
+Revolver|bs:revolving_credit|Revolving Credit Facility
+Term Loan|bs:term_loan|Term Loan
+Bonds Payable|bs:bonds|Bonds Payable
+Convertible Debt|bs:convertible_debt|Convertible Debt
+Long-Term Lease Liabilities|bs:lt_lease_liabilities|Long-Term Lease Liabilities
+Deferred Tax Liabilities|bs:deferred_tax_liability|Deferred Tax Liabilities
+DTL|bs:deferred_tax_liability|Deferred Tax Liabilities
+Pension Liabilities|bs:pension_liability|Pension Liabilities
+Other Long-Term Liabilities|bs:other_lt_liabilities|Other Long-Term Liabilities
+
+# Balance Sheet - Total Liabilities
+Total Liabilities|bs:total_liabilities|Total Liabilities
+
+# Balance Sheet - Equity
+Total Shareholders' Equity|bs:total_equity|Total Shareholders' Equity
+Total Equity|bs:total_equity|Total Shareholders' Equity
+Common Stock|bs:common_stock|Common Stock
+Preferred Stock|bs:preferred_stock|Preferred Stock
+Additional Paid-In Capital|bs:apic|Additional Paid-In Capital
+APIC|bs:apic|Additional Paid-In Capital
+Retained Earnings|bs:retained_earnings|Retained Earnings
+Treasury Stock|bs:treasury_stock|Treasury Stock
+Accumulated Other Comprehensive Income|bs:aoci|Accumulated Other Comprehensive Income
+AOCI|bs:aoci|Accumulated Other Comprehensive Income
+Non-Controlling Interest|bs:nci|Non-Controlling Interest
+Minority Interest|bs:nci|Non-Controlling Interest
+
+# Cash Flow - Operating
+Cash Flow from Operations|cf:cfo|Cash Flow from Operations
+CFO|cf:cfo|Cash Flow from Operations
+Operating Cash Flow|cf:cfo|Cash Flow from Operations
+Depreciation & Amortization (CF)|cf:da_cf|Depreciation & Amortization
+Stock-Based Compensation (CF)|cf:sbc_cf|Stock-Based Compensation
+Deferred Taxes|cf:deferred_taxes|Deferred Taxes
+Change in Accounts Receivable|cf:change_ar|Change in Accounts Receivable
+Change in Inventory|cf:change_inventory|Change in Inventory
+Change in Accounts Payable|cf:change_ap|Change in Accounts Payable
+Change in Accrued Expenses|cf:change_accrued|Change in Accrued Expenses
+
+# Cash Flow - Investing
+Cash Flow from Investing|cf:cfi|Cash Flow from Investing
+CFI|cf:cfi|Cash Flow from Investing
+Capital Expenditures|cf:capex|Capital Expenditures
+CapEx|cf:capex|Capital Expenditures
+PP&E Purchases|cf:capex|Capital Expenditures
+Acquisitions|cf:acquisitions|Acquisitions
+Business Acquisitions|cf:acquisitions|Acquisitions
+Divestitures|cf:divestitures|Divestitures
+Purchase of Investments|cf:purchase_investments|Purchase of Investments
+Sale of Investments|cf:sale_investments|Sale of Investments
+
+# Cash Flow - Financing
+Cash Flow from Financing|cf:cff|Cash Flow from Financing
+CFF|cf:cff|Cash Flow from Financing
+Proceeds from Debt|cf:debt_proceeds|Proceeds from Debt
+Debt Issuance|cf:debt_proceeds|Proceeds from Debt
+Debt Repayments|cf:debt_repayment|Debt Repayments
+Equity Issuance|cf:equity_issuance|Equity Issuance
+Share Repurchases|cf:share_repurchases|Share Repurchases
+Stock Buybacks|cf:share_repurchases|Share Repurchases
+Dividends Paid|cf:dividends_paid|Dividends Paid
+
+# Cash Flow - Summary
+Net Change in Cash|cf:net_change_cash|Net Change in Cash
+Beginning Cash|cf:beginning_cash|Beginning Cash
+Ending Cash|cf:ending_cash|Ending Cash
+Free Cash Flow|cf:fcf|Free Cash Flow
+FCF|cf:fcf|Free Cash Flow
+
+# Ratios
+Gross Margin|ratio:gross_margin|Gross Margin
+Operating Margin|ratio:operating_margin|Operating Margin
+EBITDA Margin|ratio:ebitda_margin|EBITDA Margin
+Net Profit Margin|ratio:net_margin|Net Profit Margin
+Return on Equity|ratio:roe|Return on Equity
+ROE|ratio:roe|Return on Equity
+Return on Assets|ratio:roa|Return on Assets
+ROA|ratio:roa|Return on Assets
+Current Ratio|ratio:current_ratio|Current Ratio
+Quick Ratio|ratio:quick_ratio|Quick Ratio
+Debt-to-Equity Ratio|ratio:debt_equity|Debt-to-Equity Ratio
+Leverage Ratio|ratio:debt_equity|Debt-to-Equity Ratio
