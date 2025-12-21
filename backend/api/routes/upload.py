@@ -1,0 +1,320 @@
+"""
+Upload API routes.
+
+Provides endpoints for PDF document upload and extraction.
+"""
+import shutil
+import time
+import uuid
+from datetime import datetime
+from pathlib import Path
+from typing import List
+
+import structlog
+from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
+from sqlalchemy.orm import Session
+
+from backend.config import get_settings
+from backend.database import get_db
+from backend.models.document import Document, DocumentStatus
+from backend.models.extract import Extract
+from backend.models.line_item import LineItem
+from backend.schemas.upload import (
+    CellResponse,
+    DocumentStatusResponse,
+    ErrorResponse,
+    RowResponse,
+    TableResponse,
+    UploadResponse,
+)
+from backend.services.table_detector import ExtractedTable, get_table_detector
+
+logger = structlog.get_logger(__name__)
+settings = get_settings()
+
+router = APIRouter()
+
+
+def validate_pdf_file(file: UploadFile) -> None:
+    """
+    Validate that uploaded file is a PDF.
+
+    Args:
+        file: Uploaded file.
+
+    Raises:
+        HTTPException: If file is not a valid PDF.
+    """
+    # Check content type
+    if file.content_type not in ["application/pdf", "application/x-pdf"]:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Invalid file type: {file.content_type}. Only PDF files are accepted.",
+        )
+
+    # Check file extension
+    if file.filename and not file.filename.lower().endswith(".pdf"):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid file extension. Only .pdf files are accepted.",
+        )
+
+
+def save_uploaded_file(file: UploadFile, document_id: uuid.UUID) -> Path:
+    """
+    Save uploaded file to disk.
+
+    Args:
+        file: Uploaded file.
+        document_id: Document UUID for filename.
+
+    Returns:
+        Path to saved file.
+    """
+    # Ensure upload directory exists
+    upload_dir = settings.upload_dir
+    upload_dir.mkdir(parents=True, exist_ok=True)
+
+    # Create unique filename
+    extension = Path(file.filename).suffix if file.filename else ".pdf"
+    file_path = upload_dir / f"{document_id}{extension}"
+
+    # Save file
+    with open(file_path, "wb") as buffer:
+        shutil.copyfileobj(file.file, buffer)
+
+    return file_path
+
+
+def convert_table_to_response(table: ExtractedTable) -> TableResponse:
+    """
+    Convert ExtractedTable to TableResponse schema.
+
+    Args:
+        table: Extracted table data.
+
+    Returns:
+        TableResponse for API response.
+    """
+    rows = []
+    for row in table.rows:
+        cells = [
+            CellResponse(
+                value=cell.value,
+                parsed_value=cell.parsed_value,
+                is_numeric=cell.is_numeric,
+                row=cell.row,
+                column=cell.column,
+                bbox=cell.bbox,
+                confidence=cell.confidence,
+            )
+            for cell in row.cells
+        ]
+        rows.append(RowResponse(cells=cells, row_index=row.row_index))
+
+    return TableResponse(
+        page=table.page,
+        rows=rows,
+        bbox=table.bbox,
+        confidence=table.confidence,
+        detection_method=table.detection_method,
+    )
+
+
+@router.post(
+    "/upload",
+    response_model=UploadResponse,
+    responses={
+        400: {"model": ErrorResponse, "description": "Invalid file"},
+        413: {"model": ErrorResponse, "description": "File too large"},
+        500: {"model": ErrorResponse, "description": "Processing error"},
+    },
+    summary="Upload PDF for extraction",
+    description="Upload a PDF document to extract financial tables and data.",
+)
+async def upload_pdf(
+    file: UploadFile = File(..., description="PDF file to process"),
+    db: Session = Depends(get_db),
+) -> UploadResponse:
+    """
+    Upload and process a PDF document.
+
+    Args:
+        file: PDF file to process.
+        db: Database session.
+
+    Returns:
+        UploadResponse with extracted tables and metadata.
+    """
+    start_time = time.time()
+
+    # Validate file
+    validate_pdf_file(file)
+
+    # Check file size
+    file.file.seek(0, 2)  # Seek to end
+    file_size = file.file.tell()
+    file.file.seek(0)  # Reset to beginning
+
+    if file_size > settings.max_upload_size_bytes:
+        raise HTTPException(
+            status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+            detail=f"File size {file_size} exceeds maximum allowed {settings.max_upload_size_bytes}",
+        )
+
+    # Create document record
+    document_id = uuid.uuid4()
+
+    try:
+        # Save file
+        file_path = save_uploaded_file(file, document_id)
+
+        logger.info(
+            "File uploaded",
+            document_id=str(document_id),
+            filename=file.filename,
+            size=file_size,
+        )
+
+        # Create document record
+        document = Document(
+            id=document_id,
+            filename=file.filename or "unknown.pdf",
+            file_path=str(file_path),
+            status=DocumentStatus.PROCESSING,
+        )
+        db.add(document)
+        db.commit()
+
+        # Extract tables
+        detector = get_table_detector()
+        result = detector.detect_tables(file_path)
+
+        # Update document with page count
+        document.page_count = result.page_count
+        document.status = DocumentStatus.COMPLETED
+
+        # Calculate overall confidence
+        if result.tables:
+            overall_confidence = sum(t.confidence for t in result.tables) / len(result.tables)
+        else:
+            overall_confidence = 0.0
+
+        # Create extract record
+        extract = Extract(
+            document_id=document_id,
+            tables_json=[
+                {
+                    "page": t.page,
+                    "row_count": len(t.rows),
+                    "confidence": t.confidence,
+                    "method": t.detection_method,
+                }
+                for t in result.tables
+            ],
+            confidence_score=overall_confidence,
+        )
+        db.add(extract)
+
+        # Create line items for extracted values
+        for table in result.tables:
+            for row in table.rows:
+                for cell in row.cells:
+                    if cell.is_numeric and cell.parsed_value is not None:
+                        line_item = LineItem(
+                            extract_id=extract.id,
+                            label=None,  # Label detection is Phase 2
+                            value=cell.parsed_value,
+                            raw_value=cell.value,
+                            source_page=table.page,
+                            bbox=cell.bbox,
+                            confidence=cell.confidence,
+                            row_index=cell.row,
+                            column_index=cell.column,
+                        )
+                        db.add(line_item)
+
+        db.commit()
+
+        # Convert to response
+        table_responses = [convert_table_to_response(t) for t in result.tables]
+
+        processing_time = (time.time() - start_time) * 1000
+
+        logger.info(
+            "Document processed successfully",
+            document_id=str(document_id),
+            tables=len(table_responses),
+            processing_time_ms=processing_time,
+        )
+
+        return UploadResponse(
+            document_id=document_id,
+            filename=file.filename or "unknown.pdf",
+            page_count=result.page_count,
+            tables=table_responses,
+            processing_time_ms=processing_time,
+            created_at=document.created_at,
+        )
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(
+            "Document processing failed",
+            document_id=str(document_id),
+            error=str(e),
+        )
+
+        # Update document status to failed
+        if document_id:
+            doc = db.query(Document).filter(Document.id == document_id).first()
+            if doc:
+                doc.status = DocumentStatus.FAILED
+                doc.error_message = str(e)
+                db.commit()
+
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to process document: {str(e)}",
+        )
+
+
+@router.get(
+    "/documents/{document_id}",
+    response_model=DocumentStatusResponse,
+    responses={404: {"model": ErrorResponse, "description": "Document not found"}},
+    summary="Get document status",
+    description="Retrieve the status and metadata of a previously uploaded document.",
+)
+async def get_document_status(
+    document_id: uuid.UUID,
+    db: Session = Depends(get_db),
+) -> DocumentStatusResponse:
+    """
+    Get status of a document.
+
+    Args:
+        document_id: Document UUID.
+        db: Database session.
+
+    Returns:
+        Document status and metadata.
+    """
+    document = db.query(Document).filter(Document.id == document_id).first()
+
+    if not document:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Document {document_id} not found",
+        )
+
+    return DocumentStatusResponse(
+        document_id=document.id,
+        filename=document.filename,
+        status=document.status.value,
+        page_count=document.page_count,
+        error_message=document.error_message,
+        created_at=document.created_at,
+        updated_at=document.updated_at,
+    )

@@ -1,0 +1,30 @@
+# Financial Line Item Ontology
+# Placeholder for Phase 2 - Semantic Classification
+
+# This file will contain the financial line item taxonomy
+# with GAAP standard items and common variations.
+
+version: "1.0.0"
+description: "StatementXL Financial Ontology - Phase 2"
+
+# Categories will include:
+# - Income Statement items
+# - Balance Sheet items
+# - Cash Flow Statement items
+# - Common ratios and metrics
+
+categories:
+  income_statement:
+    description: "Income/Profit & Loss statement line items"
+    items: [] # To be populated in Phase 2
+
+  balance_sheet:
+    description: "Balance sheet line items"
+    items: [] # To be populated in Phase 2
+
+  cash_flow:
+    description: "Cash flow statement line items"
+    items: [] # To be populated in Phase 2
+
+# Aliases and synonyms will be defined in Phase 2
+aliases: {}
