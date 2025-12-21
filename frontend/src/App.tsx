@@ -6,6 +6,7 @@ import ExtractionReview from './pages/ExtractionReview';
 import TemplateUpload from './pages/TemplateUpload';
 import MappingReview from './pages/MappingReview';
 import AuditTrail from './pages/AuditTrail';
+import TemplateLibrary from './pages/TemplateLibrary';
 import './index.css';
 
 function App() {
@@ -18,6 +19,7 @@ function App() {
           <Route path="template" element={<TemplateUpload />} />
           <Route path="mapping" element={<MappingReview />} />
           <Route path="audit" element={<AuditTrail />} />
+          <Route path="library" element={<TemplateLibrary />} />
         </Route>
       </Routes>
     </BrowserRouter>
