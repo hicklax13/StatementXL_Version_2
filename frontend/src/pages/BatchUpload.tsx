@@ -1,4 +1,6 @@
 import React, { useState, useCallback } from 'react';
+import { Upload, FileText, CheckCircle, XCircle, Loader2, Trash2, Download, FolderUp } from 'lucide-react';
+import logo from '../assets/logo.png';
 
 interface BatchFile {
   id: string;
@@ -25,6 +27,7 @@ const BatchUpload: React.FC = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [batchResult, setBatchResult] = useState<BatchResult | null>(null);
   const [selectedTemplate, setSelectedTemplate] = useState<string>('');
+  const [isDragging, setIsDragging] = useState(false);
 
   const handleFileSelect = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFiles = event.target.files;
@@ -42,8 +45,9 @@ const BatchUpload: React.FC = () => {
 
   const handleDrop = useCallback((event: React.DragEvent) => {
     event.preventDefault();
+    setIsDragging(false);
     const droppedFiles = event.dataTransfer.files;
-    
+
     const newFiles: BatchFile[] = Array.from(droppedFiles)
       .filter(file => file.type === 'application/pdf')
       .map((file, index) => ({
@@ -58,6 +62,11 @@ const BatchUpload: React.FC = () => {
 
   const handleDragOver = useCallback((event: React.DragEvent) => {
     event.preventDefault();
+    setIsDragging(true);
+  }, []);
+
+  const handleDragLeave = useCallback(() => {
+    setIsDragging(false);
   }, []);
 
   const removeFile = useCallback((id: string) => {
@@ -74,8 +83,8 @@ const BatchUpload: React.FC = () => {
 
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
-      
-      setFiles(prev => prev.map(f => 
+
+      setFiles(prev => prev.map(f =>
         f.id === file.id ? { ...f, status: 'processing', progress: 0 } : f
       ));
 
@@ -90,7 +99,7 @@ const BatchUpload: React.FC = () => {
 
         if (response.ok) {
           const result = await response.json();
-          setFiles(prev => prev.map(f => 
+          setFiles(prev => prev.map(f =>
             f.id === file.id ? {
               ...f,
               status: 'completed',
@@ -106,7 +115,7 @@ const BatchUpload: React.FC = () => {
           throw new Error('Upload failed');
         }
       } catch (error) {
-        setFiles(prev => prev.map(f => 
+        setFiles(prev => prev.map(f =>
           f.id === file.id ? {
             ...f,
             status: 'failed',
@@ -134,102 +143,68 @@ const BatchUpload: React.FC = () => {
     setBatchResult(null);
   };
 
-  const getStatusColor = (status: BatchFile['status']) => {
-    switch (status) {
-      case 'completed': return '#22c55e';
-      case 'failed': return '#ef4444';
-      case 'processing': return '#3b82f6';
-      default: return '#6b7280';
-    }
-  };
-
   const getStatusIcon = (status: BatchFile['status']) => {
     switch (status) {
-      case 'completed': return '✓';
-      case 'failed': return '✗';
-      case 'processing': return '◐';
-      default: return '○';
+      case 'completed': return <CheckCircle className="w-5 h-5 text-green-600" />;
+      case 'failed': return <XCircle className="w-5 h-5 text-red-600" />;
+      case 'processing': return <Loader2 className="w-5 h-5 text-blue-600 animate-spin" />;
+      default: return <FileText className="w-5 h-5 text-gray-400" />;
     }
   };
 
   return (
-    <div style={{ padding: '2rem', maxWidth: '1200px', margin: '0 auto' }}>
-      <h1 style={{ fontSize: '2rem', fontWeight: 'bold', marginBottom: '1.5rem', color: '#111827' }}>
-        Batch Upload
-      </h1>
-      
-      <p style={{ color: '#6b7280', marginBottom: '2rem' }}>
-        Upload multiple PDF financial statements for parallel processing.
-      </p>
+    <div className="space-y-6 animate-fade-in">
+      {/* Branded Header */}
+      <div className="bg-gradient-to-r from-green-600 to-green-500 rounded-2xl p-8 text-white shadow-lg">
+        <div className="flex items-center space-x-6">
+          <div className="bg-white rounded-xl p-3 shadow-md">
+            <img src={logo} alt="StatementXL" className="h-12 w-auto" />
+          </div>
+          <div>
+            <h1 className="text-3xl font-bold">Batch Upload</h1>
+            <p className="text-green-100 mt-1">Upload multiple PDF financial statements for parallel processing</p>
+          </div>
+        </div>
+      </div>
 
       {/* Drop Zone */}
       <div
         onDrop={handleDrop}
         onDragOver={handleDragOver}
-        style={{
-          border: '2px dashed #d1d5db',
-          borderRadius: '12px',
-          padding: '3rem',
-          textAlign: 'center',
-          backgroundColor: '#f9fafb',
-          marginBottom: '2rem',
-          cursor: 'pointer',
-        }}
+        onDragLeave={handleDragLeave}
+        className={`
+          relative border-2 border-dashed rounded-xl p-12 text-center transition-all cursor-pointer
+          ${isDragging
+            ? 'border-green-500 bg-green-50'
+            : 'border-gray-300 bg-white hover:border-green-400 hover:bg-green-50/50'
+          }
+        `}
       >
-        <div style={{ marginBottom: '1rem' }}>
-          <span style={{ fontSize: '3rem' }}>📁</span>
-        </div>
-        <p style={{ color: '#374151', fontWeight: '500', marginBottom: '0.5rem' }}>
-          Drop PDF files here or click to browse
-        </p>
-        <p style={{ color: '#9ca3af', fontSize: '0.875rem' }}>
-          Supports multiple files • Max 50MB per file
-        </p>
         <input
           type="file"
           accept=".pdf"
           multiple
           onChange={handleFileSelect}
-          style={{
-            position: 'absolute',
-            opacity: 0,
-            width: '100%',
-            height: '100%',
-            cursor: 'pointer',
-          }}
+          className="absolute inset-0 opacity-0 cursor-pointer"
         />
+        <FolderUp className={`w-12 h-12 mx-auto mb-4 ${isDragging ? 'text-green-600' : 'text-gray-400'}`} />
+        <p className="text-gray-700 font-medium mb-1">Drop PDF files here or click to browse</p>
+        <p className="text-gray-500 text-sm">Supports multiple files • Max 50MB per file</p>
         <button
           onClick={() => document.querySelector<HTMLInputElement>('input[type="file"]')?.click()}
-          style={{
-            marginTop: '1rem',
-            padding: '0.75rem 1.5rem',
-            backgroundColor: '#10b981',
-            color: 'white',
-            border: 'none',
-            borderRadius: '8px',
-            fontWeight: '500',
-            cursor: 'pointer',
-          }}
+          className="mt-4 px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-500 transition-colors font-medium"
         >
           Select Files
         </button>
       </div>
 
       {/* Template Selection */}
-      <div style={{ marginBottom: '2rem' }}>
-        <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>
-          Apply Template (Optional)
-        </label>
+      <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
+        <label className="block mb-2 font-medium text-gray-900">Apply Template (Optional)</label>
         <select
           value={selectedTemplate}
           onChange={(e) => setSelectedTemplate(e.target.value)}
-          style={{
-            width: '100%',
-            padding: '0.75rem',
-            border: '1px solid #d1d5db',
-            borderRadius: '8px',
-            backgroundColor: 'white',
-          }}
+          className="w-full p-3 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-green-500 focus:border-green-500"
         >
           <option value="">No template - extract only</option>
           <option value="lbo">LBO Model Template</option>
@@ -240,82 +215,38 @@ const BatchUpload: React.FC = () => {
 
       {/* File List */}
       {files.length > 0 && (
-        <div style={{
-          border: '1px solid #e5e7eb',
-          borderRadius: '12px',
-          overflow: 'hidden',
-          marginBottom: '2rem',
-        }}>
-          <div style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            padding: '1rem',
-            backgroundColor: '#f9fafb',
-            borderBottom: '1px solid #e5e7eb',
-          }}>
-            <span style={{ fontWeight: '500' }}>
+        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
+          <div className="flex justify-between items-center p-4 bg-green-50 border-b border-gray-200">
+            <span className="font-medium text-gray-900">
               {files.length} file{files.length !== 1 ? 's' : ''} selected
             </span>
             <button
               onClick={clearFiles}
-              style={{
-                color: '#ef4444',
-                background: 'none',
-                border: 'none',
-                cursor: 'pointer',
-              }}
+              className="text-red-600 hover:text-red-700 flex items-center space-x-1 text-sm"
             >
-              Clear all
+              <Trash2 className="w-4 h-4" />
+              <span>Clear all</span>
             </button>
           </div>
-          
-          <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
+
+          <div className="max-h-96 overflow-y-auto divide-y divide-gray-100">
             {files.map(file => (
-              <div
-                key={file.id}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  padding: '1rem',
-                  borderBottom: '1px solid #e5e7eb',
-                }}
-              >
-                <span
-                  style={{
-                    width: '24px',
-                    height: '24px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    borderRadius: '50%',
-                    backgroundColor: getStatusColor(file.status),
-                    color: 'white',
-                    marginRight: '1rem',
-                    fontSize: '0.75rem',
-                  }}
-                >
-                  {getStatusIcon(file.status)}
-                </span>
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontWeight: '500' }}>{file.file.name}</div>
-                  <div style={{ fontSize: '0.875rem', color: '#6b7280' }}>
+              <div key={file.id} className="flex items-center p-4 hover:bg-gray-50 transition-colors">
+                <div className="mr-4">{getStatusIcon(file.status)}</div>
+                <div className="flex-1 min-w-0">
+                  <p className="font-medium text-gray-900 truncate">{file.file.name}</p>
+                  <p className="text-sm text-gray-500">
                     {(file.file.size / 1024 / 1024).toFixed(2)} MB
-                    {file.result && ` • ${file.result.tables} tables found`}
-                    {file.error && <span style={{ color: '#ef4444' }}> • {file.error}</span>}
-                  </div>
+                    {file.result && <span className="text-green-600"> • {file.result.tables} tables found</span>}
+                    {file.error && <span className="text-red-600"> • {file.error}</span>}
+                  </p>
                 </div>
                 {file.status === 'pending' && (
                   <button
                     onClick={() => removeFile(file.id)}
-                    style={{
-                      color: '#6b7280',
-                      background: 'none',
-                      border: 'none',
-                      cursor: 'pointer',
-                    }}
+                    className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                   >
-                    ✕
+                    <Trash2 className="w-4 h-4" />
                   </button>
                 )}
               </div>
@@ -329,73 +260,56 @@ const BatchUpload: React.FC = () => {
         <button
           onClick={processFiles}
           disabled={isProcessing}
-          style={{
-            width: '100%',
-            padding: '1rem',
-            backgroundColor: isProcessing ? '#9ca3af' : '#10b981',
-            color: 'white',
-            border: 'none',
-            borderRadius: '8px',
-            fontWeight: '600',
-            fontSize: '1rem',
-            cursor: isProcessing ? 'not-allowed' : 'pointer',
-          }}
+          className={`
+            w-full py-4 rounded-xl font-semibold text-white transition-all flex items-center justify-center space-x-2
+            ${isProcessing
+              ? 'bg-gray-400 cursor-not-allowed'
+              : 'bg-green-600 hover:bg-green-500 shadow-lg hover:shadow-xl'
+            }
+          `}
         >
-          {isProcessing ? 'Processing...' : `Process ${files.length} Files`}
+          {isProcessing ? (
+            <>
+              <Loader2 className="w-5 h-5 animate-spin" />
+              <span>Processing...</span>
+            </>
+          ) : (
+            <>
+              <Upload className="w-5 h-5" />
+              <span>Process {files.length} Files</span>
+            </>
+          )}
         </button>
       )}
 
       {/* Batch Result */}
       {batchResult && (
-        <div style={{
-          padding: '1.5rem',
-          backgroundColor: '#f0fdf4',
-          borderRadius: '12px',
-          border: '1px solid #86efac',
-        }}>
-          <h3 style={{ fontWeight: '600', marginBottom: '1rem', color: '#166534' }}>
-            Batch Processing Complete
-          </h3>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1rem' }}>
-            <div>
-              <div style={{ fontSize: '2rem', fontWeight: 'bold', color: '#166534' }}>
-                {batchResult.successful}
-              </div>
-              <div style={{ color: '#6b7280' }}>Successful</div>
+        <div className="bg-green-50 border border-green-200 rounded-xl p-6 border-l-4 border-l-green-500">
+          <h3 className="font-semibold text-green-800 text-lg mb-4">Batch Processing Complete</h3>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+            <div className="bg-white rounded-lg p-4 border border-green-200">
+              <p className="text-3xl font-bold text-green-600">{batchResult.successful}</p>
+              <p className="text-sm text-gray-500">Successful</p>
             </div>
-            <div>
-              <div style={{ fontSize: '2rem', fontWeight: 'bold', color: '#dc2626' }}>
-                {batchResult.failed}
-              </div>
-              <div style={{ color: '#6b7280' }}>Failed</div>
+            <div className="bg-white rounded-lg p-4 border border-green-200">
+              <p className="text-3xl font-bold text-red-600">{batchResult.failed}</p>
+              <p className="text-sm text-gray-500">Failed</p>
             </div>
-            <div>
-              <div style={{ fontSize: '2rem', fontWeight: 'bold', color: '#111827' }}>
-                {batchResult.total_files}
-              </div>
-              <div style={{ color: '#6b7280' }}>Total</div>
+            <div className="bg-white rounded-lg p-4 border border-green-200">
+              <p className="text-3xl font-bold text-gray-900">{batchResult.total_files}</p>
+              <p className="text-sm text-gray-500">Total</p>
             </div>
-            <div>
-              <div style={{ fontSize: '2rem', fontWeight: 'bold', color: '#111827' }}>
-                {(batchResult.processing_time_ms / 1000).toFixed(1)}s
-              </div>
-              <div style={{ color: '#6b7280' }}>Time</div>
+            <div className="bg-white rounded-lg p-4 border border-green-200">
+              <p className="text-3xl font-bold text-gray-900">{(batchResult.processing_time_ms / 1000).toFixed(1)}s</p>
+              <p className="text-sm text-gray-500">Time</p>
             </div>
           </div>
           <button
             onClick={() => window.open('/api/v1/batch/' + batchResult.job_id + '/download')}
-            style={{
-              marginTop: '1.5rem',
-              padding: '0.75rem 1.5rem',
-              backgroundColor: '#10b981',
-              color: 'white',
-              border: 'none',
-              borderRadius: '8px',
-              fontWeight: '500',
-              cursor: 'pointer',
-            }}
+            className="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-500 transition-colors font-medium flex items-center space-x-2"
           >
-            Download All Results (ZIP)
+            <Download className="w-5 h-5" />
+            <span>Download All Results (ZIP)</span>
           </button>
         </div>
       )}
