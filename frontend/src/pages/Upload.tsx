@@ -4,6 +4,7 @@ import { FileText, Clock, CheckCircle, AlertCircle, ArrowRight } from 'lucide-re
 import FileUpload from '../components/FileUpload';
 import { uploadDocument } from '../api/client';
 import { useDocumentStore, useUIStore } from '../stores';
+import logo from '../assets/logo.png';
 
 const Upload: React.FC = () => {
     const navigate = useNavigate();
@@ -51,18 +52,22 @@ const Upload: React.FC = () => {
 
     return (
         <div className="space-y-8 animate-fade-in">
-            {/* Header with Logo */}
-            <div className="flex items-center space-x-4">
-                <img
-                    src="/Logos/StatementXL_Logo_v2.png"
-                    alt="StatementXL"
-                    className="h-14 w-auto object-contain"
-                />
-                <div>
-                    <h1 className="text-3xl font-bold text-gray-900">Upload Financial Statement</h1>
-                    <p className="text-gray-500 mt-1">
-                        Upload a PDF to extract financial data and map to your template
-                    </p>
+            {/* Branded Header Section */}
+            <div className="bg-gradient-to-r from-green-600 to-green-500 rounded-2xl p-8 text-white shadow-lg">
+                <div className="flex items-center space-x-6">
+                    <div className="bg-white rounded-xl p-3 shadow-md">
+                        <img
+                            src={logo}
+                            alt="StatementXL"
+                            className="h-12 w-auto"
+                        />
+                    </div>
+                    <div>
+                        <h1 className="text-3xl font-bold">Upload Financial Statement</h1>
+                        <p className="text-green-100 mt-1">
+                            Upload a PDF to extract financial data and map to your template
+                        </p>
+                    </div>
                 </div>
             </div>
 

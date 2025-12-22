@@ -10,6 +10,7 @@ import {
     FileSpreadsheet,
     Users,
 } from 'lucide-react';
+import logo from '../assets/logo.png';
 
 interface LibraryTemplate {
     id: string;
@@ -124,25 +125,29 @@ const TemplateLibrary: React.FC = () => {
 
     return (
         <div className="space-y-6 animate-fade-in">
-            {/* Header with Logo */}
-            <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-4">
-                    <img
-                        src="/Logos/StatementXL_Logo_v2.png"
-                        alt="StatementXL"
-                        className="h-12 w-auto object-contain"
-                    />
-                    <div>
-                        <h1 className="text-3xl font-bold text-gray-900">Template Library</h1>
-                        <p className="text-gray-500 mt-1">
-                            Browse and download pre-built financial templates
-                        </p>
+            {/* Branded Header Section */}
+            <div className="bg-gradient-to-r from-green-600 to-green-500 rounded-2xl p-8 text-white shadow-lg">
+                <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-6">
+                        <div className="bg-white rounded-xl p-3 shadow-md">
+                            <img
+                                src={logo}
+                                alt="StatementXL"
+                                className="h-12 w-auto"
+                            />
+                        </div>
+                        <div>
+                            <h1 className="text-3xl font-bold">Template Library</h1>
+                            <p className="text-green-100 mt-1">
+                                Browse and download pre-built financial templates
+                            </p>
+                        </div>
                     </div>
+                    <button className="px-4 py-2 bg-white text-green-600 rounded-lg hover:bg-green-50 transition-colors flex items-center space-x-2 font-medium shadow-sm">
+                        <Plus className="w-4 h-4" />
+                        <span>Upload Template</span>
+                    </button>
                 </div>
-                <button className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-500 transition-colors flex items-center space-x-2">
-                    <Plus className="w-4 h-4" />
-                    <span>Upload Template</span>
-                </button>
             </div>
 
             {/* Search and Filters */}
@@ -164,8 +169,8 @@ const TemplateLibrary: React.FC = () => {
                     <button
                         onClick={() => setShowFilters(!showFilters)}
                         className={`px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors ${showFilters
-                                ? 'bg-green-600 text-white'
-                                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                            ? 'bg-green-600 text-white'
+                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                             }`}
                     >
                         <Filter className="w-4 h-4" />

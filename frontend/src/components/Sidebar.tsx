@@ -11,6 +11,7 @@ import {
     Library,
 } from 'lucide-react';
 import { useUIStore } from '../stores';
+import logo from '../assets/logo.png';
 
 const navItems = [
     { path: '/', icon: Upload, label: 'Upload PDF' },
@@ -32,24 +33,31 @@ const Sidebar: React.FC = () => {
         ${sidebarOpen ? 'w-64' : 'w-20'}
       `}
         >
-            {/* Logo */}
-            <div className="flex items-center justify-between h-16 px-4 border-b border-green-600/30">
-                <div className="flex items-center space-x-3">
-                    <img
-                        src="/Logos/StatementXL_Logo_v2.png"
-                        alt="StatementXL"
-                        className="h-10 w-auto object-contain"
-                    />
+            {/* Logo Section - Properly Integrated */}
+            <div className="flex items-center h-16 px-4 border-b border-green-600/30">
+                <NavLink to="/" className="flex items-center space-x-3 group">
+                    <div className="flex-shrink-0 bg-white rounded-lg p-1.5 shadow-sm group-hover:shadow-md transition-shadow">
+                        <img
+                            src={logo}
+                            alt="StatementXL"
+                            className="h-7 w-auto"
+                        />
+                    </div>
                     {sidebarOpen && (
-                        <span className="font-bold text-lg text-white animate-fade-in">
-                            StatementXL
-                        </span>
+                        <div className="flex flex-col animate-fade-in">
+                            <span className="font-bold text-white text-lg leading-tight">
+                                StatementXL
+                            </span>
+                            <span className="text-green-200 text-xs">
+                                Financial Automation
+                            </span>
+                        </div>
                     )}
-                </div>
+                </NavLink>
             </div>
 
             {/* Navigation */}
-            <nav className="flex-1 py-6 px-3 space-y-2">
+            <nav className="flex-1 py-6 px-3 space-y-1">
                 {navItems.map((item) => (
                     <NavLink
                         key={item.path}
@@ -57,7 +65,7 @@ const Sidebar: React.FC = () => {
                         className={({ isActive }) => `
               flex items-center px-3 py-3 rounded-lg transition-all duration-200
               ${isActive
-                                ? 'bg-white/20 text-white border-l-2 border-white'
+                                ? 'bg-white/20 text-white border-l-2 border-white shadow-sm'
                                 : 'text-green-100 hover:text-white hover:bg-white/10'
                             }
             `}
@@ -84,9 +92,14 @@ const Sidebar: React.FC = () => {
 
             {/* Footer */}
             <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-green-600/30">
-                {sidebarOpen && (
-                    <div className="text-xs text-green-200 text-center animate-fade-in">
-                        Version 2.0.0
+                {sidebarOpen ? (
+                    <div className="flex items-center justify-center space-x-2 animate-fade-in">
+                        <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+                        <span className="text-xs text-green-200">Version 2.0.0</span>
+                    </div>
+                ) : (
+                    <div className="flex justify-center">
+                        <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
                     </div>
                 )}
             </div>
