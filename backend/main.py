@@ -98,6 +98,10 @@ app.include_router(library.router, prefix="/api/v1", tags=["Library"])
 app.include_router(batch.router, prefix="/api/v1", tags=["Batch"])
 app.include_router(audit.router, prefix="/api/v1", tags=["Audit"])
 
+# Monitoring routes (no prefix for easy access)
+from backend.api.routes import monitoring
+app.include_router(monitoring.router, tags=["Monitoring"])
+
 
 # Global Exception Handlers
 from fastapi import Request

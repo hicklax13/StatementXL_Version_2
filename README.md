@@ -1,134 +1,141 @@
-# StatementXL Version 2
+# StatementXL
 
-A modular, analyst-first SaaS platform for converting financial statement PDFs into populated Excel models.
+**AI-Powered Financial Statement Extraction & Normalization**
 
-## Overview
+Transform PDFs of financial statements into clean, structured Excel workbooks with intelligent table detection, OCR, and template mapping.
 
-StatementXL is a financial statement normalization engine that:
-1. Ingests arbitrary financial PDFs (10-Ks, audited statements, management reports, tax returns)
-2. Extracts structured data with full lineage tracking
-3. Maps extracted data into user-provided Excel templates while preserving formulas
-4. Surfaces ambiguity for analyst-in-the-loop resolution
-5. Maintains audit trails linking every cell back to source PDF coordinates
+## 🚀 Features
 
-## Phase 1: Core Data Pipeline
+- **PDF Processing**: Extract tables from scanned and native PDFs
+- **AI-Powered Extraction**: Intelligent table detection using multiple strategies
+- **Template Mapping**: Map extracted data to standardized accounting templates
+- **Batch Processing**: Process multiple documents in parallel
+- **Excel Export**: Generate formatted Excel workbooks with validation
+- **Audit Trail**: Track all processing steps and changes
 
-This phase implements the extraction pipeline: PDF → structured data with confidence scores and lineage.
+## 🛠️ Tech Stack
 
-### Tech Stack
-- **Backend**: Python 3.11+, FastAPI
-- **Database**: PostgreSQL 15 (with pgvector extension)
-- **OCR**: pdfplumber (primary), Tesseract (fallback)
-- **Table Detection**: Camelot (lattice mode), pdfplumber (stream mode)
+| Component | Technology |
+|-----------|------------|
+| Backend | FastAPI, Python 3.11 |
+| Frontend | React 18, TypeScript, Vite |
+| Database | PostgreSQL 15 |
+| Cache | Redis 7 |
+| PDF Engine | Tesseract, Ghostscript, Poppler |
 
-## Quick Start
+## 📦 Quick Start
 
 ### Prerequisites
-- Python 3.11+
-- Docker and Docker Compose
-- Tesseract OCR installed (`tesseract` on PATH)
-- Ghostscript installed (for Camelot)
+- Docker & Docker Compose
+- Python 3.11+ (for local dev)
+- Node.js 20+ (for local dev)
 
-### Setup
+### Docker (Recommended)
+```bash
+# Clone and start
+git clone https://github.com/your-repo/statementxl.git
+cd statementxl
+docker-compose up --build -d
 
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/yourusername/StatementXL_Version_2.git
-   cd StatementXL_Version_2
-   ```
+# Access the app
+open http://localhost
+```
 
-2. **Create virtual environment**
-   ```bash
-   python -m venv venv
-   venv\Scripts\activate  # Windows
-   # or
-   source venv/bin/activate  # Linux/Mac
-   ```
+### Local Development
+```bash
+# Backend
+pip install -r requirements.txt
+python -m uvicorn backend.main:app --reload --port 8000
 
-3. **Install dependencies**
-   ```bash
-   pip install -r requirements.txt
-   ```
+# Frontend (separate terminal)
+cd frontend
+npm install
+npm run dev
+```
 
-4. **Copy environment file**
-   ```bash
-   copy .env.example .env  # Windows
-   # or
-   cp .env.example .env  # Linux/Mac
-   ```
+## 🔐 Environment Variables
 
-5. **Start PostgreSQL and Redis**
-   ```bash
-   docker-compose up -d
-   ```
+Create a `.env` file:
 
-6. **Run the API server**
-   ```bash
-   uvicorn backend.main:app --reload
-   ```
+```env
+# Database
+DATABASE_URL=postgresql://user:pass@localhost:5432/statementxl
 
-7. **Access API documentation**
-   Open http://localhost:8000/docs in your browser
+# Security
+JWT_SECRET_KEY=your-secret-key-here
+ENABLE_HSTS=false
 
-## API Usage
+# API Keys (optional)
+GOOGLE_API_KEY=your-google-api-key
+```
 
-### Upload PDF
+## 📚 API Documentation
+
+- **Swagger UI**: http://localhost:8000/docs
+- **ReDoc**: http://localhost:8000/redoc
+- **OpenAPI JSON**: http://localhost:8000/openapi.json
+
+## 🧪 Testing
 
 ```bash
-curl -X POST "http://localhost:8000/api/v1/upload" \
-  -H "Content-Type: multipart/form-data" \
-  -F "file=@statement.pdf"
+# Run all tests
+python -m pytest tests/ -v
+
+# Unit tests only
+python -m pytest tests/unit -v
+
+# Integration tests
+python -m pytest tests/integration -v
+
+# With coverage
+python -m pytest tests/ --cov=backend --cov-report=html
 ```
 
-**Response:**
-```json
-{
-  "document_id": "550e8400-e29b-41d4-a716-446655440000",
-  "filename": "statement.pdf",
-  "page_count": 10,
-  "tables": [
-    {
-      "page": 1,
-      "rows": [
-        {
-          "cells": [
-            {"value": "Revenue", "bbox": [100, 200, 300, 220]},
-            {"value": 1500000, "raw": "$1,500,000", "bbox": [350, 200, 500, 220], "confidence": 0.95}
-          ]
-        }
-      ],
-      "confidence": 0.92
-    }
-  ]
-}
-```
-
-## Running Tests
-
-```bash
-pytest tests/ -v --cov=backend --cov-report=term-missing
-```
-
-## Project Structure
+## 📁 Project Structure
 
 ```
-StatementXL_Version_2/
+StatementXL/
 ├── backend/
-│   ├── api/routes/        # API endpoints
-│   ├── models/            # SQLAlchemy models
-│   ├── services/          # Business logic
-│   ├── repositories/      # Database access
-│   ├── schemas/           # Pydantic schemas
-│   ├── main.py            # FastAPI application
-│   ├── config.py          # Settings management
-│   └── database.py        # Database setup
-├── tests/                 # Test suite
-├── data/                  # Ontology and reference data
-├── uploads/               # Uploaded PDFs storage
-├── docker-compose.yml     # Docker services
-└── requirements.txt       # Python dependencies
+│   ├── api/routes/       # API endpoints
+│   ├── auth/             # JWT authentication
+│   ├── middleware/       # Logging, security, rate limiting
+│   ├── models/           # SQLAlchemy models
+│   ├── services/         # Business logic
+│   └── validation/       # Input validators
+├── frontend/
+│   ├── src/
+│   │   ├── api/          # API client
+│   │   ├── components/   # React components
+│   │   └── pages/        # Route pages
+│   └── Dockerfile
+├── tests/
+│   ├── unit/
+│   └── integration/
+├── scripts/
+│   ├── backup.sh
+│   └── restore.sh
+└── docker-compose.yml
 ```
 
-## License
+## 🔒 Security Features
 
-Proprietary - All rights reserved
+- JWT authentication with refresh tokens
+- Password strength validation
+- Rate limiting (brute force protection)
+- Input sanitization (XSS prevention)
+- Security headers (CSP, HSTS, etc.)
+- SQL injection detection
+
+## 📊 Database Backup
+
+```bash
+# Backup
+./scripts/backup.sh ./backups
+
+# Restore
+./scripts/restore.sh ./backups/statementxl_backup_XXXXXX.sql.gz
+```
+
+## 📄 License
+
+MIT License - see LICENSE file.
