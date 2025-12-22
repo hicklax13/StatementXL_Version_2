@@ -289,7 +289,12 @@ async def upload_pdf(
                     doc.status = DocumentStatus.FAILED
                     doc.error_message = str(e)
                     db.commit()
-            except:
+            except Exception as db_error:
+                logger.warning(
+                    "failed_to_update_document_status",
+                    document_id=str(document_id),
+                    error=str(db_error),
+                )
                 db.rollback()
 
         raise HTTPException(

@@ -68,6 +68,56 @@ app.include_router(batch.router, prefix="/api/v1", tags=["Batch"])
 app.include_router(audit.router, prefix="/api/v1", tags=["Audit"])
 
 
+# Global Exception Handlers
+from fastapi import Request
+from fastapi.responses import JSONResponse
+from backend.exceptions import StatementXLError
+
+
+@app.exception_handler(StatementXLError)
+async def statementxl_exception_handler(request: Request, exc: StatementXLError):
+    """Handle all StatementXL custom exceptions."""
+    logger.error(
+        "statementxl_error",
+        error_code=exc.error_code,
+        message=exc.message,
+        details=exc.details,
+        path=str(request.url.path),
+    )
+    return JSONResponse(
+        status_code=exc.http_status,
+        content={
+            "error": True,
+            "error_code": exc.error_code,
+            "message": exc.message,
+            "details": exc.details,
+        },
+    )
+
+
+@app.exception_handler(Exception)
+async def generic_exception_handler(request: Request, exc: Exception):
+    """Handle unexpected exceptions with consistent format."""
+    import traceback
+    
+    logger.error(
+        "unhandled_error",
+        error_type=type(exc).__name__,
+        message=str(exc),
+        path=str(request.url.path),
+        traceback=traceback.format_exc(),
+    )
+    return JSONResponse(
+        status_code=500,
+        content={
+            "error": True,
+            "error_code": "SXL-999",
+            "message": "An unexpected error occurred. Please try again.",
+            "details": {"error_type": type(exc).__name__} if settings.debug else {},
+        },
+    )
+
+
 @app.on_event("startup")
 async def startup_event() -> None:
     """Initialize application on startup."""
