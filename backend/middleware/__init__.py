@@ -19,6 +19,11 @@ from backend.middleware.rate_limit import (
     export_rate_limit,
     RATE_LIMITS,
 )
+from backend.middleware.security import (
+    SecurityHeadersMiddleware,
+    get_cors_origins,
+    MAX_REQUEST_SIZE_BYTES,
+)
 
 __all__ = [
     "CorrelationIdMiddleware",
@@ -35,4 +40,7 @@ __all__ = [
     "api_rate_limit",
     "export_rate_limit",
     "RATE_LIMITS",
+    "SecurityHeadersMiddleware",
+    "get_cors_origins",
+    "MAX_REQUEST_SIZE_BYTES",
 ]
