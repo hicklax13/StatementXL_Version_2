@@ -116,4 +116,39 @@ export const getAuditLog = async (
     return response.data;
 };
 
+// Authentication APIs
+export const register = async (email: string, password: string, fullName?: string): Promise<any> => {
+    const response = await api.post('/auth/register', { email, password, full_name: fullName });
+    return response.data;
+};
+
+export const login = async (email: string, password: string): Promise<any> => {
+    const response = await api.post('/auth/login', { email, password });
+    return response.data;
+};
+
+export const refreshToken = async (refreshTokenStr: string): Promise<any> => {
+    const response = await api.post('/auth/refresh', { refresh_token: refreshTokenStr });
+    return response.data;
+};
+
+export const getCurrentUser = async (): Promise<any> => {
+    const response = await api.get('/auth/me');
+    return response.data;
+};
+
+export const logout = async (): Promise<any> => {
+    const response = await api.post('/auth/logout');
+    return response.data;
+};
+
+// Add auth token to requests
+export const setAuthToken = (token: string | null) => {
+    if (token) {
+        api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+    } else {
+        delete api.defaults.headers.common['Authorization'];
+    }
+};
+
 export default api;

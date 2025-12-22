@@ -14,6 +14,7 @@ from backend.api.routes import mapping
 from backend.api.routes import library
 from backend.api.routes import batch
 from backend.api.routes import audit
+from backend.api.routes import auth
 from backend.config import get_settings
 from backend.database import init_db
 
@@ -59,6 +60,7 @@ app.add_middleware(
 )
 
 # Include API routes
+app.include_router(auth.router, prefix="/api/v1/auth", tags=["Authentication"])
 app.include_router(upload.router, prefix="/api/v1", tags=["Upload"])
 app.include_router(classify.router, prefix="/api/v1", tags=["Classification"])
 app.include_router(template.router, prefix="/api/v1", tags=["Template"])
