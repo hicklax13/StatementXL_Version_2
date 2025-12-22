@@ -391,6 +391,64 @@ async def get_recommendations(
     ]
 
 
+@router.get(
+    "/library/recommend-by-industry",
+    response_model=List[TemplateLibraryResponse],
+    summary="Get recommendations by industry",
+)
+async def recommend_by_industry(
+    industry: str = Query(..., description="Industry to get recommendations for"),
+    category: Optional[str] = Query(None, description="Optional category filter"),
+    limit: int = Query(default=10, le=50),
+    db: Session = Depends(get_db),
+) -> List[TemplateLibraryResponse]:
+    """
+    Get template recommendations based on industry.
+    
+    This endpoint enables template suggestions without needing an existing template,
+    which is useful for new users or when uploading a document for a new company.
+    """
+    query = db.query(TemplateLibraryItem).filter(
+        TemplateLibraryItem.is_public == True,
+        TemplateLibraryItem.industry == industry,
+    )
+    
+    if category:
+        query = query.filter(TemplateLibraryItem.category == category)
+    
+    # Order by featured first, then by usage count
+    templates = query.order_by(
+        TemplateLibraryItem.is_featured.desc(),
+        TemplateLibraryItem.use_count.desc(),
+        TemplateLibraryItem.rating.desc(),
+    ).limit(limit).all()
+    
+    logger.info(
+        "Industry recommendation",
+        industry=industry,
+        results=len(templates),
+    )
+    
+    return [
+        TemplateLibraryResponse(
+            id=str(t.id),
+            template_id=str(t.template_id),
+            name=t.name,
+            description=t.description,
+            category=t.category,
+            industry=t.industry,
+            tags=t.tags or [],
+            download_count=t.download_count,
+            use_count=t.use_count,
+            rating=t.rating,
+            is_featured=t.is_featured,
+            author=t.author,
+            created_at=t.created_at.isoformat(),
+        )
+        for t in templates
+    ]
+
+
 # Profile Endpoints
 @router.get(
     "/profiles",

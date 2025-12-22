@@ -215,7 +215,37 @@ async def upload_pdf(
             confidence_score=overall_confidence,
         )
         db.add(extract)
+        db.flush()  # Get extract.id without committing
+
+        # Create line items for extracted values
+        from decimal import Decimal, InvalidOperation
+        line_item_count = 0
+        for table in result.tables:
+            for row in table.rows:
+                for cell in row.cells:
+                    if cell.is_numeric and cell.parsed_value is not None:
+                        try:
+                            # Use round() to avoid precision issues with floats
+                            value = Decimal(str(round(float(cell.parsed_value), 4)))
+                        except (InvalidOperation, ValueError, TypeError):
+                            continue  # Skip problematic values
+                        
+                        line_item = LineItem(
+                            extract_id=extract.id,
+                            label=None,  # Label detection is Phase 2
+                            value=value,
+                            raw_value=str(cell.value) if cell.value else "",
+                            source_page=table.page,
+                            bbox=list(cell.bbox) if cell.bbox else None,
+                            confidence=float(cell.confidence) if cell.confidence else 0.0,
+                            row_index=int(cell.row) if cell.row is not None else 0,
+                            column_index=int(cell.column) if cell.column is not None else 0,
+                        )
+                        db.add(line_item)
+                        line_item_count += 1
+
         db.commit()
+        logger.info("Created line items", count=line_item_count)
 
         # Convert to response
         table_responses = [convert_table_to_response(t) for t in result.tables]
