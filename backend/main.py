@@ -17,11 +17,19 @@ from backend.api.routes import audit
 from backend.api.routes import auth
 from backend.config import get_settings
 from backend.database import init_db
+from backend.middleware.logging import (
+    CorrelationIdMiddleware,
+    RequestLoggingMiddleware,
+    add_correlation_id_processor,
+    redact_sensitive_processor,
+)
 
-# Configure structured logging
+# Configure structured logging with enhanced processors
 structlog.configure(
     processors=[
         structlog.stdlib.filter_by_level,
+        add_correlation_id_processor,  # Add correlation ID to all logs
+        redact_sensitive_processor,     # Redact passwords, tokens, etc.
         structlog.stdlib.add_logger_name,
         structlog.stdlib.add_log_level,
         structlog.stdlib.PositionalArgumentsFormatter(),
@@ -58,6 +66,10 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Add logging middleware (order matters: correlation ID first)
+app.add_middleware(RequestLoggingMiddleware)
+app.add_middleware(CorrelationIdMiddleware)
 
 # Include API routes
 app.include_router(auth.router, prefix="/api/v1/auth", tags=["Authentication"])
