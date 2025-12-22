@@ -93,6 +93,16 @@ async def register(
     Returns:
         Access and refresh tokens
     """
+    from backend.validation import PasswordValidator, sanitize_text_input
+    
+    # Validate password strength
+    is_valid, password_errors = PasswordValidator.validate(request.password)
+    if not is_valid:
+        raise ValidationError(
+            message="Password does not meet requirements",
+            errors=[{"field": "password", "message": err} for err in password_errors]
+        )
+    
     # Check if email already exists
     existing = db.query(User).filter(User.email == request.email).first()
     if existing:
@@ -101,12 +111,15 @@ async def register(
             errors=[{"field": "email", "message": "This email is already in use"}]
         )
     
+    # Sanitize full name
+    sanitized_name = sanitize_text_input(request.full_name) if request.full_name else None
+    
     # Create new user
     user = User(
         id=uuid.uuid4(),
         email=request.email,
         password_hash=hash_password(request.password),
-        full_name=request.full_name,
+        full_name=sanitized_name,
         role=UserRole.ANALYST,
         is_active=True,
         is_verified=False,
