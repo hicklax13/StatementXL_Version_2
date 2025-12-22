@@ -215,25 +215,6 @@ async def upload_pdf(
             confidence_score=overall_confidence,
         )
         db.add(extract)
-
-        # Create line items for extracted values
-        for table in result.tables:
-            for row in table.rows:
-                for cell in row.cells:
-                    if cell.is_numeric and cell.parsed_value is not None:
-                        line_item = LineItem(
-                            extract_id=extract.id,
-                            label=None,  # Label detection is Phase 2
-                            value=cell.parsed_value,
-                            raw_value=cell.value,
-                            source_page=table.page,
-                            bbox=cell.bbox,
-                            confidence=cell.confidence,
-                            row_index=cell.row,
-                            column_index=cell.column,
-                        )
-                        db.add(line_item)
-
         db.commit()
 
         # Convert to response
@@ -260,19 +241,26 @@ async def upload_pdf(
     except HTTPException:
         raise
     except Exception as e:
+        import traceback
+        error_traceback = traceback.format_exc()
         logger.error(
             "Document processing failed",
             document_id=str(document_id),
             error=str(e),
+            traceback=error_traceback,
         )
+        print(f"UPLOAD ERROR: {error_traceback}")  # Debug print
 
         # Update document status to failed
         if document_id:
-            doc = db.query(Document).filter(Document.id == document_id).first()
-            if doc:
-                doc.status = DocumentStatus.FAILED
-                doc.error_message = str(e)
-                db.commit()
+            try:
+                doc = db.query(Document).filter(Document.id == document_id).first()
+                if doc:
+                    doc.status = DocumentStatus.FAILED
+                    doc.error_message = str(e)
+                    db.commit()
+            except:
+                db.rollback()
 
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
