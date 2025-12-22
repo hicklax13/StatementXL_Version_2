@@ -1,0 +1,747 @@
+# StatementXL - 6-Month Production Roadmap
+# ==========================================
+# 33 Phases SORTED BY CRITICALITY to Core Features
+# Core Features: PDF Upload → Table Extraction → Template Mapping → Excel Export
+# ==========================================
+
+# ==========================================
+# PRIORITY TIER 1: CRITICAL (Blocks Core Functionality)
+# ==========================================
+
+## PHASE 1: Remove Mock Data - Connect Real APIs [CRITICAL]
+```
+PRIORITY: #1 - Users currently see FAKE DATA instead of real extractions
+
+Remove all hardcoded mock data from frontend:
+
+1. ExtractionReview.tsx:
+   - Remove mockTables constant
+   - Add useEffect to fetch GET /api/v1/documents/{id}/extractions
+   - Add loading state and error handling
+   - Handle empty state when no extractions
+2. MappingReview.tsx:
+   - Remove mockMapping constant
+   - Add useEffect to fetch GET /api/v1/mappings/{id}
+   - Connect conflict resolution to real API
+3. AuditTrail.tsx:
+   - Remove mock audit entries
+   - Fetch from GET /api/v1/audit
+   - Add pagination support
+4. Create API endpoints if missing
+5. Test: upload PDF, verify real data flows through all pages
+```
+
+## PHASE 2: Exception Handling & Custom Errors [CRITICAL]
+```
+PRIORITY: #2 - Bare except: clause HIDES all errors from developers
+
+Implement comprehensive error handling:
+
+1. Create custom exception hierarchy:
+   - StatementXLError (base)
+   - DocumentProcessingError
+   - TableExtractionError
+   - MappingError
+   - TemplateError
+   - AuthenticationError
+   - AuthorizationError
+2. Replace ALL bare except: clauses with specific types
+3. Add error codes to all exceptions (SXL-001, SXL-002, etc.)
+4. Create global exception handler in main.py
+5. Ensure all errors return consistent JSON structure
+6. Add user-friendly error messages for frontend
+7. Create error documentation for API consumers
+8. Test: trigger each error type, verify response format
+```
+
+## PHASE 3: Complete UI Theme - Core Pages [CRITICAL]
+```
+PRIORITY: #3 - UI is inconsistent, unprofessional appearance
+
+Update ExtractionReview and MappingReview with green theme:
+
+1. ExtractionReview.tsx:
+   - Add branded gradient header with logo
+   - Replace text-dark-* with text-gray-* classes
+   - Replace bg-dark-* with bg-white/bg-gray-* classes
+   - Update table headers to green theme
+   - Add confidence badges with green/yellow/red colors
+2. MappingReview.tsx:
+   - Add branded gradient header with logo
+   - Update conflict cards with green theme
+   - Update progress bar to green gradient
+   - Update stat cards with green accents
+3. Import logo using ES module in both files
+4. Test: verify visual consistency with Upload page
+```
+
+## PHASE 4: Complete UI Theme - Remaining Pages [CRITICAL]
+```
+PRIORITY: #4 - All pages must have consistent branding
+
+Update AuditTrail, TemplateUpload, BatchUpload with green theme:
+
+1. AuditTrail.tsx:
+   - Add branded header with logo
+   - Update timeline styling to green theme
+   - Update filter buttons and badges
+2. TemplateUpload.tsx:
+   - Add branded header with logo
+   - Update file upload zone styling
+   - Update column mapping interface
+3. BatchUpload.tsx:
+   - Verify green theme already applied
+   - Add branded header if missing
+4. Verify all buttons use btn-primary (green) styling
+5. Test: navigate all pages, verify consistent theme
+```
+
+## PHASE 5: PostgreSQL Database Migration [CRITICAL]
+```
+PRIORITY: #5 - SQLite WILL FAIL under production load
+
+Migrate StatementXL from SQLite to PostgreSQL:
+
+1. Update backend/config.py to read DATABASE_URL from environment
+2. Add psycopg2-binary and asyncpg to requirements.txt
+3. Create docker-compose.yml with PostgreSQL 15 service
+4. Update database.py for PostgreSQL connection pooling (pool_size=20)
+5. Initialize Alembic for database migrations
+6. Create initial migration from current models
+7. Add database indices for frequently queried columns
+8. Configure connection timeout and retry logic
+9. Test: start postgres, run migrations, verify all tables
+10. Document database setup in README
+```
+
+## PHASE 6: JWT Authentication System [CRITICAL]
+```
+PRIORITY: #6 - NO SECURITY - anyone can access any endpoint
+
+Implement JWT-based authentication for StatementXL:
+
+1. Create User model with email, hashed_password, is_active, created_at, role
+2. Add auth routes: POST /auth/register, POST /auth/login, POST /auth/refresh, GET /auth/me
+3. Create JWT token utilities with access + refresh token pattern
+4. Add password hashing with bcrypt, minimum 12 rounds
+5. Create auth middleware/dependency for protected routes
+6. Protect all /api/v1/* routes except /health
+7. Add login/register pages to frontend with form validation
+8. Store tokens securely (httpOnly cookies or secure localStorage pattern)
+9. Create ProtectedRoute component for frontend routing
+10. Add logout functionality that invalidates tokens
+11. Test: full auth flow including token refresh
+```
+
+# ==========================================
+# PRIORITY TIER 2: HIGH (Required for Reliable Operation)
+# ==========================================
+
+## PHASE 7: Structured Logging & Tracing [HIGH]
+```
+PRIORITY: #7 - Cannot debug production issues without logs
+
+Implement production-grade logging:
+
+1. Configure structlog with JSON output for production
+2. Add correlation ID middleware for request tracing
+3. Create log levels: DEBUG, INFO, WARNING, ERROR, CRITICAL
+4. Add request/response logging with body sampling
+5. Implement sensitive data redaction (passwords, tokens)
+6. Add performance timing logs for slow operations
+7. Configure log rotation (100MB max, 10 files retained)
+8. Create log analysis queries documentation
+9. Add logging to all service methods
+10. Test: verify logs contain correlation IDs across requests
+```
+
+## PHASE 8: Input Validation & Sanitization [HIGH]
+```
+PRIORITY: #8 - Vulnerable to injection attacks
+
+Implement comprehensive input validation:
+
+1. Create validation schemas for all endpoints using Pydantic
+2. Add email format validation
+3. Add password complexity requirements (8+ chars, mixed case, number)
+4. Sanitize all user text inputs (strip HTML, limit length)
+5. Validate file types by magic bytes, not just extension
+6. Add filename sanitization for uploads
+7. Validate numeric inputs (prevent overflow)
+8. Add request body size limits
+9. Create validation error response format
+10. Test: attempt injection attacks, verify blocked
+```
+
+## PHASE 9: Rate Limiting [HIGH]
+```
+PRIORITY: #9 - Vulnerable to DoS and brute force attacks
+
+Implement API rate limiting:
+
+1. Install slowapi
+2. Configure rate limiter with Redis backend (or in-memory for dev)
+3. Set limits:
+   - Global: 1000 requests/hour per IP
+   - Auth endpoints: 10/minute (prevent brute force)
+   - Upload endpoint: 20/hour per user
+   - API endpoints: 100/minute per user
+4. Add rate limit headers to responses (X-RateLimit-*)
+5. Create custom 429 response with retry-after
+6. Add rate limit bypass for admin users
+7. Log rate limit violations
+8. Test: verify limits trigger correctly
+```
+
+## PHASE 10: Security Headers & CORS [HIGH]
+```
+PRIORITY: #10 - Missing basic security protections
+
+Implement security hardening:
+
+1. Add security headers middleware:
+   - X-Content-Type-Options: nosniff
+   - X-Frame-Options: DENY
+   - X-XSS-Protection: 1; mode=block
+   - Strict-Transport-Security (for HTTPS)
+   - Content-Security-Policy
+2. Configure CORS properly:
+   - Whitelist specific origins (not *)
+   - Define allowed methods and headers
+3. Add request size limits (50MB for uploads)
+4. Implement input sanitization
+5. Add SQL injection prevention verification
+6. Add XSS prevention in frontend
+7. Security audit with OWASP checklist
+8. Document security measures
+```
+
+## PHASE 11: Backend Unit Tests [HIGH]
+```
+PRIORITY: #11 - No automated verification of core logic
+
+Create unit tests for backend services:
+
+1. Install pytest, pytest-asyncio, pytest-cov
+2. Create tests/conftest.py with fixtures
+3. tests/unit/test_table_detector.py:
+   - Test PDF table extraction
+   - Test edge cases (empty PDF, image-only PDF)
+4. tests/unit/test_numeric_parser.py:
+   - Test number format parsing
+   - Test currency symbols, negatives, percentages
+5. tests/unit/test_mapping_engine.py:
+   - Test semantic matching
+   - Test exact match fallback
+6. tests/unit/test_learning_service.py:
+   - Test mapping history storage
+   - Test recommendation generation
+7. Run: pytest tests/unit --cov=backend --cov-report=html
+8. Target: >80% coverage on services
+```
+
+## PHASE 12: Backend Integration Tests [HIGH]
+```
+PRIORITY: #12 - No end-to-end API verification
+
+Create API integration tests:
+
+1. Create tests/integration/conftest.py with test database
+2. tests/integration/test_auth.py:
+   - Test registration flow
+   - Test login with valid/invalid credentials
+   - Test token refresh
+   - Test protected route access
+3. tests/integration/test_upload.py:
+   - Test PDF upload with sample files
+   - Test invalid file rejection
+   - Test file size limits
+4. tests/integration/test_mapping.py:
+   - Test mapping creation
+   - Test conflict detection
+   - Test mapping export
+5. tests/integration/test_templates.py:
+   - Test template CRUD operations
+6. Run full suite, ensure >90% pass rate
+```
+
+# ==========================================
+# PRIORITY TIER 3: MEDIUM (Production Readiness)
+# ==========================================
+
+## PHASE 13: Performance Optimization - Backend [MEDIUM]
+```
+PRIORITY: #13 - Unknown performance under real load
+
+Optimize backend performance:
+
+1. Add database query profiling
+2. Optimize N+1 queries with eager loading
+3. Add database connection pooling configuration
+4. Implement response caching for templates endpoint
+5. Add async file processing for large PDFs
+6. Optimize PDF extraction with parallel processing
+7. Add response compression (gzip)
+8. Profile memory usage, fix any leaks
+9. Add performance monitoring endpoints
+10. Benchmark: target <500ms for PDF upload response
+```
+
+## PHASE 14: Docker Configuration [MEDIUM]
+```
+PRIORITY: #14 - Needed for consistent deployment
+
+Create production Docker configuration:
+
+1. Create backend/Dockerfile:
+   - Multi-stage build (builder + runtime)
+   - Non-root user
+   - Health check
+   - Minimal base image (python:3.11-slim)
+2. Create frontend/Dockerfile:
+   - Build stage with Node
+   - Runtime with nginx
+   - Gzip compression enabled
+3. Create docker-compose.yml for development
+4. Create docker-compose.prod.yml for production
+5. Add .dockerignore files
+6. Configure environment variable injection
+7. Test: build and run containers locally
+8. Document container usage
+```
+
+## PHASE 15: Database Backup & Recovery [MEDIUM]
+```
+PRIORITY: #15 - No recovery plan for data loss
+
+Implement database backup and recovery procedures:
+
+1. Create backup script using pg_dump with compression
+2. Configure automated daily backups to local storage
+3. Create backup rotation policy (keep 7 daily, 4 weekly, 3 monthly)
+4. Implement point-in-time recovery capability
+5. Create backup verification script
+6. Document restore procedures step-by-step
+7. Create disaster recovery runbook
+8. Test: perform backup, corrupt database, restore successfully
+9. Add backup status endpoint for monitoring
+10. Configure backup alerts on failure
+```
+
+## PHASE 16: CI/CD Pipeline [MEDIUM]
+```
+PRIORITY: #16 - Manual deployments are error-prone
+
+Create automated CI/CD pipeline:
+
+1. Create .github/workflows/ci.yml:
+   - Run tests on every PR
+   - Check code formatting (black, eslint)
+   - Run type checking
+   - Build Docker images
+2. Create .github/workflows/deploy.yml:
+   - Deploy on main branch merge
+   - Run database migrations
+   - Blue-green deployment
+3. Add branch protection rules
+4. Create staging environment workflow
+5. Add deployment status notifications
+6. Document deployment process
+7. Test: submit PR, verify pipeline runs
+```
+
+## PHASE 17: Monitoring & Alerting [MEDIUM]
+```
+PRIORITY: #17 - Blind to production issues
+
+Implement application monitoring:
+
+1. Add Prometheus metrics endpoint /metrics
+2. Create custom metrics:
+   - pdf_uploads_total
+   - extraction_duration_seconds
+   - mapping_conflicts_total
+   - active_users_gauge
+3. Configure Grafana dashboards (or equivalent)
+4. Set up alerting rules:
+   - Error rate > 5%
+   - Response time > 2s
+   - Database connection failures
+5. Add uptime monitoring
+6. Create runbook for common alerts
+7. Document SLIs and SLOs
+8. Test: trigger alert, verify notification
+```
+
+## PHASE 18: Error Tracking [MEDIUM]
+```
+PRIORITY: #18 - Cannot aggregate and analyze production errors
+
+Implement error tracking and debugging:
+
+1. Integrate Sentry (or similar):
+   - Backend: sentry-sdk[fastapi]
+   - Frontend: @sentry/react
+2. Configure error grouping and fingerprinting
+3. Add user context to errors
+4. Set up release tracking
+5. Configure performance monitoring
+6. Create error notification rules
+7. Add source maps for frontend errors
+8. Document error investigation process
+9. Test: trigger error, verify captured in Sentry
+```
+
+## PHASE 19: Role-Based Access Control [MEDIUM]
+```
+PRIORITY: #19 - All authenticated users have same permissions
+
+Implement RBAC for StatementXL:
+
+1. Create Role enum: ADMIN, ANALYST, VIEWER, API_USER
+2. Add role field to User model with default ANALYST
+3. Create Permission model linking roles to specific actions
+4. Add permission checking decorator for route handlers
+5. Create admin-only routes for user management
+6. Add role display in frontend user profile
+7. Create admin panel page for user management
+8. Implement role upgrade/downgrade functionality
+9. Add audit logging for permission changes
+10. Test: verify each role has correct access levels
+```
+
+## PHASE 20: Export & Reporting Enhancements [MEDIUM]
+```
+PRIORITY: #20 - Core feature needs polish
+
+Enhance export and reporting capabilities:
+
+1. Add export formats:
+   - Excel (existing)
+   - CSV
+   - JSON
+   - PDF report
+2. Create batch export functionality
+3. Add export history tracking
+4. Create scheduled export feature
+5. Implement export templates
+6. Add export preview before download
+7. Create usage analytics dashboard
+8. Generate monthly usage reports
+9. Test: export in all formats, verify accuracy
+```
+
+# ==========================================
+# PRIORITY TIER 4: LOW (Enterprise & Polish)
+# ==========================================
+
+## PHASE 21: Frontend Component Tests [LOW]
+```
+PRIORITY: #21 - Backend tests more critical first
+
+Create React component tests:
+
+1. Install @testing-library/react, vitest, jsdom
+2. Configure vitest.config.ts for React testing
+3. tests/components/FileUpload.test.tsx:
+   - Test file selection
+   - Test drag and drop
+   - Test upload progress
+4. tests/components/Sidebar.test.tsx:
+   - Test navigation links
+   - Test collapse/expand
+5. tests/pages/Upload.test.tsx:
+   - Test complete upload flow
+6. tests/pages/Login.test.tsx:
+   - Test form validation
+   - Test submission
+7. Add test script to package.json
+8. Run: npm test, target >70% pass rate
+```
+
+## PHASE 22: Multi-Tenant Support [LOW]
+```
+PRIORITY: #22 - Enterprise feature, not needed for MVP
+
+Implement organization/team support:
+
+1. Create Organization model (name, slug, settings)
+2. Create OrganizationMember model (user_id, org_id, role)
+3. Add org_id foreign key to Document, Template, Mapping
+4. Create organization management endpoints
+5. Add organization switcher to frontend
+6. Implement data isolation (users only see their org's data)
+7. Create organization settings page
+8. Add organization-level billing placeholder
+9. Test: create org, add members, verify data isolation
+```
+
+## PHASE 23: Audit Logging [LOW]
+```
+PRIORITY: #23 - Compliance feature, not core functionality
+
+Implement comprehensive audit logging:
+
+1. Create AuditLog model:
+   - user_id, action, resource_type, resource_id
+   - old_value, new_value (JSON)
+   - ip_address, user_agent, timestamp
+2. Create audit logging middleware
+3. Log all data mutations (create, update, delete)
+4. Log authentication events (login, logout, failed attempts)
+5. Log permission changes
+6. Create audit log viewer in admin panel
+7. Add audit log export functionality
+8. Implement log retention policy (2 years)
+9. Test: perform actions, verify all logged
+```
+
+## PHASE 24: API Documentation [LOW]
+```
+PRIORITY: #24 - Important but Swagger already exists
+
+Create comprehensive API documentation:
+
+1. Enhance OpenAPI/Swagger documentation:
+   - Add detailed descriptions for all endpoints
+   - Add request/response examples
+   - Document error responses
+   - Add authentication requirements
+2. Create API versioning strategy (v1, v2)
+3. Generate SDK documentation
+4. Create API changelog
+5. Add rate limit documentation
+6. Create interactive examples
+7. Add webhook documentation (if applicable)
+8. Publish documentation site
+9. Test: verify all endpoints documented accurately
+```
+
+## PHASE 25: User Onboarding Flow [LOW]
+```
+PRIORITY: #25 - Nice-to-have UX improvement
+
+Implement user onboarding experience:
+
+1. Create onboarding wizard component
+2. Step 1: Welcome & account setup
+3. Step 2: Upload first document tutorial
+4. Step 3: Template selection guide
+5. Step 4: Mapping review walkthrough
+6. Add progress tracking (onboarding_completed flag)
+7. Create contextual help tooltips throughout app
+8. Add keyboard shortcut guide
+9. Create video tutorial placeholders
+10. Test: new user signup, complete onboarding
+```
+
+## PHASE 26: Email Notifications [LOW]
+```
+PRIORITY: #26 - Nice-to-have feature
+
+Implement email notification system:
+
+1. Integrate email service (SendGrid, AWS SES, or SMTP)
+2. Create email templates:
+   - Welcome email
+   - Password reset
+   - Document processing complete
+   - Weekly summary
+3. Create notification preferences model
+4. Add notification settings page
+5. Implement email queue for reliability
+6. Add email delivery tracking
+7. Create unsubscribe functionality
+8. Test: trigger each email type, verify delivery
+```
+
+## PHASE 27: Performance Testing [LOW]
+```
+PRIORITY: #27 - Important pre-launch but after core features
+
+Conduct comprehensive performance testing:
+
+1. Create load testing scripts using Locust
+2. Test scenarios:
+   - 100 concurrent users browsing
+   - 50 simultaneous PDF uploads
+   - 1000 API requests per minute
+3. Identify and fix bottlenecks
+4. Optimize database queries
+5. Add caching for frequently accessed data
+6. Create performance baseline documentation
+7. Set performance budgets
+8. Create capacity planning document
+9. Test: run load tests, verify meets targets
+```
+
+## PHASE 28: Security Audit [LOW]
+```
+PRIORITY: #28 - Pre-launch verification
+
+Conduct security audit and penetration testing:
+
+1. Run OWASP ZAP automated scan
+2. Check for common vulnerabilities:
+   - SQL injection
+   - XSS
+   - CSRF
+   - Authentication bypass
+   - Insecure direct object references
+3. Review authentication implementation
+4. Check for exposed secrets
+5. Verify HTTPS configuration
+6. Check dependency vulnerabilities (npm audit, pip-audit)
+7. Create security findings report
+8. Remediate all critical/high issues
+9. Document security test results
+```
+
+## PHASE 29: Documentation Complete [LOW]
+```
+PRIORITY: #29 - Final polish before launch
+
+Complete all documentation:
+
+1. README.md - project overview, quick start
+2. INSTALL.md - detailed installation guide
+3. DEPLOY.md - deployment procedures
+4. CONTRIBUTING.md - contribution guidelines
+5. API.md - API reference (or link to OpenAPI)
+6. SECURITY.md - security policies
+7. CHANGELOG.md - version history
+8. LICENSE - license file
+9. Create administrator guide
+10. Create end-user guide
+11. Review and proofread all documentation
+```
+
+## PHASE 30: Accessibility Audit [LOW]
+```
+PRIORITY: #30 - Compliance/polish
+
+Ensure WCAG 2.1 AA compliance:
+
+1. Run automated accessibility scan (axe)
+2. Fix color contrast issues
+3. Add ARIA labels to interactive elements
+4. Ensure keyboard navigation works throughout
+5. Add skip navigation links
+6. Verify form labels and error messages
+7. Add alt text to all images
+8. Test with screen reader
+9. Create accessibility statement
+10. Document known limitations
+```
+
+## PHASE 31: Browser & Device Testing [LOW]
+```
+PRIORITY: #31 - Pre-launch verification
+
+Ensure cross-browser and device compatibility:
+
+1. Test on browsers:
+   - Chrome (latest 2 versions)
+   - Firefox (latest 2 versions)
+   - Safari (latest 2 versions)
+   - Edge (latest 2 versions)
+2. Test on devices:
+   - Desktop (1920x1080, 1366x768)
+   - Tablet (iPad, Android tablet)
+   - Mobile (responsive view)
+3. Fix any layout/functionality issues
+4. Test file upload on all browsers
+5. Test PDF preview on all browsers
+6. Document known browser-specific issues
+7. Create browser support matrix
+```
+
+## PHASE 32: Final QA & Bug Bash [LOW]
+```
+PRIORITY: #32 - Pre-launch verification
+
+Final quality assurance phase:
+
+1. Create comprehensive test plan
+2. Test all user flows end-to-end:
+   - Registration → Login → Upload → Extract → Map → Export
+3. Test edge cases and error scenarios
+4. Verify all error messages are user-friendly
+5. Check all links and navigation
+6. Verify data persistence across sessions
+7. Test session timeout behavior
+8. Create bug tracking list
+9. Fix all P0/P1 bugs
+10. Regression test after fixes
+```
+
+## PHASE 33: Launch Preparation [LOW]
+```
+PRIORITY: #33 - Final step before go-live
+
+Final launch preparation:
+
+1. Create production environment checklist
+2. Verify all environment variables configured
+3. Run final security scan
+4. Run final performance test
+5. Verify monitoring and alerting active
+6. Create rollback procedures
+7. Prepare launch announcement
+8. Create support escalation procedures
+9. Brief support team on common issues
+10. Final go/no-go meeting
+11. Tag release as v1.0.0
+12. Deploy to production
+13. Monitor for 24 hours post-launch
+14. Create post-launch report
+```
+
+# ==========================================
+# PRIORITY SUMMARY
+# ==========================================
+#
+# TIER 1 - CRITICAL (Do First):
+#   1. Remove Mock Data
+#   2. Exception Handling
+#   3. UI Theme Core Pages
+#   4. UI Theme Remaining Pages
+#   5. PostgreSQL Migration
+#   6. JWT Authentication
+#
+# TIER 2 - HIGH (Required for Reliability):
+#   7. Structured Logging
+#   8. Input Validation
+#   9. Rate Limiting
+#   10. Security Headers
+#   11. Unit Tests
+#   12. Integration Tests
+#
+# TIER 3 - MEDIUM (Production Readiness):
+#   13. Performance Optimization
+#   14. Docker Configuration
+#   15. Database Backup
+#   16. CI/CD Pipeline
+#   17. Monitoring
+#   18. Error Tracking
+#   19. RBAC
+#   20. Export Enhancements
+#
+# TIER 4 - LOW (Enterprise/Polish):
+#   21-33. Frontend Tests, Multi-tenant, Audit Logs,
+#          API Docs, Onboarding, Email, Performance Test,
+#          Security Audit, Documentation, Accessibility,
+#          Browser Testing, QA, Launch Prep
+#
+# ==========================================
+# HOW TO USE
+# ==========================================
+# 
+# 1. Start with Phase 1 (highest priority)
+# 2. Copy the phase prompt block
+# 3. Paste as your message to continue
+# 4. Complete phases in order 1-33
+#
+# CURRENT STATUS: Phase 0 Complete (Audit)
+# NEXT: Phase 1 - Remove Mock Data
+# ==========================================

@@ -13,6 +13,7 @@ from backend.api.routes import template
 from backend.api.routes import mapping
 from backend.api.routes import library
 from backend.api.routes import batch
+from backend.api.routes import audit
 from backend.config import get_settings
 from backend.database import init_db
 
@@ -64,6 +65,7 @@ app.include_router(template.router, prefix="/api/v1", tags=["Template"])
 app.include_router(mapping.router, prefix="/api/v1", tags=["Mapping"])
 app.include_router(library.router, prefix="/api/v1", tags=["Library"])
 app.include_router(batch.router, prefix="/api/v1", tags=["Batch"])
+app.include_router(audit.router, prefix="/api/v1", tags=["Audit"])
 
 
 @app.on_event("startup")

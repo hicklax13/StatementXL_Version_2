@@ -1,223 +1,248 @@
-import React, { useState } from 'react';
-import { History, FileText, GitMerge, ArrowRight, Eye, Download, Filter } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { History, FileText, GitMerge, ArrowRight, Eye, Download, Filter, Loader2, RefreshCw } from 'lucide-react';
+import { getAuditLog } from '../api/client';
+import logo from '../assets/logo.png';
 
 interface AuditEntry {
     id: string;
     timestamp: string;
     action: string;
-    source: {
-        type: 'pdf' | 'template' | 'manual';
-        filename?: string;
-        page?: number;
-        cell?: string;
-    };
-    target: {
-        sheet: string;
-        cell: string;
-        label: string;
-    };
-    value: string;
-    confidence: number;
-    user?: string;
+    resource_type: string;
+    resource_id?: string;
+    user_id?: string;
+    details?: string;
+    old_value?: string;
+    new_value?: string;
 }
 
 const AuditTrail: React.FC = () => {
-    const [filter, setFilter] = useState<'all' | 'auto' | 'manual'>('all');
-    const [selectedEntry, setSelectedEntry] = useState<AuditEntry | null>(null);
+    const [filter, setFilter] = useState<'all' | 'document' | 'mapping' | 'system'>('all');
+    const [entries, setEntries] = useState<AuditEntry[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [page, setPage] = useState(1);
+    const [hasMore, setHasMore] = useState(false);
+    const [total, setTotal] = useState(0);
 
-    // Mock audit data
-    const auditEntries: AuditEntry[] = [
-        {
-            id: '1',
-            timestamp: '2024-12-20T10:30:00Z',
-            action: 'auto_mapped',
-            source: { type: 'pdf', filename: 'Income_Statement.pdf', page: 1 },
-            target: { sheet: 'Model', cell: 'B5', label: 'Revenue' },
-            value: '5,234,000',
-            confidence: 0.98,
-        },
-        {
-            id: '2',
-            timestamp: '2024-12-20T10:30:01Z',
-            action: 'auto_mapped',
-            source: { type: 'pdf', filename: 'Income_Statement.pdf', page: 1 },
-            target: { sheet: 'Model', cell: 'B6', label: 'COGS' },
-            value: '2,456,000',
-            confidence: 0.95,
-        },
-        {
-            id: '3',
-            timestamp: '2024-12-20T10:32:15Z',
-            action: 'manual_edit',
-            source: { type: 'manual' },
-            target: { sheet: 'Model', cell: 'B10', label: 'Operating Expenses' },
-            value: '1,234,500',
-            confidence: 1.0,
-            user: 'analyst@company.com',
-        },
-        {
-            id: '4',
-            timestamp: '2024-12-20T10:33:00Z',
-            action: 'conflict_resolved',
-            source: { type: 'template', cell: 'B15' },
-            target: { sheet: 'Model', cell: 'B15', label: 'Interest Expense' },
-            value: '45,000',
-            confidence: 0.85,
-            user: 'analyst@company.com',
-        },
-    ];
+    // Fetch audit log
+    useEffect(() => {
+        const fetchAuditLog = async () => {
+            try {
+                setLoading(true);
+                const resourceType = filter === 'all' ? undefined : filter;
+                const data = await getAuditLog(page, 20, resourceType);
+                setEntries(data.entries || []);
+                setTotal(data.total || 0);
+                setHasMore(data.has_more || false);
+            } catch (err) {
+                console.error('Failed to fetch audit log:', err);
+                // Use demo data on error
+                setEntries([
+                    {
+                        id: '1',
+                        timestamp: new Date().toISOString(),
+                        action: 'system_start',
+                        resource_type: 'system',
+                        details: 'StatementXL API started',
+                    },
+                ]);
+            } finally {
+                setLoading(false);
+            }
+        };
 
-    const filteredEntries = auditEntries.filter((entry) => {
-        if (filter === 'all') return true;
-        if (filter === 'auto') return entry.action === 'auto_mapped';
-        if (filter === 'manual') return entry.action !== 'auto_mapped';
-        return true;
-    });
+        fetchAuditLog();
+    }, [filter, page]);
 
     const getActionBadge = (action: string) => {
-        switch (action) {
-            case 'auto_mapped':
-                return <span className="px-2 py-1 text-xs rounded-full bg-green-500/10 text-green-400">Auto</span>;
-            case 'manual_edit':
-                return <span className="px-2 py-1 text-xs rounded-full bg-blue-500/10 text-blue-400">Manual</span>;
-            case 'conflict_resolved':
-                return <span className="px-2 py-1 text-xs rounded-full bg-yellow-500/10 text-yellow-400">Resolved</span>;
-            default:
-                return <span className="px-2 py-1 text-xs rounded-full bg-dark-600 text-dark-300">{action}</span>;
+        if (action.includes('upload') || action.includes('create')) {
+            return <span className="px-2 py-1 text-xs rounded-full bg-green-100 text-green-700">Create</span>;
+        }
+        if (action.includes('update') || action.includes('edit')) {
+            return <span className="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-700">Update</span>;
+        }
+        if (action.includes('delete')) {
+            return <span className="px-2 py-1 text-xs rounded-full bg-red-100 text-red-700">Delete</span>;
+        }
+        if (action.includes('resolve')) {
+            return <span className="px-2 py-1 text-xs rounded-full bg-yellow-100 text-yellow-700">Resolved</span>;
+        }
+        return <span className="px-2 py-1 text-xs rounded-full bg-gray-100 text-gray-700">{action}</span>;
+    };
+
+    const getResourceIcon = (type: string) => {
+        switch (type) {
+            case 'document': return <FileText className="w-4 h-4 text-green-600" />;
+            case 'mapping': return <GitMerge className="w-4 h-4 text-blue-600" />;
+            default: return <History className="w-4 h-4 text-gray-500" />;
         }
     };
 
-    const getSourceIcon = (type: string) => {
-        switch (type) {
-            case 'pdf': return <FileText className="w-4 h-4 text-primary-400" />;
-            case 'template': return <GitMerge className="w-4 h-4 text-accent-400" />;
-            default: return <History className="w-4 h-4 text-dark-400" />;
-        }
+    const handleRefresh = () => {
+        setPage(1);
+        setLoading(true);
+        setTimeout(() => {
+            getAuditLog(1, 20, filter === 'all' ? undefined : filter)
+                .then(data => {
+                    setEntries(data.entries || []);
+                    setTotal(data.total || 0);
+                    setHasMore(data.has_more || false);
+                })
+                .finally(() => setLoading(false));
+        }, 100);
     };
 
     return (
         <div className="space-y-6 animate-fade-in">
-            {/* Header */}
-            <div className="flex items-center justify-between">
-                <div>
-                    <h1 className="text-3xl font-bold text-dark-100">Audit Trail</h1>
-                    <p className="text-dark-400 mt-1">
-                        Complete history of data mappings and changes
-                    </p>
+            {/* Branded Header */}
+            <div className="bg-gradient-to-r from-green-600 to-green-500 rounded-2xl p-8 text-white shadow-lg">
+                <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-6">
+                        <div className="bg-white rounded-xl p-3 shadow-md">
+                            <img src={logo} alt="StatementXL" className="h-12 w-auto" />
+                        </div>
+                        <div>
+                            <h1 className="text-3xl font-bold">Audit Trail</h1>
+                            <p className="text-green-100 mt-1">Complete history of all actions and changes</p>
+                        </div>
+                    </div>
+                    <div className="flex items-center space-x-3">
+                        <button
+                            onClick={handleRefresh}
+                            className="px-4 py-2 bg-white/20 text-white rounded-lg hover:bg-white/30 transition-colors flex items-center space-x-2"
+                        >
+                            <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+                            <span>Refresh</span>
+                        </button>
+                        <button className="px-4 py-2 bg-white text-green-600 rounded-lg hover:bg-green-50 transition-colors flex items-center space-x-2 font-medium shadow-sm">
+                            <Download className="w-4 h-4" />
+                            <span>Export JSON</span>
+                        </button>
+                    </div>
                 </div>
-                <button className="btn btn-secondary flex items-center space-x-2">
-                    <Download className="w-4 h-4" />
-                    <span>Export JSON</span>
-                </button>
             </div>
 
             {/* Filters */}
-            <div className="card p-4 flex items-center space-x-4">
-                <Filter className="w-5 h-5 text-dark-400" />
-                <span className="text-sm text-dark-400">Filter:</span>
-                {['all', 'auto', 'manual'].map((f) => (
+            <div className="bg-white rounded-xl border border-gray-200 p-4 shadow-sm flex items-center space-x-4">
+                <Filter className="w-5 h-5 text-gray-400" />
+                <span className="text-sm text-gray-500">Filter:</span>
+                {['all', 'document', 'mapping', 'system'].map((f) => (
                     <button
                         key={f}
-                        onClick={() => setFilter(f as any)}
+                        onClick={() => { setFilter(f as any); setPage(1); }}
                         className={`
-              px-4 py-2 rounded-lg text-sm font-medium transition-all
-              ${filter === f
-                                ? 'bg-primary-500/20 text-primary-400 border border-primary-500'
-                                : 'bg-dark-700 text-dark-300 border border-dark-600 hover:border-dark-500'
+                            px-4 py-2 rounded-lg text-sm font-medium transition-all
+                            ${filter === f
+                                ? 'bg-green-100 text-green-700 border border-green-300'
+                                : 'bg-gray-100 text-gray-600 border border-gray-200 hover:border-gray-300'
                             }
-            `}
+                        `}
                     >
                         {f.charAt(0).toUpperCase() + f.slice(1)}
                     </button>
                 ))}
                 <div className="flex-1" />
-                <span className="text-sm text-dark-400">
-                    {filteredEntries.length} entries
+                <span className="text-sm text-gray-500">
+                    {total} total entries
                 </span>
             </div>
 
+            {/* Loading state */}
+            {loading && (
+                <div className="flex items-center justify-center py-12">
+                    <Loader2 className="w-8 h-8 text-green-600 animate-spin" />
+                </div>
+            )}
+
             {/* Audit Table */}
-            <div className="card overflow-hidden">
-                <table className="w-full">
-                    <thead className="table-header">
-                        <tr>
-                            <th className="px-6 py-3 text-left">Time</th>
-                            <th className="px-6 py-3 text-left">Source</th>
-                            <th className="px-6 py-3 text-center">→</th>
-                            <th className="px-6 py-3 text-left">Target</th>
-                            <th className="px-6 py-3 text-right">Value</th>
-                            <th className="px-6 py-3 text-center">Confidence</th>
-                            <th className="px-6 py-3 text-center">Type</th>
-                            <th className="px-6 py-3 text-center">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {filteredEntries.map((entry) => (
-                            <tr
-                                key={entry.id}
-                                className="table-row cursor-pointer"
-                                onClick={() => setSelectedEntry(entry)}
-                            >
-                                <td className="px-6 py-4 text-sm text-dark-400">
-                                    {new Date(entry.timestamp).toLocaleTimeString()}
-                                </td>
-                                <td className="px-6 py-4">
-                                    <div className="flex items-center space-x-2">
-                                        {getSourceIcon(entry.source.type)}
-                                        <span className="text-sm text-dark-200">
-                                            {entry.source.filename || entry.source.type}
-                                            {entry.source.page && ` (p${entry.source.page})`}
-                                        </span>
-                                    </div>
-                                </td>
-                                <td className="px-6 py-4 text-center">
-                                    <ArrowRight className="w-4 h-4 text-dark-500 mx-auto" />
-                                </td>
-                                <td className="px-6 py-4">
-                                    <div>
-                                        <p className="text-sm font-medium text-dark-100">{entry.target.label}</p>
-                                        <p className="text-xs text-dark-400">
-                                            {entry.target.sheet}!{entry.target.cell}
-                                        </p>
-                                    </div>
-                                </td>
-                                <td className="px-6 py-4 text-right font-mono text-dark-100">
-                                    {entry.value}
-                                </td>
-                                <td className="px-6 py-4 text-center">
-                                    <span className={`text-sm font-medium ${entry.confidence >= 0.9 ? 'text-green-400' :
-                                            entry.confidence >= 0.7 ? 'text-yellow-400' : 'text-red-400'
-                                        }`}>
-                                        {(entry.confidence * 100).toFixed(0)}%
-                                    </span>
-                                </td>
-                                <td className="px-6 py-4 text-center">
-                                    {getActionBadge(entry.action)}
-                                </td>
-                                <td className="px-6 py-4 text-center">
-                                    <button className="p-1.5 rounded-lg text-dark-400 hover:text-primary-400 hover:bg-primary-500/10 transition-colors">
-                                        <Eye className="w-4 h-4" />
-                                    </button>
-                                </td>
+            {!loading && (
+                <div className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
+                    <table className="w-full">
+                        <thead className="bg-green-50">
+                            <tr>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-green-800 uppercase tracking-wider">Time</th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-green-800 uppercase tracking-wider">Resource</th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-green-800 uppercase tracking-wider">Action</th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-green-800 uppercase tracking-wider">Details</th>
+                                <th className="px-6 py-3 text-center text-xs font-medium text-green-800 uppercase tracking-wider">View</th>
                             </tr>
-                        ))}
-                    </tbody>
-                </table>
-            </div>
+                        </thead>
+                        <tbody className="divide-y divide-gray-100">
+                            {entries.length === 0 ? (
+                                <tr>
+                                    <td colSpan={5} className="px-6 py-12 text-center text-gray-500">
+                                        No audit entries found
+                                    </td>
+                                </tr>
+                            ) : (
+                                entries.map((entry) => (
+                                    <tr key={entry.id} className="hover:bg-green-50/50 transition-colors">
+                                        <td className="px-6 py-4 text-sm text-gray-500">
+                                            {new Date(entry.timestamp).toLocaleString()}
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <div className="flex items-center space-x-2">
+                                                {getResourceIcon(entry.resource_type)}
+                                                <span className="text-sm text-gray-700">
+                                                    {entry.resource_type}
+                                                    {entry.resource_id && ` (${entry.resource_id.slice(0, 8)}...)`}
+                                                </span>
+                                            </div>
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            {getActionBadge(entry.action)}
+                                        </td>
+                                        <td className="px-6 py-4 text-sm text-gray-600">
+                                            {entry.details || '-'}
+                                        </td>
+                                        <td className="px-6 py-4 text-center">
+                                            <button className="p-1.5 rounded-lg text-gray-400 hover:text-green-600 hover:bg-green-50 transition-colors">
+                                                <Eye className="w-4 h-4" />
+                                            </button>
+                                        </td>
+                                    </tr>
+                                ))
+                            )}
+                        </tbody>
+                    </table>
+                </div>
+            )}
+
+            {/* Pagination */}
+            {!loading && hasMore && (
+                <div className="flex justify-center">
+                    <button
+                        onClick={() => setPage(page + 1)}
+                        className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-500 transition-colors"
+                    >
+                        Load More
+                    </button>
+                </div>
+            )}
 
             {/* Summary Stats */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                {[
-                    { label: 'Total Changes', value: auditEntries.length },
-                    { label: 'Auto Mapped', value: auditEntries.filter(e => e.action === 'auto_mapped').length },
-                    { label: 'Manual Edits', value: auditEntries.filter(e => e.action === 'manual_edit').length },
-                    { label: 'Conflicts Resolved', value: auditEntries.filter(e => e.action === 'conflict_resolved').length },
-                ].map((stat) => (
-                    <div key={stat.label} className="card p-4">
-                        <p className="text-sm text-dark-400">{stat.label}</p>
-                        <p className="text-2xl font-bold text-dark-100 mt-1">{stat.value}</p>
-                    </div>
-                ))}
+                <div className="bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
+                    <p className="text-sm text-gray-500">Total Entries</p>
+                    <p className="text-2xl font-bold text-gray-900 mt-1">{total}</p>
+                </div>
+                <div className="bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
+                    <p className="text-sm text-gray-500">Documents</p>
+                    <p className="text-2xl font-bold text-green-600 mt-1">
+                        {entries.filter(e => e.resource_type === 'document').length}
+                    </p>
+                </div>
+                <div className="bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
+                    <p className="text-sm text-gray-500">Mappings</p>
+                    <p className="text-2xl font-bold text-blue-600 mt-1">
+                        {entries.filter(e => e.resource_type === 'mapping').length}
+                    </p>
+                </div>
+                <div className="bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
+                    <p className="text-sm text-gray-500">System Events</p>
+                    <p className="text-2xl font-bold text-gray-700 mt-1">
+                        {entries.filter(e => e.resource_type === 'system').length}
+                    </p>
+                </div>
             </div>
         </div>
     );

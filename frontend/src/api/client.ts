@@ -93,4 +93,27 @@ export const resolveConflict = async (
     return response.data;
 };
 
+// Extraction APIs
+export const getDocumentExtractions = async (documentId: string): Promise<any> => {
+    const response = await api.get(`/documents/${documentId}/extractions`);
+    return response.data;
+};
+
+// Audit APIs
+export const getAuditLog = async (
+    page: number = 1,
+    pageSize: number = 20,
+    resourceType?: string,
+    action?: string
+): Promise<any> => {
+    const params = new URLSearchParams();
+    params.append('page', page.toString());
+    params.append('page_size', pageSize.toString());
+    if (resourceType) params.append('resource_type', resourceType);
+    if (action) params.append('action', action);
+
+    const response = await api.get(`/audit?${params.toString()}`);
+    return response.data;
+};
+
 export default api;

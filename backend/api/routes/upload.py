@@ -336,3 +336,76 @@ async def get_document_status(
         created_at=document.created_at,
         updated_at=document.updated_at,
     )
+
+
+@router.get(
+    "/documents/{document_id}/extractions",
+    responses={404: {"model": ErrorResponse, "description": "Document not found"}},
+    summary="Get document extractions",
+    description="Retrieve all extracted tables and data for a document.",
+)
+async def get_document_extractions(
+    document_id: uuid.UUID,
+    db: Session = Depends(get_db),
+):
+    """
+    Get extracted tables for a document.
+
+    Args:
+        document_id: Document UUID.
+        db: Database session.
+
+    Returns:
+        List of extracted tables with rows and cells.
+    """
+    from backend.models.extraction import Extraction
+    from backend.models.line_item import LineItem
+
+    document = db.query(Document).filter(Document.id == document_id).first()
+
+    if not document:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Document {document_id} not found",
+        )
+
+    # Get all extractions for this document
+    extractions = db.query(Extraction).filter(Extraction.document_id == document_id).all()
+
+    tables = []
+    for extraction in extractions:
+        # Get line items for this extraction
+        line_items = db.query(LineItem).filter(LineItem.extract_id == extraction.id).all()
+
+        # Group line items by row
+        rows_dict = {}
+        for item in line_items:
+            row_num = item.row_number or 0
+            if row_num not in rows_dict:
+                rows_dict[row_num] = []
+            rows_dict[row_num].append({
+                "value": item.text or "",
+                "parsed_value": float(item.value) if item.value else None,
+                "confidence": item.confidence or 0.0,
+                "is_numeric": item.value is not None,
+            })
+
+        # Convert to list of rows
+        rows = []
+        for row_num in sorted(rows_dict.keys()):
+            rows.append({"cells": rows_dict[row_num]})
+
+        tables.append({
+            "page": extraction.page_number or 1,
+            "title": extraction.table_type or f"Table {len(tables) + 1}",
+            "rows": rows,
+            "confidence": extraction.confidence or 0.0,
+        })
+
+    return {
+        "document_id": str(document_id),
+        "filename": document.filename,
+        "tables": tables,
+        "total_tables": len(tables),
+    }
+
