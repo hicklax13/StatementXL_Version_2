@@ -6,6 +6,7 @@ Configures the application with routes, middleware, and settings.
 import structlog
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.gzip import GZipMiddleware
 
 from backend.api.routes import upload
 from backend.api.routes import classify
@@ -75,6 +76,9 @@ app.add_middleware(SecurityHeadersMiddleware)
 # Add logging middleware (order matters: correlation ID first)
 app.add_middleware(RequestLoggingMiddleware)
 app.add_middleware(CorrelationIdMiddleware)
+
+# Add GZip compression for responses > 1KB
+app.add_middleware(GZipMiddleware, minimum_size=1000)
 
 # Configure rate limiter
 from backend.middleware.rate_limit import limiter, rate_limit_exceeded_handler
