@@ -4,45 +4,49 @@
   font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
-  color: #e2e8f0;
-  background-color: #0f172a;
+  color: #374151;
+  background-color: #ffffff;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 
-  /* Custom colors */
-  --color-primary-50: #f0f9ff;
-  --color-primary-100: #e0f2fe;
-  --color-primary-200: #bae6fd;
-  --color-primary-300: #7dd3fc;
-  --color-primary-400: #38bdf8;
-  --color-primary-500: #0ea5e9;
-  --color-primary-600: #0284c7;
-  --color-primary-700: #0369a1;
-  --color-primary-800: #075985;
-  --color-primary-900: #0c4a6e;
+  /* Green Primary Colors */
+  --color-primary-50: #f0fdf4;
+  --color-primary-100: #dcfce7;
+  --color-primary-200: #bbf7d0;
+  --color-primary-300: #86efac;
+  --color-primary-400: #4ade80;
+  --color-primary-500: #22c55e;
+  --color-primary-600: #16a34a;
+  --color-primary-700: #15803d;
+  --color-primary-800: #166534;
+  --color-primary-900: #14532d;
 
-  --color-accent-400: #e879f9;
-  --color-accent-500: #d946ef;
-  --color-accent-600: #c026d3;
+  /* Accent - Emerald for highlights */
+  --color-accent-400: #34d399;
+  --color-accent-500: #10b981;
+  --color-accent-600: #059669;
 
-  --color-dark-100: #f1f5f9;
-  --color-dark-200: #e2e8f0;
-  --color-dark-300: #cbd5e1;
-  --color-dark-400: #94a3b8;
-  --color-dark-500: #64748b;
-  --color-dark-600: #475569;
-  --color-dark-700: #334155;
-  --color-dark-800: #1e293b;
-  --color-dark-900: #0f172a;
-  --color-dark-950: #020617;
+  /* Neutral Light Theme */
+  --color-light-50: #ffffff;
+  --color-light-100: #f9fafb;
+  --color-light-200: #f3f4f6;
+  --color-light-300: #e5e7eb;
+  --color-light-400: #d1d5db;
+  --color-light-500: #9ca3af;
+  --color-light-600: #6b7280;
+  --color-light-700: #4b5563;
+  --color-light-800: #374151;
+  --color-light-900: #1f2937;
+  --color-light-950: #111827;
 }
 
 body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
+  background-color: #f9fafb;
 }
 
 /* Custom Scrollbar */
@@ -52,29 +56,29 @@ body {
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--color-dark-800);
+  background: var(--color-light-200);
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--color-dark-600);
+  background: var(--color-primary-400);
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--color-dark-500);
+  background: var(--color-primary-500);
 }
 
-/* Glass Effect */
+/* Glass Effect - Light Mode */
 .glass {
-  background: rgba(30, 41, 59, 0.7);
+  background: rgba(255, 255, 255, 0.8);
   backdrop-filter: blur(12px);
-  border: 1px solid rgba(148, 163, 184, 0.1);
+  border: 1px solid rgba(34, 197, 94, 0.2);
 }
 
-/* Gradient Text */
+/* Gradient Text - Green */
 .gradient-text {
-  background: linear-gradient(135deg, #38bdf8 0%, #d946ef 100%);
+  background: linear-gradient(135deg, #16a34a 0%, #22c55e 50%, #4ade80 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -87,7 +91,7 @@ body {
 
 .hover-lift:hover {
   transform: translateY(-2px);
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 10px 25px -5px rgba(22, 163, 74, 0.2);
 }
 
 /* Button Base */
@@ -100,7 +104,7 @@ body {
 
 .btn:focus {
   outline: none;
-  box-shadow: 0 0 0 2px var(--color-dark-900), 0 0 0 4px var(--color-primary-500);
+  box-shadow: 0 0 0 2px white, 0 0 0 4px var(--color-primary-500);
 }
 
 .btn-primary {
@@ -113,13 +117,14 @@ body {
 }
 
 .btn-secondary {
-  background-color: var(--color-dark-700);
-  color: var(--color-dark-100);
-  border: 1px solid var(--color-dark-600);
+  background-color: white;
+  color: var(--color-light-800);
+  border: 1px solid var(--color-light-300);
 }
 
 .btn-secondary:hover {
-  background-color: var(--color-dark-600);
+  background-color: var(--color-light-100);
+  border-color: var(--color-primary-400);
 }
 
 .btn-danger {
@@ -133,61 +138,67 @@ body {
 
 /* Card Base */
 .card {
-  background-color: var(--color-dark-800);
+  background-color: white;
   border-radius: 0.75rem;
-  border: 1px solid var(--color-dark-700);
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  border: 1px solid var(--color-light-300);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 /* Input Base */
 .input {
   width: 100%;
   padding: 0.5rem 1rem;
-  background-color: var(--color-dark-800);
-  border: 1px solid var(--color-dark-600);
+  background-color: white;
+  border: 1px solid var(--color-light-300);
   border-radius: 0.5rem;
-  color: var(--color-dark-100);
+  color: var(--color-light-800);
   transition: all 0.2s;
 }
 
 .input::placeholder {
-  color: var(--color-dark-400);
+  color: var(--color-light-500);
 }
 
 .input:focus {
   outline: none;
   border-color: var(--color-primary-500);
-  box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.2);
+  box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.2);
 }
 
 /* Table Styles */
 .table-container {
   overflow-x: auto;
   border-radius: 0.5rem;
-  border: 1px solid var(--color-dark-700);
+  border: 1px solid var(--color-light-300);
+  background: white;
 }
 
 .table-header {
-  background-color: var(--color-dark-800);
-  color: var(--color-dark-300);
+  background-color: var(--color-primary-50);
+  color: var(--color-primary-800);
   font-size: 0.75rem;
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
 
 .table-row {
-  border-bottom: 1px solid var(--color-dark-700);
+  border-bottom: 1px solid var(--color-light-200);
   transition: background-color 0.15s;
 }
 
 .table-row:hover {
-  background-color: rgba(30, 41, 59, 0.5);
+  background-color: var(--color-primary-50);
 }
 
 .table-cell {
   padding: 0.75rem 1rem;
   font-size: 0.875rem;
-  color: var(--color-dark-200);
+  color: var(--color-light-800);
+}
+
+/* Sidebar specific for light theme */
+.sidebar-light {
+  background: linear-gradient(180deg, #166534 0%, #15803d 100%);
 }
 
 /* Animations */
@@ -235,4 +246,17 @@ body {
 
 .animate-slide-down {
   animation: slideDown 0.3s ease-out;
+}
+
+/* Green accent utilities */
+.bg-green-gradient {
+  background: linear-gradient(135deg, #166534 0%, #22c55e 100%);
+}
+
+.text-green-primary {
+  color: var(--color-primary-600);
+}
+
+.border-green-primary {
+  border-color: var(--color-primary-500);
 }

@@ -8,7 +8,7 @@ const Layout: React.FC = () => {
     const { sidebarOpen, notifications, removeNotification } = useUIStore();
 
     return (
-        <div className="min-h-screen bg-dark-950">
+        <div className="min-h-screen bg-gray-50">
             <Sidebar />
 
             {/* Main Content */}
@@ -30,9 +30,9 @@ const Layout: React.FC = () => {
                         key={notification.id}
                         className={`
               flex items-center space-x-3 px-4 py-3 rounded-lg shadow-lg animate-slide-up
-              ${notification.type === 'success' ? 'bg-green-500/90 text-white' :
-                                notification.type === 'error' ? 'bg-red-500/90 text-white' :
-                                    'bg-primary-500/90 text-white'}
+              ${notification.type === 'success' ? 'bg-green-600 text-white' :
+                                notification.type === 'error' ? 'bg-red-500 text-white' :
+                                    'bg-green-500 text-white'}
             `}
                     >
                         <span>{notification.message}</span>

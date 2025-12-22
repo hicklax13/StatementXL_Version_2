@@ -39,28 +39,35 @@ const Upload: React.FC = () => {
     const getStatusIcon = (status: string) => {
         switch (status) {
             case 'completed':
-                return <CheckCircle className="w-4 h-4 text-green-500" />;
+                return <CheckCircle className="w-4 h-4 text-green-600" />;
             case 'processing':
-                return <Clock className="w-4 h-4 text-yellow-500 animate-pulse" />;
+                return <Clock className="w-4 h-4 text-amber-500 animate-pulse" />;
             case 'failed':
                 return <AlertCircle className="w-4 h-4 text-red-500" />;
             default:
-                return <Clock className="w-4 h-4 text-dark-400" />;
+                return <Clock className="w-4 h-4 text-gray-400" />;
         }
     };
 
     return (
         <div className="space-y-8 animate-fade-in">
-            {/* Header */}
-            <div>
-                <h1 className="text-3xl font-bold text-dark-100">Upload Financial Statement</h1>
-                <p className="text-dark-400 mt-2">
-                    Upload a PDF to extract financial data and map to your template
-                </p>
+            {/* Header with Logo */}
+            <div className="flex items-center space-x-4">
+                <img
+                    src="/Logos/StatementXL_Logo_v2.png"
+                    alt="StatementXL"
+                    className="h-14 w-auto object-contain"
+                />
+                <div>
+                    <h1 className="text-3xl font-bold text-gray-900">Upload Financial Statement</h1>
+                    <p className="text-gray-500 mt-1">
+                        Upload a PDF to extract financial data and map to your template
+                    </p>
+                </div>
             </div>
 
             {/* Upload Area */}
-            <div className="card p-8">
+            <div className="bg-white rounded-xl border border-gray-200 p-8 shadow-sm">
                 <FileUpload
                     accept=".pdf"
                     onUpload={handleUpload}
@@ -72,32 +79,32 @@ const Upload: React.FC = () => {
 
             {/* Recent Uploads */}
             {(recentUploads.length > 0 || documents.length > 0) && (
-                <div className="card p-6">
-                    <h2 className="text-lg font-semibold text-dark-100 mb-4">Recent Uploads</h2>
+                <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
+                    <h2 className="text-lg font-semibold text-gray-900 mb-4">Recent Uploads</h2>
                     <div className="space-y-3">
                         {(recentUploads.length > 0 ? recentUploads : documents.slice(0, 5)).map((doc) => (
                             <div
                                 key={doc.id}
-                                className="flex items-center justify-between p-4 rounded-lg bg-dark-800/50 hover:bg-dark-800 transition-colors cursor-pointer group"
+                                className="flex items-center justify-between p-4 rounded-lg bg-green-50 hover:bg-green-100 transition-colors cursor-pointer group border border-green-200"
                                 onClick={() => {
                                     setCurrentDocument(doc);
                                     navigate('/extraction');
                                 }}
                             >
                                 <div className="flex items-center space-x-4">
-                                    <div className="p-2 rounded-lg bg-primary-500/10">
-                                        <FileText className="w-5 h-5 text-primary-400" />
+                                    <div className="p-2 rounded-lg bg-green-600">
+                                        <FileText className="w-5 h-5 text-white" />
                                     </div>
                                     <div>
-                                        <p className="font-medium text-dark-100">{doc.filename}</p>
-                                        <p className="text-sm text-dark-400">
+                                        <p className="font-medium text-gray-900">{doc.filename}</p>
+                                        <p className="text-sm text-gray-500">
                                             {doc.pageCount} pages • {new Date(doc.createdAt).toLocaleDateString()}
                                         </p>
                                     </div>
                                 </div>
                                 <div className="flex items-center space-x-4">
                                     {getStatusIcon(doc.status)}
-                                    <ArrowRight className="w-4 h-4 text-dark-500 group-hover:text-primary-400 transition-colors" />
+                                    <ArrowRight className="w-4 h-4 text-gray-400 group-hover:text-green-600 transition-colors" />
                                 </div>
                             </div>
                         ))}
@@ -107,16 +114,18 @@ const Upload: React.FC = () => {
 
             {/* Quick Stats */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {[
-                    { label: 'Documents Processed', value: documents.length.toString(), color: 'primary' },
-                    { label: 'Success Rate', value: '98%', color: 'green' },
-                    { label: 'Avg. Confidence', value: '94%', color: 'accent' },
-                ].map((stat) => (
-                    <div key={stat.label} className="card p-6">
-                        <p className="text-sm text-dark-400">{stat.label}</p>
-                        <p className={`text-2xl font-bold mt-1 text-${stat.color}-400`}>{stat.value}</p>
-                    </div>
-                ))}
+                <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
+                    <p className="text-sm text-gray-500">Documents Processed</p>
+                    <p className="text-2xl font-bold mt-1 text-green-600">{documents.length}</p>
+                </div>
+                <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
+                    <p className="text-sm text-gray-500">Success Rate</p>
+                    <p className="text-2xl font-bold mt-1 text-green-600">98%</p>
+                </div>
+                <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
+                    <p className="text-sm text-gray-500">Avg. Confidence</p>
+                    <p className="text-2xl font-bold mt-1 text-green-600">94%</p>
+                </div>
             </div>
         </div>
     );

@@ -1,0 +1,231 @@
+[
+  {
+    "file": "Test_Balance_Sheet_Multi_Column.pdf",
+    "status_code": 200,
+    "success": true,
+    "tables": 3,
+    "processing_time_ms": 282.9124927520752,
+    "table_details": [
+      {
+        "table_num": 1,
+        "rows": 79,
+        "confidence": 0.7
+      },
+      {
+        "table_num": 2,
+        "rows": 85,
+        "confidence": 0.7
+      },
+      {
+        "table_num": 3,
+        "rows": 23,
+        "confidence": 0.7
+      }
+    ]
+  },
+  {
+    "file": "Test_Balance_Sheet_Single_Column.pdf",
+    "status_code": 200,
+    "success": true,
+    "tables": 2,
+    "processing_time_ms": 200.20723342895508,
+    "table_details": [
+      {
+        "table_num": 1,
+        "rows": 79,
+        "confidence": 0.7
+      },
+      {
+        "table_num": 2,
+        "rows": 29,
+        "confidence": 0.7
+      }
+    ]
+  },
+  {
+    "file": "Test_Balance_Sheet_Single_Column_DETAIL.pdf",
+    "status_code": 200,
+    "success": true,
+    "tables": 2,
+    "processing_time_ms": 128.09467315673828,
+    "table_details": [
+      {
+        "table_num": 1,
+        "rows": 79,
+        "confidence": 0.7
+      },
+      {
+        "table_num": 2,
+        "rows": 29,
+        "confidence": 0.7
+      }
+    ]
+  },
+  {
+    "file": "Test_Cash_Flow_Statement_Multi_Column_HARD.pdf",
+    "status_code": 200,
+    "success": true,
+    "tables": 1,
+    "processing_time_ms": 327.37016677856445,
+    "table_details": [
+      {
+        "table_num": 1,
+        "rows": 84,
+        "confidence": 0.7
+      }
+    ]
+  },
+  {
+    "file": "Test_Income Statement.pdf",
+    "status_code": 200,
+    "success": true,
+    "tables": 2,
+    "processing_time_ms": 162.6441478729248,
+    "table_details": [
+      {
+        "table_num": 1,
+        "rows": 83,
+        "confidence": 0.7
+      },
+      {
+        "table_num": 2,
+        "rows": 61,
+        "confidence": 0.7
+      }
+    ]
+  },
+  {
+    "file": "Test_Income_Satement_Multi_Column.pdf",
+    "status_code": 200,
+    "success": true,
+    "tables": 5,
+    "processing_time_ms": 486.73439025878906,
+    "table_details": [
+      {
+        "table_num": 1,
+        "rows": 59,
+        "confidence": 0.7
+      },
+      {
+        "table_num": 2,
+        "rows": 38,
+        "confidence": 0.7
+      },
+      {
+        "table_num": 3,
+        "rows": 51,
+        "confidence": 0.7
+      },
+      {
+        "table_num": 4,
+        "rows": 46,
+        "confidence": 0.7
+      },
+      {
+        "table_num": 5,
+        "rows": 61,
+        "confidence": 0.7
+      }
+    ]
+  },
+  {
+    "file": "Test_Income_Statement_EASY.pdf",
+    "status_code": 200,
+    "success": true,
+    "tables": 1,
+    "processing_time_ms": 193.6047077178955,
+    "table_details": [
+      {
+        "table_num": 1,
+        "rows": 75,
+        "confidence": 0.7
+      }
+    ]
+  },
+  {
+    "file": "Test_Income_Statement_Multi_Column_HARD.pdf",
+    "status_code": 200,
+    "success": true,
+    "tables": 3,
+    "processing_time_ms": 564.9704933166504,
+    "table_details": [
+      {
+        "table_num": 1,
+        "rows": 95,
+        "confidence": 0.7
+      },
+      {
+        "table_num": 2,
+        "rows": 95,
+        "confidence": 0.7
+      },
+      {
+        "table_num": 3,
+        "rows": 17,
+        "confidence": 0.7
+      }
+    ]
+  },
+  {
+    "file": "Test_Income_Statement_Single_Column_DETAIL.pdf",
+    "status_code": 200,
+    "success": true,
+    "tables": 3,
+    "processing_time_ms": 255.45835494995117,
+    "table_details": [
+      {
+        "table_num": 1,
+        "rows": 75,
+        "confidence": 0.7
+      },
+      {
+        "table_num": 2,
+        "rows": 85,
+        "confidence": 0.7
+      },
+      {
+        "table_num": 3,
+        "rows": 83,
+        "confidence": 0.7
+      }
+    ]
+  },
+  {
+    "file": "Test_Income_Statement_Single_Column_HARD.pdf",
+    "status_code": 200,
+    "success": true,
+    "tables": 2,
+    "processing_time_ms": 149.72925186157227,
+    "table_details": [
+      {
+        "table_num": 1,
+        "rows": 72,
+        "confidence": 0.7
+      },
+      {
+        "table_num": 2,
+        "rows": 36,
+        "confidence": 0.7
+      }
+    ]
+  },
+  {
+    "file": "Test_Income_Statment_Monthly_Multi_Column.pdf",
+    "status_code": 200,
+    "success": true,
+    "tables": 2,
+    "processing_time_ms": 309.8132610321045,
+    "table_details": [
+      {
+        "table_num": 1,
+        "rows": 65,
+        "confidence": 0.7
+      },
+      {
+        "table_num": 2,
+        "rows": 25,
+        "confidence": 0.7
+      }
+    ]
+  }
+]

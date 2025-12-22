@@ -27,19 +27,21 @@ const Sidebar: React.FC = () => {
     return (
         <aside
             className={`
-        fixed left-0 top-0 h-screen bg-dark-900 border-r border-dark-700
-        transition-all duration-300 ease-in-out z-20
+        fixed left-0 top-0 h-screen bg-gradient-to-b from-green-800 to-green-700
+        transition-all duration-300 ease-in-out z-20 shadow-xl
         ${sidebarOpen ? 'w-64' : 'w-20'}
       `}
         >
             {/* Logo */}
-            <div className="flex items-center justify-between h-16 px-4 border-b border-dark-700">
+            <div className="flex items-center justify-between h-16 px-4 border-b border-green-600/30">
                 <div className="flex items-center space-x-3">
-                    <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-primary-500 to-accent-500 flex items-center justify-center">
-                        <span className="text-white font-bold text-lg">S</span>
-                    </div>
+                    <img
+                        src="/Logos/StatementXL_Logo_v2.png"
+                        alt="StatementXL"
+                        className="h-10 w-auto object-contain"
+                    />
                     {sidebarOpen && (
-                        <span className="font-bold text-lg gradient-text animate-fade-in">
+                        <span className="font-bold text-lg text-white animate-fade-in">
                             StatementXL
                         </span>
                     )}
@@ -55,8 +57,8 @@ const Sidebar: React.FC = () => {
                         className={({ isActive }) => `
               flex items-center px-3 py-3 rounded-lg transition-all duration-200
               ${isActive
-                                ? 'bg-primary-500/10 text-primary-400 border-l-2 border-primary-500'
-                                : 'text-dark-400 hover:text-dark-100 hover:bg-dark-800'
+                                ? 'bg-white/20 text-white border-l-2 border-white'
+                                : 'text-green-100 hover:text-white hover:bg-white/10'
                             }
             `}
                     >
@@ -71,19 +73,19 @@ const Sidebar: React.FC = () => {
             {/* Toggle Button */}
             <button
                 onClick={toggleSidebar}
-                className="absolute -right-3 top-20 w-6 h-6 bg-dark-700 rounded-full flex items-center justify-center border border-dark-600 hover:bg-dark-600 transition-colors"
+                className="absolute -right-3 top-20 w-6 h-6 bg-green-600 rounded-full flex items-center justify-center border-2 border-white hover:bg-green-500 transition-colors shadow-lg"
             >
                 {sidebarOpen ? (
-                    <ChevronLeft className="w-4 h-4 text-dark-300" />
+                    <ChevronLeft className="w-4 h-4 text-white" />
                 ) : (
-                    <ChevronRight className="w-4 h-4 text-dark-300" />
+                    <ChevronRight className="w-4 h-4 text-white" />
                 )}
             </button>
 
             {/* Footer */}
-            <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-dark-700">
+            <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-green-600/30">
                 {sidebarOpen && (
-                    <div className="text-xs text-dark-500 text-center animate-fade-in">
+                    <div className="text-xs text-green-200 text-center animate-fade-in">
                         Version 2.0.0
                     </div>
                 )}
