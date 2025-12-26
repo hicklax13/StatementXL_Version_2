@@ -28,31 +28,49 @@ docker network prune -f
 echo "✓ Networks cleaned"
 echo ""
 
-# Step 4: Verify ports are free
-echo "Step 4/6: Verifying ports are available..."
+# Step 4: Kill any processes using required ports
+echo "Step 4/6: Freeing up required ports..."
 PORTS=(80 5432 6379 8000)
-PORTS_BLOCKED=false
 
-for PORT in "${PORTS[@]}"; do
-    if lsof -Pi :$PORT -sTCP:LISTEN -t >/dev/null 2>&1; then
-        PROCESS=$(lsof -Pi :$PORT -sTCP:LISTEN -t 2>/dev/null || echo "unknown")
-        echo "⚠️  Warning: Port $PORT is in use by process $PROCESS"
-        PORTS_BLOCKED=true
-    else
-        echo "✓ Port $PORT is available"
-    fi
-done
-
-if [ "$PORTS_BLOCKED" = true ]; then
-    echo ""
-    echo "❌ ERROR: Some required ports are still in use."
-    echo "Run this command to find and stop blocking processes:"
-    echo "  sudo lsof -i :80 -i :5432 -i :6379 -i :8000"
-    echo ""
-    echo "To force kill Docker processes on these ports:"
-    echo "  docker ps -a | grep -E '(5432|6379|8000|80)' | awk '{print \$1}' | xargs -r docker rm -f"
-    exit 1
+# Detect OS
+if [[ "$OSTYPE" == "msys" || "$OSTYPE" == "win32" ]]; then
+    # Windows (Git Bash)
+    echo "Detected Windows environment"
+    for PORT in "${PORTS[@]}"; do
+        # Find PIDs using the port
+        PIDS=$(netstat -ano | grep ":$PORT " | grep "LISTENING" | awk '{print $5}' | sort -u)
+        if [ -n "$PIDS" ]; then
+            echo "⚠️  Port $PORT is in use. Attempting to free it..."
+            for PID in $PIDS; do
+                # Skip system process (PID 4)
+                if [ "$PID" != "4" ] && [ "$PID" != "0" ]; then
+                    echo "  Killing process $PID using port $PORT"
+                    taskkill //F //PID $PID 2>/dev/null || echo "  Could not kill PID $PID (may require admin)"
+                fi
+            done
+        else
+            echo "✓ Port $PORT is available"
+        fi
+    done
+else
+    # Linux/macOS
+    for PORT in "${PORTS[@]}"; do
+        if lsof -Pi :$PORT -sTCP:LISTEN -t >/dev/null 2>&1; then
+            PIDS=$(lsof -Pi :$PORT -sTCP:LISTEN -t)
+            echo "⚠️  Port $PORT is in use. Attempting to free it..."
+            for PID in $PIDS; do
+                echo "  Killing process $PID using port $PORT"
+                kill -9 $PID 2>/dev/null || sudo kill -9 $PID 2>/dev/null || echo "  Could not kill PID $PID"
+            done
+        else
+            echo "✓ Port $PORT is available"
+        fi
+    done
 fi
+
+# Wait a moment for ports to be fully released
+sleep 2
+echo "✓ Ports cleaned"
 echo ""
 
 # Step 5: Pull latest changes
