@@ -8,6 +8,21 @@ echo "🧹 StatementXL Docker Reset Script"
 echo "=================================="
 echo ""
 
+# Check if Docker is running
+echo "Checking if Docker is running..."
+if ! docker info >/dev/null 2>&1; then
+    echo "❌ ERROR: Docker is not running!"
+    echo ""
+    echo "Please start Docker Desktop:"
+    echo "  1. Open Docker Desktop application"
+    echo "  2. Wait for it to fully start (green icon in system tray)"
+    echo "  3. Run this script again"
+    echo ""
+    exit 1
+fi
+echo "✓ Docker is running"
+echo ""
+
 # Step 1: Stop all StatementXL containers
 echo "Step 1/6: Stopping all StatementXL containers..."
 docker-compose down 2>/dev/null || true
