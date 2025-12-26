@@ -11,7 +11,7 @@ import {
     Edit3,
     Loader2,
 } from 'lucide-react';
-import { useMappingStore, useUIStore, useDocumentStore } from '../stores';
+import { useMappingStore, useUIStore } from '../stores';
 import { getMapping, getMappingConflicts, resolveConflict as resolveConflictApi } from '../api/client';
 import logo from '../assets/logo.png';
 
