@@ -2,26 +2,49 @@
 # Complete Docker cleanup and rebuild script for StatementXL
 # This script ensures no port conflicts or stale containers
 
-set -e
-
 echo "🧹 StatementXL Docker Reset Script"
 echo "=================================="
 echo ""
 
-# Check if Docker is running
-echo "Checking if Docker is running..."
-if ! docker info >/dev/null 2>&1; then
-    echo "❌ ERROR: Docker is not running!"
+# Check if Docker is running with retry logic
+echo "Checking if Docker Desktop is running..."
+MAX_RETRIES=30
+RETRY_COUNT=0
+
+while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
+    if docker info >/dev/null 2>&1; then
+        echo "✓ Docker is running and ready"
+        echo ""
+        break
+    fi
+
+    if [ $RETRY_COUNT -eq 0 ]; then
+        echo "❌ Docker is not responding"
+        echo ""
+        echo "Please start Docker Desktop if it's not already running:"
+        echo "  1. Open Docker Desktop application"
+        echo "  2. Wait for it to fully start (green icon in system tray)"
+        echo ""
+        echo "Waiting for Docker to be ready... (this may take up to 60 seconds)"
+    fi
+
+    echo -n "."
+    sleep 2
+    RETRY_COUNT=$((RETRY_COUNT + 1))
+done
+
+if [ $RETRY_COUNT -eq $MAX_RETRIES ]; then
     echo ""
-    echo "Please start Docker Desktop:"
-    echo "  1. Open Docker Desktop application"
-    echo "  2. Wait for it to fully start (green icon in system tray)"
-    echo "  3. Run this script again"
+    echo "❌ ERROR: Docker did not become ready after 60 seconds"
+    echo ""
+    echo "Troubleshooting steps:"
+    echo "  1. Check if Docker Desktop is running (look for Docker icon in system tray)"
+    echo "  2. Try restarting Docker Desktop"
+    echo "  3. Check if virtualization is enabled in BIOS"
+    echo "  4. Run 'docker info' manually to see detailed error"
     echo ""
     exit 1
 fi
-echo "✓ Docker is running"
-echo ""
 
 # Step 1: Stop all StatementXL containers
 echo "Step 1/6: Stopping all StatementXL containers..."
