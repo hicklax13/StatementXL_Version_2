@@ -52,4 +52,5 @@ passlib[bcrypt]>=1.7.4
 
 # Phase 9: Rate Limiting
 slowapi>=0.1.9
+redis>=4.0.0
 
