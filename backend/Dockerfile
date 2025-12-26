@@ -36,8 +36,8 @@ RUN pip install --no-cache /wheels/*
 
 # Copy application code
 COPY backend/ ./backend/
-COPY alembic/ ./alembic/ 2>/dev/null || true
-COPY alembic.ini ./alembic.ini 2>/dev/null || true
+COPY alembic/ ./alembic/
+COPY alembic.ini ./alembic.ini
 
 # Create uploads directory
 RUN mkdir -p /app/uploads && chown -R statementxl:statementxl /app
