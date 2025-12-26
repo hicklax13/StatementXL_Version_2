@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { History, FileText, GitMerge, ArrowRight, Eye, Download, Filter, Loader2, RefreshCw } from 'lucide-react';
+import { History, FileText, GitMerge, Eye, Download, Filter, Loader2, RefreshCw } from 'lucide-react';
 import { getAuditLog } from '../api/client';
 import logo from '../assets/logo.png';
 

@@ -6,7 +6,6 @@ import {
     XCircle,
     ChevronDown,
     ChevronUp,
-    ArrowRight,
     Download,
     ThumbsUp,
     Edit3,
@@ -31,7 +30,7 @@ interface ConflictItemProps {
     onResolve: (id: string, resolution: string) => void;
 }
 
-const ConflictItem: React.FC<ConflictItemProps> = ({ conflict, mappingId, onResolve }) => {
+const ConflictItem: React.FC<ConflictItemProps> = ({ conflict, onResolve }) => {
     const [expanded, setExpanded] = useState(false);
     const [selectedSuggestion, setSelectedSuggestion] = useState<string | null>(null);
     const [resolving, setResolving] = useState(false);
@@ -144,7 +143,6 @@ const ConflictItem: React.FC<ConflictItemProps> = ({ conflict, mappingId, onReso
 const MappingReview: React.FC = () => {
     const navigate = useNavigate();
     const { mapping, resolveConflict } = useMappingStore();
-    const { currentDocument } = useDocumentStore();
     const { addNotification } = useUIStore();
     const [mappingData, setMappingData] = useState<any>(null);
     const [conflicts, setConflicts] = useState<any[]>([]);
