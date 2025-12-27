@@ -1,4 +1,4 @@
-```python
+
 """
 Authentication utilities for JWT tokens and password hashing.
 
@@ -191,4 +191,3 @@ def verify_refresh_token(token: str) -> Optional[str]:
         return None
     
     return payload.get("sub")
-```
