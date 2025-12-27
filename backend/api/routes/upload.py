@@ -200,18 +200,40 @@ async def upload_pdf(
         else:
             overall_confidence = 0.0
 
-        # Create extract record
+        # Create extract record with FULL row data
+        def serialize_tables(tables):
+            """Serialize tables with full row/cell data for export."""
+            result = []
+            for table in tables:
+                rows_data = []
+                for row in table.rows:
+                    cells_data = []
+                    for cell in row.cells:
+                        cells_data.append({
+                            "value": str(cell.value) if cell.value else "",
+                            "row": cell.row,
+                            "column": cell.column,
+                            "confidence": cell.confidence,
+                            "is_numeric": cell.is_numeric,
+                            "parsed_value": float(cell.parsed_value) if cell.parsed_value is not None else None,
+                        })
+                    rows_data.append({
+                        "cells": cells_data,
+                        "row_index": row.row_index,
+                    })
+                
+                result.append({
+                    "page": table.page,
+                    "rows": rows_data,
+                    "row_count": len(table.rows),
+                    "confidence": table.confidence,
+                    "method": table.detection_method,
+                })
+            return result
+        
         extract = Extract(
             document_id=document_id,
-            tables_json=[
-                {
-                    "page": t.page,
-                    "row_count": len(t.rows),
-                    "confidence": t.confidence,
-                    "method": t.detection_method,
-                }
-                for t in result.tables
-            ],
+            tables_json=serialize_tables(result.tables),
             confidence_score=overall_confidence,
         )
         db.add(extract)
@@ -363,9 +385,6 @@ async def get_document_extractions(
     Returns:
         List of extracted tables with rows and cells.
     """
-    from backend.models.extraction import Extraction
-    from backend.models.line_item import LineItem
-
     document = db.query(Document).filter(Document.id == document_id).first()
 
     if not document:
@@ -374,38 +393,20 @@ async def get_document_extractions(
             detail=f"Document {document_id} not found",
         )
 
-    # Get all extractions for this document
-    extractions = db.query(Extraction).filter(Extraction.document_id == document_id).all()
+    # Get all extracts for this document
+    extracts = db.query(Extract).filter(Extract.document_id == document_id).all()
 
     tables = []
-    for extraction in extractions:
-        # Get line items for this extraction
-        line_items = db.query(LineItem).filter(LineItem.extract_id == extraction.id).all()
-
-        # Group line items by row
-        rows_dict = {}
-        for item in line_items:
-            row_num = item.row_number or 0
-            if row_num not in rows_dict:
-                rows_dict[row_num] = []
-            rows_dict[row_num].append({
-                "value": item.text or "",
-                "parsed_value": float(item.value) if item.value else None,
-                "confidence": item.confidence or 0.0,
-                "is_numeric": item.value is not None,
-            })
-
-        # Convert to list of rows
-        rows = []
-        for row_num in sorted(rows_dict.keys()):
-            rows.append({"cells": rows_dict[row_num]})
-
-        tables.append({
-            "page": extraction.page_number or 1,
-            "title": extraction.table_type or f"Table {len(tables) + 1}",
-            "rows": rows,
-            "confidence": extraction.confidence or 0.0,
-        })
+    for extract in extracts:
+        # Get tables from tables_json field
+        if extract.tables_json:
+            for table_data in extract.tables_json:
+                tables.append({
+                    "page": table_data.get("page", 1),
+                    "title": table_data.get("title", f"Table {len(tables) + 1}"),
+                    "rows": table_data.get("rows", []),
+                    "confidence": table_data.get("confidence", extract.confidence_score or 0.0),
+                })
 
     return {
         "document_id": str(document_id),

@@ -103,7 +103,13 @@ class TableDetector:
                 page_count = len(pdf.pages)
 
                 for page_num, page in enumerate(pdf.pages, start=1):
-                    # Try Camelot first for bordered tables
+                    # Try text line extraction first (preserves full labels)
+                    text_tables = self._extract_text_lines(page, page_num)
+                    if text_tables and len(text_tables[0].rows) > 5:  # Has substantial content
+                        all_tables.extend(text_tables)
+                        continue  # Skip table-based extraction for this page
+                    
+                    # Try Camelot for bordered tables
                     if self._camelot_available:
                         camelot_tables = self._detect_with_camelot(pdf_path, page_num)
                         all_tables.extend(camelot_tables)
@@ -338,6 +344,99 @@ class TableDetector:
         except Exception:
             pass
         return None
+    
+    def _extract_text_lines(self, page, page_num: int) -> List[ExtractedTable]:
+        """
+        Extract structured data from text lines (fallback for tables that truncate).
+        
+        Uses full line text extraction and regex parsing to separate labels from values.
+        This preserves full label text that table extraction might truncate.
+        Handles both single-column (label value) and multi-column (label v1 v2 v3...) formats.
+        """
+        import re
+        
+        text = page.extract_text()
+        if not text:
+            return []
+        
+        lines = text.strip().split('\n')
+        rows: List[TableRow] = []
+        
+        # Pattern to find all numeric values in a line
+        # Matches: 123,456.78, $1,234.56, (1,234.56), 1234
+        number_pattern = re.compile(r'\$?[\(\-]?[\d,]+\.?\d*[\)]?')
+        
+        for row_idx, line in enumerate(lines):
+            line = line.strip()
+            if not line:
+                continue
+            
+            cells: List[CellData] = []
+            
+            # Find all numeric values in the line
+            numbers = number_pattern.findall(line)
+            
+            if numbers:
+                # Extract label (text before first number)
+                first_num_pos = line.find(numbers[0])
+                label = line[:first_num_pos].strip() if first_num_pos > 0 else ""
+                
+                # Skip header rows that contain year patterns like "JAN 2025 FEB 2025"
+                if not label or any(m in line.upper() for m in ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"]) and len(numbers) > 3:
+                    # Check if this is a data row by looking for a label
+                    if not label or len(label) < 3:
+                        continue
+                
+                # Label cell
+                if label:
+                    cells.append(
+                        CellData(
+                            value=label,
+                            row=row_idx,
+                            column=0,
+                            confidence=0.95,
+                            is_numeric=False,
+                        )
+                    )
+                
+                # Add numeric cells
+                for col_idx, num_str in enumerate(numbers):
+                    parsed = self._numeric_parser.parse(num_str)
+                    cells.append(
+                        CellData(
+                            value=num_str,
+                            row=row_idx,
+                            column=col_idx + 1 if label else col_idx,
+                            confidence=parsed.confidence if parsed.value else 0.9,
+                            parsed_value=float(parsed.value) if parsed.value else None,
+                            is_numeric=parsed.value is not None,
+                        )
+                    )
+            else:
+                # Line is label-only (section header or total without value)
+                cells.append(
+                    CellData(
+                        value=line,
+                        row=row_idx,
+                        column=0,
+                        confidence=0.9,
+                        is_numeric=False,
+                    )
+                )
+            
+            rows.append(TableRow(cells=cells, row_index=row_idx))
+        
+        if rows:
+            return [
+                ExtractedTable(
+                    page=page_num,
+                    rows=rows,
+                    confidence=0.95,  # High confidence for text extraction
+                    detection_method="text_lines",
+                )
+            ]
+        
+        return []
 
     def _overlaps_existing(
         self, new_table: ExtractedTable, existing: List[ExtractedTable]

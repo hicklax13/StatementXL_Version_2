@@ -249,12 +249,14 @@ const TemplateLibrary: React.FC = () => {
                         <button
                             onClick={() => setViewMode('grid')}
                             className={`p-2 rounded ${viewMode === 'grid' ? 'bg-white text-green-600 shadow-sm' : 'text-gray-500'}`}
+                            title="Grid view"
                         >
                             <Grid3X3 className="w-4 h-4" />
                         </button>
                         <button
                             onClick={() => setViewMode('list')}
                             className={`p-2 rounded ${viewMode === 'list' ? 'bg-white text-green-600 shadow-sm' : 'text-gray-500'}`}
+                            title="List view"
                         >
                             <List className="w-4 h-4" />
                         </button>
@@ -469,7 +471,7 @@ const TemplateLibrary: React.FC = () => {
                                                 {template.download_count.toLocaleString()}
                                             </td>
                                             <td className="px-6 py-4 text-center">
-                                                <button className="p-2 rounded-lg text-gray-500 hover:text-green-600 hover:bg-green-50 transition-colors">
+                                                <button className="p-2 rounded-lg text-gray-500 hover:text-green-600 hover:bg-green-50 transition-colors" title="Download template">
                                                     <Download className="w-4 h-4" />
                                                 </button>
                                             </td>

@@ -1,0 +1,38 @@
+"""Company Name""",,
+,,
+,Income Statement,
+,Line Items,Year(s) Ended
+,Revenue,2025
+,,
+,Products,20.00
+,Services,10.00
+,Total Revenue, $30.00 
+,,
+,Cost of Goods Sold,
+,,
+,Products,4.00
+,Services,4.00
+,Total Cost of Goods Sold, $8.00 
+,,
+,Gross Profit, $22.00 
+,,
+,Operating Expenses,
+,,
+,Research & Development,4.00
+,"Selling, General, and Administrative",4.00
+,Total Operating Expenses, $8.00 
+,,
+,Operating Income, $14.00 
+,,
+,Other Income/(Expenses),
+,,
+,"Other Income/(Expenses), Net",-5.00
+,Total Other Income/(Expense), $(5.00)
+,,
+,Income Before Income Taxes, $9.00 
+,,
+,Provision for Income Taxes,2.00
+,Net Income, $7.00 
+,,
+,,
+,,

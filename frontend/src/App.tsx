@@ -7,6 +7,7 @@ import MappingReview from './pages/MappingReview';
 import AuditTrail from './pages/AuditTrail';
 import TemplateLibrary from './pages/TemplateLibrary';
 import BatchUpload from './pages/BatchUpload';
+import Export from './pages/Export';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import './index.css';
@@ -25,6 +26,7 @@ function App() {
           <Route path="extraction" element={<ExtractionReview />} />
           <Route path="template" element={<TemplateUpload />} />
           <Route path="mapping" element={<MappingReview />} />
+          <Route path="export" element={<Export />} />
           <Route path="audit" element={<AuditTrail />} />
           <Route path="library" element={<TemplateLibrary />} />
           <Route path="batch" element={<BatchUpload />} />

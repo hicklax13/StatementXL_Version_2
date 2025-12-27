@@ -9,6 +9,7 @@ import {
     ChevronLeft,
     ChevronRight,
     Library,
+    Download,
 } from 'lucide-react';
 import { useUIStore } from '../stores';
 import logo from '../assets/logo.png';
@@ -18,6 +19,7 @@ const navItems = [
     { path: '/extraction', icon: FileSearch, label: 'Extraction Review' },
     { path: '/template', icon: FileSpreadsheet, label: 'Template Upload' },
     { path: '/mapping', icon: GitMerge, label: 'Mapping Review' },
+    { path: '/export', icon: Download, label: 'Export to Excel' },
     { path: '/audit', icon: History, label: 'Audit Trail' },
     { path: '/library', icon: Library, label: 'Template Library' },
 ];

@@ -5,6 +5,7 @@ import react from '@vitejs/plugin-react'
 export default defineConfig({
   plugins: [react()],
   server: {
+    open: false, // Explicitly disable auto-open to prevent duplicate tabs
     proxy: {
       '/api/v1': {
         target: 'http://localhost:8000',

@@ -314,4 +314,57 @@ export const setAuthToken = (token: string | null) => {
     }
 };
 
+// Export API Types
+export interface StyleInfo {
+    id: string;
+    name: string;
+    description: string;
+}
+
+export interface ColorwayInfo {
+    id: string;
+    name: string;
+    primary_color: string;
+}
+
+export interface ExportOptionsResponse {
+    styles: StyleInfo[];
+    colorways: ColorwayInfo[];
+    statement_types: string[];
+}
+
+export interface ExportRequest {
+    document_id: string;
+    statement_type: 'income_statement' | 'balance_sheet' | 'cash_flow';
+    style: 'basic' | 'corporate' | 'professional';
+    colorway: string;
+    company_name?: string;
+}
+
+export interface ExportResponse {
+    export_id: string;
+    filename: string;
+    download_url: string;
+    style: string;
+    colorway: string;
+    periods: number[];
+    rows_populated: number;
+}
+
+// Export APIs
+export const getExportOptions = async (): Promise<ExportOptionsResponse> => {
+    const response = await api.get('/export/options');
+    return response.data;
+};
+
+export const exportToExcel = async (request: ExportRequest): Promise<ExportResponse> => {
+    const response = await api.post('/export/excel', request);
+    return response.data;
+};
+
+export const downloadExport = (exportId: string): string => {
+    return `${API_BASE_URL}/export/download/${exportId}`;
+};
+
 export default api;
+
