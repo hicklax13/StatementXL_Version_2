@@ -3,25 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { Check, X, Edit3, FileText, ArrowRight, AlertTriangle, Loader2 } from 'lucide-react';
 import { useDocumentStore, useExtractionStore, useUIStore } from '../stores';
 import { getDocumentExtractions } from '../api/client';
+import type { ExtractedTable } from '../api/client';
 import logo from '../assets/logo.png';
-
-interface CellData {
-    value: string;
-    parsed_value?: number;
-    confidence: number;
-    is_numeric?: boolean;
-}
-
-interface TableRow {
-    cells: CellData[];
-}
-
-interface ExtractedTable {
-    page: number;
-    title: string;
-    rows: TableRow[];
-    confidence: number;
-}
 
 const ExtractionReview: React.FC = () => {
     const navigate = useNavigate();
@@ -47,9 +30,9 @@ const ExtractionReview: React.FC = () => {
                 setError(null);
                 const data = await getDocumentExtractions(currentDocument.id);
                 setTables(data.tables || []);
-            } catch (err: any) {
+            } catch (err: unknown) {
                 console.error('Failed to fetch extractions:', err);
-                setError(err.message || 'Failed to load extractions');
+                setError(err instanceof Error ? err.message : 'Failed to load extractions');
                 addNotification('error', 'Failed to load extraction data');
             } finally {
                 setLoading(false);

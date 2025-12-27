@@ -3,6 +3,7 @@ Authentication dependencies for FastAPI routes.
 
 Provides dependency injection for protected routes.
 """
+import uuid
 from typing import Optional
 
 from fastapi import Depends, HTTPException, status
@@ -48,11 +49,17 @@ async def get_current_user(
     token_data = verify_access_token(credentials.credentials)
     if not token_data:
         raise InvalidTokenError()
-    
-    user = db.query(User).filter(User.id == token_data.user_id).first()
+
+    # Convert string user_id to UUID for database query
+    try:
+        user_uuid = uuid.UUID(token_data.user_id)
+    except (ValueError, AttributeError):
+        raise InvalidTokenError()
+
+    user = db.query(User).filter(User.id == user_uuid).first()
     if not user:
         raise InvalidTokenError()
-    
+
     return user
 
 
@@ -120,5 +127,11 @@ async def get_optional_user(
     token_data = verify_access_token(credentials.credentials)
     if not token_data:
         return None
-    
-    return db.query(User).filter(User.id == token_data.user_id).first()
+
+    # Convert string user_id to UUID for database query
+    try:
+        user_uuid = uuid.UUID(token_data.user_id)
+    except (ValueError, AttributeError):
+        return None
+
+    return db.query(User).filter(User.id == user_uuid).first()

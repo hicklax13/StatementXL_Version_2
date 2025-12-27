@@ -1,19 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { History, FileText, GitMerge, Eye, Download, Filter, Loader2, RefreshCw } from 'lucide-react';
 import { getAuditLog } from '../api/client';
+import type { AuditEntry } from '../api/client';
 import logo from '../assets/logo.png';
-
-interface AuditEntry {
-    id: string;
-    timestamp: string;
-    action: string;
-    resource_type: string;
-    resource_id?: string;
-    user_id?: string;
-    details?: string;
-    old_value?: string;
-    new_value?: string;
-}
 
 const AuditTrail: React.FC = () => {
     const [filter, setFilter] = useState<'all' | 'document' | 'mapping' | 'system'>('all');
@@ -125,10 +114,10 @@ const AuditTrail: React.FC = () => {
             <div className="bg-white rounded-xl border border-gray-200 p-4 shadow-sm flex items-center space-x-4">
                 <Filter className="w-5 h-5 text-gray-400" />
                 <span className="text-sm text-gray-500">Filter:</span>
-                {['all', 'document', 'mapping', 'system'].map((f) => (
+                {(['all', 'document', 'mapping', 'system'] as const).map((f) => (
                     <button
                         key={f}
-                        onClick={() => { setFilter(f as any); setPage(1); }}
+                        onClick={() => { setFilter(f); setPage(1); }}
                         className={`
                             px-4 py-2 rounded-lg text-sm font-medium transition-all
                             ${filter === f

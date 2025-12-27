@@ -70,3 +70,15 @@ temp/
 # PDF extraction helpers
 extract_pdf.py
 roadmap_content.txt
+
+# Claude Code
+.claude/
+
+# Test run logs
+backend-test_run_log/
+
+# Generated data files
+data/ontology_embeddings.pkl
+
+# Temporary fix scripts
+fix_all_password_tests.py

@@ -92,35 +92,42 @@ class PasswordValidator:
     def get_strength_score(cls, password: str) -> int:
         """
         Get password strength score (0-100).
-        
+
         Factors:
         - Length (up to 30 points)
         - Character variety (up to 40 points)
-        - No common patterns (up to 30 points)
+        - No common patterns (up to 30 points, only if password has variety)
         """
         score = 0
-        
+
         # Length score (2 points per char, max 30)
         score += min(len(password) * 2, 30)
-        
-        # Character variety
+
+        # Character variety - track how many types are present
+        variety_count = 0
         if any(c.isupper() for c in password):
             score += 10
+            variety_count += 1
         if any(c.islower() for c in password):
             score += 10
+            variety_count += 1
         if any(c.isdigit() for c in password):
             score += 10
+            variety_count += 1
         if any(c in cls.SPECIAL_CHARS for c in password):
             score += 10
-        
-        # No common patterns bonus
-        if not re.search(r'(.)\1{2,}', password):  # No 3+ repeated chars
-            score += 10
-        if not re.search(r'(012|123|234|345|456|567|678|789|abc|bcd)', password.lower()):
-            score += 10
-        if password.lower() not in {"password", "qwerty", "letmein", "welcome"}:
-            score += 10
-        
+            variety_count += 1
+
+        # No common patterns bonus - only if password has at least 2 character types
+        # and meets minimum length requirement
+        if variety_count >= 2 and len(password) >= 8:
+            if not re.search(r'(.)\1{2,}', password):  # No 3+ repeated chars
+                score += 10
+            if not re.search(r'(012|123|234|345|456|567|678|789|abc|bcd)', password.lower()):
+                score += 10
+            if password.lower() not in {"password", "qwerty", "letmein", "welcome"}:
+                score += 10
+
         return min(score, 100)
 
 

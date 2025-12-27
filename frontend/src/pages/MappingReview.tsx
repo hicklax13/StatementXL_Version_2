@@ -13,19 +13,11 @@ import {
 } from 'lucide-react';
 import { useMappingStore, useUIStore } from '../stores';
 import { getMapping, getMappingConflicts, resolveConflict as resolveConflictApi } from '../api/client';
+import type { Conflict, MappingResponse } from '../api/client';
 import logo from '../assets/logo.png';
 
 interface ConflictItemProps {
-    conflict: {
-        id: string;
-        conflict_type: string;
-        severity: 'critical' | 'high' | 'medium' | 'low';
-        description: string;
-        source_label?: string;
-        target_address?: string;
-        suggestions: string[];
-        is_resolved: boolean;
-    };
+    conflict: Conflict;
     mappingId: string;
     onResolve: (id: string, resolution: string) => void;
 }
@@ -140,12 +132,23 @@ const ConflictItem: React.FC<ConflictItemProps> = ({ conflict, onResolve }) => {
     );
 };
 
+// Define a typed interface for the mapping data used in UI
+interface MappingData {
+    mapping_id: string;
+    status: string;
+    total_items: number;
+    mapped_count: number;
+    auto_mapped_count: number;
+    conflict_count: number;
+    average_confidence: number;
+}
+
 const MappingReview: React.FC = () => {
     const navigate = useNavigate();
     const { mapping, resolveConflict } = useMappingStore();
     const { addNotification } = useUIStore();
-    const [mappingData, setMappingData] = useState<any>(null);
-    const [conflicts, setConflicts] = useState<any[]>([]);
+    const [mappingData, setMappingData] = useState<MappingData | null>(null);
+    const [conflicts, setConflicts] = useState<Conflict[]>([]);
     const [loading, setLoading] = useState(true);
 
     // Fetch mapping data if available
@@ -154,8 +157,16 @@ const MappingReview: React.FC = () => {
             if (mapping?.id) {
                 try {
                     setLoading(true);
-                    const data = await getMapping(mapping.id);
-                    setMappingData(data);
+                    const data: MappingResponse = await getMapping(mapping.id);
+                    setMappingData({
+                        mapping_id: data.mapping_id,
+                        status: data.status,
+                        total_items: data.total_items ?? 0,
+                        mapped_count: data.mapped_count ?? 0,
+                        auto_mapped_count: data.auto_mapped_count ?? 0,
+                        conflict_count: data.conflict_count ?? 0,
+                        average_confidence: data.average_confidence ?? 0,
+                    });
                     const conflictData = await getMappingConflicts(mapping.id);
                     setConflicts(conflictData.conflicts || []);
                 } catch (err) {
@@ -213,13 +224,13 @@ const MappingReview: React.FC = () => {
                 c.id === conflictId ? { ...c, is_resolved: true } : c
             ));
             addNotification('success', 'Conflict resolved');
-        } catch (err) {
+        } catch {
             addNotification('error', 'Failed to resolve conflict');
         }
     };
 
     const unresolvedCount = conflicts.filter((c) => !c.is_resolved).length;
-    const data = mappingData || { total_items: 0, mapped_count: 0, auto_mapped_count: 0, average_confidence: 0 };
+    const data: MappingData = mappingData || { mapping_id: '', status: '', total_items: 0, mapped_count: 0, auto_mapped_count: 0, conflict_count: 0, average_confidence: 0 };
 
     if (loading) {
         return (

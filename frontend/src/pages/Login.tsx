@@ -29,8 +29,9 @@ const Login: React.FC = () => {
 
             addNotification('success', 'Welcome back!');
             navigate('/');
-        } catch (err: any) {
-            const message = err.response?.data?.message || 'Invalid email or password';
+        } catch (err: unknown) {
+            const axiosError = err as { response?: { data?: { message?: string } } };
+            const message = axiosError.response?.data?.message || 'Invalid email or password';
             setError(message);
         } finally {
             setLoading(false);
