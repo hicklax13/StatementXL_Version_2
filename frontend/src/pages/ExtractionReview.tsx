@@ -3,25 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { Check, X, Edit3, FileText, ArrowRight, AlertTriangle, Loader2 } from 'lucide-react';
 import { useDocumentStore, useExtractionStore, useUIStore } from '../stores';
 import { getDocumentExtractions } from '../api/client';
+import type { ExtractedTable } from '../api/client';
 import logo from '../assets/logo.png';
-
-interface CellData {
-    value: string;
-    parsed_value?: number;
-    confidence: number;
-    is_numeric?: boolean;
-}
-
-interface TableRow {
-    cells: CellData[];
-}
-
-interface ExtractedTable {
-    page: number;
-    title: string;
-    rows: TableRow[];
-    confidence: number;
-}
 
 const ExtractionReview: React.FC = () => {
     const navigate = useNavigate();

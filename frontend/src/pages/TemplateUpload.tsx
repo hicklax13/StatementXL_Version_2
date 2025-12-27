@@ -17,8 +17,8 @@ const TemplateUpload: React.FC = () => {
 
             const newTemplate = {
                 id: result.template_id,
-                filename: result.filename,
-                sheetCount: result.sheet_count,
+                filename: result.filename || file.name,
+                sheetCount: result.sheet_count || 1,
                 status: 'completed' as const,
                 createdAt: new Date().toISOString(),
             };

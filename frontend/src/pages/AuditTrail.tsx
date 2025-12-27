@@ -1,19 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { History, FileText, GitMerge, Eye, Download, Filter, Loader2, RefreshCw } from 'lucide-react';
 import { getAuditLog } from '../api/client';
+import type { AuditEntry } from '../api/client';
 import logo from '../assets/logo.png';
-
-interface AuditEntry {
-    id: string;
-    timestamp: string;
-    action: string;
-    resource_type: string;
-    resource_id?: string;
-    user_id?: string;
-    details?: string;
-    old_value?: string;
-    new_value?: string;
-}
 
 const AuditTrail: React.FC = () => {
     const [filter, setFilter] = useState<'all' | 'document' | 'mapping' | 'system'>('all');

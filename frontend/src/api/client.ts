@@ -9,82 +9,157 @@ const api = axios.create({
     },
 });
 
-// API Response Types
-interface UploadResponse {
+// API Response Types - Exported for use in components
+export interface UploadResponse {
     document_id: string;
     filename: string;
     status: string;
+    page_count?: number;
+    tables?: TableResponse[];
+    processing_time_ms?: number;
+    created_at?: string;
 }
 
-interface DocumentResponse {
+export interface DocumentResponse {
     id: string;
     filename: string;
     status: string;
     created_at: string;
+    page_count?: number;
+    error_message?: string;
 }
 
-interface ClassificationResult {
+export interface ClassificationResult {
     text: string;
     label: string;
     confidence: number;
 }
 
-interface TemplateResponse {
+export interface TemplateResponse {
     template_id: string;
     name: string;
-    structure: Record<string, unknown>;
+    filename?: string;
+    sheet_count?: number;
+    structure?: {
+        sections?: unknown[];
+        [key: string]: unknown;
+    };
 }
 
-interface TemplateGraphResponse {
+export interface TemplateGraphResponse {
     nodes: unknown[];
     edges: unknown[];
 }
 
-interface ExtractedItem {
+export interface ExtractedItem {
     id: string;
     text: string;
     value?: number;
 }
 
-interface TemplateTarget {
+export interface TemplateTarget {
     id: string;
     label: string;
     path: string;
 }
 
-interface MappingResponse {
+export interface MappingResponse {
     mapping_id: string;
     status: string;
-    mappings: Record<string, unknown>[];
+    mappings: MappingItem[];
+    total_items?: number;
+    mapped_count?: number;
+    auto_mapped_count?: number;
+    conflict_count?: number;
+    average_confidence?: number;
 }
 
-interface ConflictResponse {
-    conflicts: Record<string, unknown>[];
+export interface MappingItem {
+    source_id: string;
+    target_id: string;
+    confidence: number;
+    [key: string]: unknown;
 }
 
-interface ResolveConflictResponse {
+export interface Conflict {
+    id: string;
+    conflict_type: string;
+    severity: 'critical' | 'high' | 'medium' | 'low';
+    description: string;
+    source_label?: string;
+    target_address?: string;
+    suggestions: string[];
+    is_resolved: boolean;
+}
+
+export interface ConflictResponse {
+    conflicts: Conflict[];
+}
+
+export interface ResolveConflictResponse {
     success: boolean;
     conflict_id: string;
 }
 
-interface ExtractionResponse {
-    extractions: Record<string, unknown>[];
+export interface CellData {
+    value: string;
+    parsed_value?: number;
+    confidence: number;
+    is_numeric?: boolean;
 }
 
-interface AuditLogResponse {
-    items: Record<string, unknown>[];
+export interface TableRow {
+    cells: CellData[];
+}
+
+export interface ExtractedTable {
+    page: number;
+    title: string;
+    rows: TableRow[];
+    confidence: number;
+}
+
+export interface TableResponse {
+    page: number;
+    rows: TableRow[];
+    confidence?: number;
+    detection_method?: string;
+}
+
+export interface ExtractionResponse {
+    document_id?: string;
+    filename?: string;
+    tables: ExtractedTable[];
+    total_tables?: number;
+}
+
+export interface AuditEntry {
+    id: string;
+    timestamp: string;
+    action: string;
+    resource_type: string;
+    resource_id?: string;
+    user_id?: string;
+    details?: string;
+    old_value?: string;
+    new_value?: string;
+}
+
+export interface AuditLogResponse {
+    entries: AuditEntry[];
     total: number;
     page: number;
     page_size: number;
+    has_more: boolean;
 }
 
-interface AuthTokenResponse {
+export interface AuthTokenResponse {
     access_token: string;
     refresh_token: string;
     token_type: string;
 }
 
-interface UserResponse {
+export interface UserResponse {
     id: string;
     email: string;
     full_name?: string;
@@ -92,9 +167,10 @@ interface UserResponse {
     is_active: boolean;
 }
 
-interface LogoutResponse {
+export interface LogoutResponse {
     message: string;
 }
+
 
 // Document APIs
 export const uploadDocument = async (file: File): Promise<UploadResponse> => {
