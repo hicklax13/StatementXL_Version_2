@@ -1,0 +1,549 @@
+# GAAP Financial Statement Ontology
+# Complete taxonomy of line items for Income Statement, Balance Sheet, and Cash Flow Statement
+
+version: "1.0"
+description: "GAAP-compliant financial statement line item classification reference"
+
+# =============================================================================
+# INCOME STATEMENT
+# =============================================================================
+income_statement:
+  # ---------------------------------------------------------------------------
+  # REVENUE SECTION
+  # ---------------------------------------------------------------------------
+  revenue:
+    display_name: "Revenue"
+    template_row: "Revenue"
+    is_section_header: true
+    calculation: null
+
+    sub_items:
+      products:
+        display_name: "Products"
+        template_row: "Products"
+        aliases:
+          - "Product Sales"
+          - "Product Revenue"
+          - "Merchandise Sales"
+          - "Goods Sold"
+
+      services:
+        display_name: "Services"
+        template_row: "Services"
+        aliases:
+          - "Service Revenue"
+          - "Service Income"
+          - "Professional Services"
+          - "Consulting Revenue"
+
+    total:
+      display_name: "Total Revenue"
+      template_row: "Total Revenue"
+      formula: "=SUM({products}:{services})"
+
+    # Common variations and aliases for revenue recognition
+    aliases:
+      - "Sales"
+      - "Net Sales"
+      - "Net Revenue"
+      - "Gross Revenue"
+      - "Operating Revenue"
+      - "Income"
+      - "Total Income"
+      - "Fee Income"
+      - "Fees"
+      - "Billings"
+
+    # Industry-specific revenue items (map to Revenue)
+    industry_variations:
+      healthcare:
+        - "Social Security"
+        - "Social Security Income"
+        - "Medicaid"
+        - "Medicaid Revenue"
+        - "Medicare"
+        - "Medicare Revenue"
+        - "Patient Revenue"
+        - "Patient Fees"
+        - "Resident Fees"
+        - "Private Pay"
+        - "Insurance Reimbursements"
+        - "Additional Support"
+
+      retail:
+        - "Retail Sales"
+        - "Online Sales"
+        - "Wholesale Revenue"
+        - "Store Sales"
+
+      saas:
+        - "Subscription Revenue"
+        - "Recurring Revenue"
+        - "License Revenue"
+        - "Support Revenue"
+        - "Implementation Fees"
+
+      hospitality:
+        - "Room Revenue"
+        - "Food & Beverage"
+        - "Ancillary Revenue"
+
+      real_estate:
+        - "Rental Income"
+        - "Lease Revenue"
+        - "Property Income"
+        - "HOA Fees"
+
+  # ---------------------------------------------------------------------------
+  # COST OF GOODS SOLD SECTION
+  # ---------------------------------------------------------------------------
+  cost_of_goods_sold:
+    display_name: "Cost of Goods Sold"
+    template_row: "Cost of Goods Sold"
+    is_section_header: true
+
+    sub_items:
+      products:
+        display_name: "Products"
+        template_row: "Products"
+        aliases:
+          - "Product Costs"
+          - "Cost of Products"
+          - "Merchandise Costs"
+
+      services:
+        display_name: "Services"
+        template_row: "Services"
+        aliases:
+          - "Service Costs"
+          - "Cost of Services"
+          - "Direct Service Costs"
+
+    total:
+      display_name: "Total Cost of Goods Sold"
+      template_row: "Total Cost of Goods Sold"
+      formula: "=SUM({cogs_products}:{cogs_services})"
+
+    aliases:
+      - "COGS"
+      - "Cost of Revenue"
+      - "Cost of Sales"
+      - "Direct Costs"
+      - "Cost of Goods"
+      - "Materials Cost"
+
+    components:
+      - "Raw Materials"
+      - "Direct Labor"
+      - "Manufacturing Overhead"
+      - "Freight-In"
+      - "Purchase Discounts"
+      - "Inventory Adjustments"
+
+  # ---------------------------------------------------------------------------
+  # GROSS PROFIT
+  # ---------------------------------------------------------------------------
+  gross_profit:
+    display_name: "Gross Profit"
+    template_row: "Gross Profit"
+    is_calculated: true
+    formula: "={total_revenue}-{total_cogs}"
+    aliases:
+      - "Gross Margin"
+      - "Gross Income"
+
+  # ---------------------------------------------------------------------------
+  # OPERATING EXPENSES SECTION
+  # ---------------------------------------------------------------------------
+  operating_expenses:
+    display_name: "Operating Expenses"
+    template_row: "Operating Expenses"
+    is_section_header: true
+
+    sub_sections:
+      research_and_development:
+        display_name: "Research & Development"
+        template_row: "Research & Development"
+        aliases:
+          - "R&D"
+          - "Research"
+          - "Development Costs"
+          - "Product Development"
+        components:
+          - "R&D Salaries"
+          - "Lab Equipment"
+          - "Patent Costs"
+          - "Testing Costs"
+
+      selling_general_administrative:
+        display_name: "Selling, General, and Administrative"
+        template_row: "Selling, General, and Administrative"
+        aliases:
+          - "SG&A"
+          - "General & Administrative"
+          - "G&A"
+          - "Admin Expenses"
+          - "Administrative"
+          - "Operating Costs"
+
+        # Comprehensive list of SG&A components
+        components:
+          payroll:
+            - "Salaries"
+            - "Wages"
+            - "Payroll"
+            - "Payroll, Administrator"
+            - "Payroll, Manager"
+            - "Payroll, Staff"
+            - "Payroll, Certified Nursing Assistant"
+            - "Payroll, Project Manager"
+            - "Employee Benefits"
+            - "Payroll Taxes"
+            - "Commissions"
+            - "Bonuses"
+
+          facilities:
+            - "Rent"
+            - "Rent Expense"
+            - "Lease Expense"
+            - "Property Rent"
+            - "Office Rent"
+
+          utilities:
+            - "Utilities"
+            - "Electricity"
+            - "Electric"
+            - "Gas"
+            - "Natural Gas"
+            - "Water"
+            - "Water/Garbage/Sewer/Storm Water"
+            - "Garbage"
+            - "Sewer"
+            - "Internet"
+            - "Internet/Cable"
+            - "Phone"
+            - "Phone/Fax"
+            - "Telephone"
+            - "Cable"
+
+          insurance:
+            - "Insurance"
+            - "Insurance, Property"
+            - "Insurance, Liability"
+            - "Insurance, Health"
+            - "Business Insurance"
+
+          professional_services:
+            - "Legal Fees"
+            - "Legal & Professional Fees"
+            - "Professional Fees"
+            - "Accounting Fees"
+            - "Consulting Fees"
+            - "Audit Fees"
+
+          office:
+            - "Office Supplies"
+            - "Office Operation"
+            - "Office Expenses"
+            - "Printing"
+            - "Postage"
+
+          marketing:
+            - "Advertising"
+            - "Marketing"
+            - "Promotional Costs"
+            - "Public Relations"
+
+          travel:
+            - "Travel"
+            - "Travel Expense"
+            - "Business Travel"
+            - "Mileage"
+
+          maintenance:
+            - "Repairs"
+            - "Repairs & Maintenance"
+            - "Maintenance"
+            - "Cleaning"
+            - "Cleaning and Maintenance"
+            - "Janitorial"
+
+          fees:
+            - "Bank Fees"
+            - "Bank fees"
+            - "Bank Charges"
+            - "AHCA fees"
+            - "License Fees"
+            - "Permit Fees"
+            - "Regulatory Fees"
+
+          training:
+            - "Training"
+            - "Training Expense"
+            - "Education"
+            - "Seminars"
+
+          security:
+            - "Security"
+            - "Security Services"
+            - "Alarm Services"
+
+          other:
+            - "Furniture"
+            - "Equipment"
+            - "Improvements"
+            - "Housekeeping"
+            - "Food"
+            - "Med supply"
+            - "Medical Supplies"
+            - "Resident Fund"
+            - "Dues & Subscriptions"
+            - "Miscellaneous"
+
+    total:
+      display_name: "Total Operating Expenses"
+      template_row: "Total Operating Expenses"
+      formula: "=SUM({rd}:{sga})"
+
+  # ---------------------------------------------------------------------------
+  # OPERATING INCOME
+  # ---------------------------------------------------------------------------
+  operating_income:
+    display_name: "Operating Income"
+    template_row: "Operating Income"
+    is_calculated: true
+    formula: "={gross_profit}-{total_operating_expenses}"
+    aliases:
+      - "Operating Profit"
+      - "EBIT"
+      - "Income from Operations"
+
+  # ---------------------------------------------------------------------------
+  # OTHER INCOME / EXPENSES
+  # ---------------------------------------------------------------------------
+  other_income_expenses:
+    display_name: "Other Income/(Expenses)"
+    template_row: "Other Income/(Expenses)"
+    is_section_header: true
+
+    sub_items:
+      other_income_expenses_net:
+        display_name: "Other Income/(Expenses), Net"
+        template_row: "Other Income/(Expenses), Net"
+
+    total:
+      display_name: "Total Other Income/(Expense)"
+      template_row: "Total Other Income/(Expense)"
+
+    components:
+      income:
+        - "Interest Income"
+        - "Dividend Income"
+        - "Gain on Sale of Assets"
+        - "Foreign Exchange Gain"
+        - "Other Income"
+
+      expenses:
+        - "Interest Expense"
+        - "Mortgage Interest"
+        - "Mortgage Interest (Hard Money)"
+        - "Loss on Sale of Assets"
+        - "Foreign Exchange Loss"
+        - "Other Expenses"
+
+  # ---------------------------------------------------------------------------
+  # INCOME BEFORE TAXES
+  # ---------------------------------------------------------------------------
+  income_before_taxes:
+    display_name: "Income Before Income Taxes"
+    template_row: "Income Before Income Taxes"
+    is_calculated: true
+    formula: "={operating_income}+{total_other}"
+    aliases:
+      - "Pre-tax Income"
+      - "EBT"
+      - "Income Before Tax"
+
+  # ---------------------------------------------------------------------------
+  # TAX PROVISION
+  # ---------------------------------------------------------------------------
+  tax_provision:
+    display_name: "Provision for Income Taxes"
+    template_row: "Provision for Income Taxes"
+    aliases:
+      - "Income Tax Expense"
+      - "Tax Expense"
+      - "Taxes"
+      - "Income Taxes"
+    components:
+      - "Current Tax"
+      - "Deferred Tax"
+
+  # ---------------------------------------------------------------------------
+  # NET INCOME
+  # ---------------------------------------------------------------------------
+  net_income:
+    display_name: "Net Income"
+    template_row: "Net Income"
+    is_calculated: true
+    formula: "={income_before_taxes}-{tax_provision}"
+    aliases:
+      - "Net Profit"
+      - "Net Earnings"
+      - "Net Loss"
+      - "Bottom Line"
+      - "Overall Total"
+      - "Total"
+
+# =============================================================================
+# BALANCE SHEET
+# =============================================================================
+balance_sheet:
+  assets:
+    current_assets:
+      - display_name: "Cash and Cash Equivalents"
+        aliases: ["Cash", "Bank", "Checking", "Savings"]
+      - display_name: "Accounts Receivable"
+        aliases: ["A/R", "Trade Receivables", "Customer Receivables"]
+      - display_name: "Inventory"
+        aliases: ["Merchandise", "Stock"]
+      - display_name: "Prepaid Expenses"
+        aliases: ["Prepaid", "Prepayments"]
+
+    non_current_assets:
+      - display_name: "Property, Plant & Equipment"
+        aliases: ["PP&E", "Fixed Assets", "Capital Assets"]
+      - display_name: "Accumulated Depreciation"
+      - display_name: "Intangible Assets"
+        aliases: ["Patents", "Trademarks", "Copyrights"]
+      - display_name: "Goodwill"
+      - display_name: "Long-term Investments"
+
+  liabilities:
+    current_liabilities:
+      - display_name: "Accounts Payable"
+        aliases: ["A/P", "Trade Payables"]
+      - display_name: "Accrued Expenses"
+        aliases: ["Accrued Liabilities"]
+      - display_name: "Short-term Debt"
+        aliases: ["Current Portion of Long-term Debt"]
+      - display_name: "Deferred Revenue"
+        aliases: ["Unearned Revenue"]
+
+    non_current_liabilities:
+      - display_name: "Long-term Debt"
+        aliases: ["Notes Payable", "Bonds Payable"]
+      - display_name: "Deferred Tax Liabilities"
+      - display_name: "Pension Obligations"
+
+  equity:
+    - display_name: "Common Stock"
+      aliases: ["Share Capital"]
+    - display_name: "Preferred Stock"
+    - display_name: "Additional Paid-in Capital"
+      aliases: ["APIC", "Share Premium"]
+    - display_name: "Retained Earnings"
+    - display_name: "Treasury Stock"
+    - display_name: "Accumulated Other Comprehensive Income"
+      aliases: ["AOCI"]
+
+# =============================================================================
+# CASH FLOW STATEMENT
+# =============================================================================
+cash_flow_statement:
+  operating_activities:
+    starting_point: "Net Income"
+    adjustments:
+      add_back:
+        - "Depreciation & Amortization"
+        - "Impairment Losses"
+        - "Stock-Based Compensation"
+        - "Deferred Taxes"
+        - "Loss on Sale of Assets"
+      subtract:
+        - "Gain on Sale of Assets"
+    working_capital_changes:
+      - "Accounts Receivable"
+      - "Inventory"
+      - "Prepaid Expenses"
+      - "Accounts Payable"
+      - "Accrued Expenses"
+
+  investing_activities:
+    inflows:
+      - "Proceeds from Sale of PP&E"
+      - "Proceeds from Sale of Investments"
+      - "Collection of Loans"
+    outflows:
+      - "Capital Expenditures"
+      - "Acquisitions"
+      - "Purchase of Investments"
+
+  financing_activities:
+    inflows:
+      - "Proceeds from Stock Issuance"
+      - "Proceeds from Debt"
+    outflows:
+      - "Debt Repayments"
+      - "Stock Repurchases"
+      - "Dividends Paid"
+
+# =============================================================================
+# CLASSIFICATION RULES
+# =============================================================================
+classification_rules:
+  # Keywords that indicate revenue
+  revenue_keywords:
+    - "income"
+    - "revenue"
+    - "sales"
+    - "fees"
+    - "billings"
+    - "receipts"
+
+  # Keywords that indicate expenses
+  expense_keywords:
+    - "expense"
+    - "cost"
+    - "fees"
+    - "charges"
+    - "payments"
+
+  # Keywords that indicate SG&A (Operating Expenses)
+  sga_keywords:
+    - "payroll"
+    - "salary"
+    - "wage"
+    - "rent"
+    - "utility"
+    - "insurance"
+    - "legal"
+    - "professional"
+    - "office"
+    - "travel"
+    - "training"
+    - "bank"
+    - "advertising"
+    - "marketing"
+    - "repair"
+    - "maintenance"
+
+  # Keywords that indicate Other Income/Expenses
+  other_keywords:
+    - "interest"
+    - "mortgage"
+    - "gain"
+    - "loss"
+    - "foreign"
+
+  # Account number prefixes (if available)
+  account_prefixes:
+    "1": "assets"
+    "2": "liabilities"
+    "3": "equity"
+    "4": "revenue"
+    "5": "cogs"
+    "6": "operating_expenses"
+    "7": "other_income_expenses"
+    "8": "other_income_expenses"
+    "9": "taxes"

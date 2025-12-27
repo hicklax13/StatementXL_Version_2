@@ -281,30 +281,150 @@ async def export_to_excel(
     if not periods:
         periods = {2025}  # Default to current year
     
-    # Build Excel file using DirectPopulator (preserves original PDF structure)
+    # Build Excel file using Template-based approach with GAAP classification
     try:
-        from backend.services.excel_builder.direct_populator import DirectPopulator
+        import re
+        from backend.services.gaap_classifier import get_gaap_classifier
+        from backend.services.template_loader import get_template_loader
+        from backend.services.template_populator import get_template_populator
         
-        # Create populator with styling
-        populator = DirectPopulator(
-            style=request.style,
-            colorway=request.colorway,
+        # Detect year from raw tables_json (look for date patterns)
+        detected_year = None
+        
+        # Search through all extract tables for date patterns
+        for extract in extracts:
+            if not extract.tables_json:
+                continue
+            for table in extract.tables_json:
+                rows = table.get("rows", [])
+                for row in rows:
+                    cells = row.get("cells", [])
+                    for cell in cells:
+                        cell_value = ""
+                        if isinstance(cell, dict):
+                            cell_value = str(cell.get("value", ""))
+                        else:
+                            cell_value = str(cell)
+                        
+                        # Look for date range patterns like "01/01/2024 - 12/31/2024"
+                        date_range_match = re.search(r'(\d{1,2}/\d{1,2}/(\d{4}))\s*[-–]\s*(\d{1,2}/\d{1,2}/(\d{4}))', cell_value)
+                        if date_range_match:
+                            # Use the end year (second date)
+                            year_val = int(date_range_match.group(4))
+                            if 2000 <= year_val <= 2100:
+                                detected_year = year_val
+                                logger.info(f"Detected year from date range: {detected_year}")
+                                break
+                        
+                        # Look for "Year Ended 2024" patterns
+                        year_ended_match = re.search(r'year\s*ended.*?(\d{4})', cell_value, re.IGNORECASE)
+                        if year_ended_match:
+                            year_val = int(year_ended_match.group(1))
+                            if 2000 <= year_val <= 2100:
+                                detected_year = year_val
+                                logger.info(f"Detected year from 'year ended': {detected_year}")
+                                break
+                    
+                    if detected_year:
+                        break
+                if detected_year:
+                    break
+            if detected_year:
+                break
+        
+        # Fallback to extracted_items if still not found
+        if detected_year is None:
+            for item in extracted_items:
+                label = item.get("label", "")
+                year_match = re.search(r'(\d{4})', label)
+                if year_match:
+                    year_val = int(year_match.group(1))
+                    if 2000 <= year_val <= 2100:
+                        detected_year = year_val
+                        break
+        
+        # Final fallback: Extract text directly from PDF file
+        if detected_year is None and document.file_path:
+            try:
+                import pdfplumber
+                pdf_path = Path(document.file_path)
+                if pdf_path.exists():
+                    with pdfplumber.open(pdf_path) as pdf:
+                        if pdf.pages:
+                            text = pdf.pages[0].extract_text() or ""
+                            # Look for date range patterns
+                            date_range_match = re.search(r'(\d{1,2}/\d{1,2}/(\d{4}))\s*[-–]\s*(\d{1,2}/\d{1,2}/(\d{4}))', text)
+                            if date_range_match:
+                                year_val = int(date_range_match.group(4))
+                                if 2000 <= year_val <= 2100:
+                                    detected_year = year_val
+                                    logger.info(f"Detected year from PDF text: {detected_year}")
+            except Exception as e:
+                logger.warning(f"Failed to extract year from PDF: {e}")
+        
+        # Override the hardcoded 2025 with detected year
+        if detected_year:
+            # Remap items to use detected year
+            for item in extracted_items:
+                if "2025" in item:
+                    item[str(detected_year)] = item.pop("2025")
+            periods = {detected_year}
+            logger.info(f"Using detected year: {detected_year}")
+        
+        # Convert extracted items to classifier format
+        items_for_classification = []
+        for item in extracted_items:
+            label = item.get("label", "")
+            # Get first available value
+            value = None
+            for key in item.keys():
+                if key != "label" and isinstance(item[key], (int, float)):
+                    value = item[key]
+                    break
+            
+            items_for_classification.append({
+                "label": label,
+                "value": value,
+            })
+        
+        # Classify items using GAAP classifier
+        classifier = get_gaap_classifier()
+        classifications = await classifier.classify_items(
+            items_for_classification,
+            statement_type=request.statement_type,
         )
         
-        # Determine statement title
-        statement_titles = {
-            "income_statement": "Income Statement",
-            "balance_sheet": "Balance Sheet",
-            "cash_flow": "Cash Flow Statement",
-        }
-        statement_title = statement_titles.get(request.statement_type, "Financial Statement")
+        logger.info(
+            "Classification complete",
+            total_classified=len(classifications),
+            sample=[c.category for c in classifications[:5]],
+        )
         
-        # Populate workbook directly from extracted data
-        populator.populate(
-            extracted_items=extracted_items,
-            periods=list(periods),
+        # Aggregate by GAAP category
+        aggregated = classifier.aggregate_by_category(classifications)
+        
+        logger.info(
+            "Aggregation complete",
+            categories=list(aggregated.keys()),
+            values=list(aggregated.values()),
+        )
+        
+        # Load template
+        loader = get_template_loader()
+        workbook, structure = loader.load(
+            statement_type=request.statement_type,
+            style=request.style,
+        )
+        
+        # Populate template
+        populator = get_template_populator()
+        workbook = populator.populate(
+            workbook=workbook,
+            structure=structure,
+            aggregated_data=aggregated,
+            classifications=classifications,
+            periods=sorted(periods, reverse=True),
             company_name=request.company_name,
-            statement_title=statement_title,
         )
         
         # Save to exports directory
@@ -315,14 +435,15 @@ async def export_to_excel(
         filename = f"{document.filename.rsplit('.', 1)[0]}_{request.style}_{request.colorway}.xlsx"
         output_path = export_dir / f"{export_id}_{filename}"
         
-        populator.save(output_path)
+        workbook.save(output_path)
         
         logger.info(
             "Export complete",
             export_id=export_id,
             filename=filename,
             periods=list(periods),
-            items_exported=len(extracted_items),
+            items_classified=len(classifications),
+            categories_populated=len(aggregated),
         )
         
         return ExportResponse(
@@ -332,11 +453,11 @@ async def export_to_excel(
             style=request.style,
             colorway=request.colorway,
             periods=sorted(periods, reverse=True),
-            rows_populated=len(extracted_items),
+            rows_populated=len(aggregated),
         )
         
     except Exception as e:
-        logger.error("Export failed", error=str(e))
+        logger.error("Export failed", error=str(e), exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Export failed: {str(e)}",
