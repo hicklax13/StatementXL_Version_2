@@ -41,8 +41,9 @@ const Register: React.FC = () => {
 
             addNotification('success', 'Account created successfully!');
             navigate('/');
-        } catch (err: any) {
-            const message = err.response?.data?.message || 'Registration failed';
+        } catch (err: unknown) {
+            const axiosError = err as { response?: { data?: { message?: string } } };
+            const message = axiosError.response?.data?.message || 'Registration failed';
             setError(message);
         } finally {
             setLoading(false);

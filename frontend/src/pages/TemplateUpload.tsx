@@ -28,8 +28,8 @@ const TemplateUpload: React.FC = () => {
             addNotification('success', `Template analyzed: ${result.structure?.sections?.length || 0} sections detected`);
 
             setTimeout(() => navigate('/mapping'), 1500);
-        } catch (error: any) {
-            addNotification('error', error.message || 'Template upload failed');
+        } catch (error: unknown) {
+            addNotification('error', error instanceof Error ? error.message : 'Template upload failed');
             throw error;
         }
     };

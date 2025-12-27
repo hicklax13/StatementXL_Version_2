@@ -10,7 +10,13 @@ const Upload: React.FC = () => {
     const navigate = useNavigate();
     const { documents, addDocument, setCurrentDocument } = useDocumentStore();
     const { addNotification } = useUIStore();
-    const [recentUploads, setRecentUploads] = useState<any[]>([]);
+    const [recentUploads, setRecentUploads] = useState<{
+        id: string;
+        filename: string;
+        status: 'completed' | 'processing' | 'failed';
+        pageCount?: number;
+        createdAt: string;
+    }[]>([]);
 
     const handleUpload = async (file: File) => {
         try {
@@ -31,8 +37,8 @@ const Upload: React.FC = () => {
 
             // Navigate to extraction review
             setTimeout(() => navigate('/extraction'), 1500);
-        } catch (error: any) {
-            addNotification('error', error.message || 'Upload failed');
+        } catch (error: unknown) {
+            addNotification('error', error instanceof Error ? error.message : 'Upload failed');
             throw error;
         }
     };

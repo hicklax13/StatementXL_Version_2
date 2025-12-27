@@ -144,8 +144,8 @@ const MappingReview: React.FC = () => {
     const navigate = useNavigate();
     const { mapping, resolveConflict } = useMappingStore();
     const { addNotification } = useUIStore();
-    const [mappingData, setMappingData] = useState<any>(null);
-    const [conflicts, setConflicts] = useState<any[]>([]);
+    const [mappingData, setMappingData] = useState<Record<string, unknown> | null>(null);
+    const [conflicts, setConflicts] = useState<ConflictItemProps['conflict'][]>([]);
     const [loading, setLoading] = useState(true);
 
     // Fetch mapping data if available
@@ -213,7 +213,7 @@ const MappingReview: React.FC = () => {
                 c.id === conflictId ? { ...c, is_resolved: true } : c
             ));
             addNotification('success', 'Conflict resolved');
-        } catch (err) {
+        } catch {
             addNotification('error', 'Failed to resolve conflict');
         }
     };

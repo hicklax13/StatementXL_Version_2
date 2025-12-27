@@ -47,9 +47,9 @@ const ExtractionReview: React.FC = () => {
                 setError(null);
                 const data = await getDocumentExtractions(currentDocument.id);
                 setTables(data.tables || []);
-            } catch (err: any) {
+            } catch (err: unknown) {
                 console.error('Failed to fetch extractions:', err);
-                setError(err.message || 'Failed to load extractions');
+                setError(err instanceof Error ? err.message : 'Failed to load extractions');
                 addNotification('error', 'Failed to load extraction data');
             } finally {
                 setLoading(false);
