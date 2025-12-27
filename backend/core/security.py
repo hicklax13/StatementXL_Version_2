@@ -1,9 +1,11 @@
-from typing import Union
-from passlib.context import CryptContext
-from fastapi import HTTPException, status
+"""
+Security utilities for password hashing.
 
-# Use bcrypt via passlib
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+Uses bcrypt directly for Python 3.14 compatibility.
+"""
+from typing import Union
+import bcrypt
+from fastapi import HTTPException, status
 
 # bcrypt maximum accepted password length in bytes
 MAX_PASSWORD_BYTES = 72
@@ -42,7 +44,7 @@ def validate_password_strength(password: str) -> None:
 
 def hash_password(password: str, truncate: bool = False) -> str:
     """
-    Hash password using passlib/bcrypt. By default, reject >72 byte passwords with HTTP 400.
+    Hash password using bcrypt. By default, reject >72 byte passwords with HTTP 400.
     """
     pw_bytes = _to_bytes(password)
     if len(pw_bytes) > MAX_PASSWORD_BYTES:
@@ -52,8 +54,10 @@ def hash_password(password: str, truncate: bool = False) -> str:
                 detail=f"Password must be at most {MAX_PASSWORD_BYTES} bytes when UTF-8 encoded."
             )
         pw_bytes = pw_bytes[:MAX_PASSWORD_BYTES]
-        return pwd_context.hash(pw_bytes)
-    return pwd_context.hash(password)
+    
+    salt = bcrypt.gensalt()
+    hashed = bcrypt.hashpw(pw_bytes, salt)
+    return hashed.decode("utf-8")
 
 def verify_password(password: str, hashed: str, truncate: bool = False) -> bool:
     """
@@ -67,5 +71,6 @@ def verify_password(password: str, hashed: str, truncate: bool = False) -> bool:
                 detail=f"Password must be at most {MAX_PASSWORD_BYTES} bytes when UTF-8 encoded."
             )
         pw_bytes = pw_bytes[:MAX_PASSWORD_BYTES]
-        return pwd_context.verify(pw_bytes, hashed)
-    return pwd_context.verify(password, hashed)
+    
+    hashed_bytes = hashed.encode("utf-8")
+    return bcrypt.checkpw(pw_bytes, hashed_bytes)
