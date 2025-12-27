@@ -14,9 +14,11 @@ from sqlalchemy.orm import Session
 
 from backend.database import get_db
 from backend.models.user import User, UserRole
-from backend.auth.utils import (
+from backend.core.security import (
     hash_password,
     verify_password,
+)
+from backend.auth.utils import (
     create_tokens,
     verify_refresh_token,
     TokenResponse,

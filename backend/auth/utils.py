@@ -1,3 +1,4 @@
+```python
 """
 Authentication utilities for JWT tokens and password hashing.
 
@@ -10,6 +11,8 @@ from typing import Optional, Tuple
 from jose import JWTError, jwt
 from passlib.context import CryptContext
 from pydantic import BaseModel
+
+from backend.core.security import hash_password, verify_password
 
 
 # Password hashing context
@@ -36,16 +39,6 @@ class TokenResponse(BaseModel):
     refresh_token: str
     token_type: str = "bearer"
     expires_in: int  # seconds
-
-
-def verify_password(plain_password: str, hashed_password: str) -> bool:
-    """Verify a password against its hash."""
-    return pwd_context.verify(plain_password, hashed_password)
-
-
-def hash_password(password: str) -> str:
-    """Hash a password for storage."""
-    return pwd_context.hash(password)
 
 
 def create_access_token(
@@ -198,3 +191,4 @@ def verify_refresh_token(token: str) -> Optional[str]:
         return None
     
     return payload.get("sub")
+```

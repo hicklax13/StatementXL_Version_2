@@ -6,9 +6,11 @@ Tests JWT tokens, password hashing, and token verification.
 import pytest
 from datetime import timedelta
 
-from backend.auth.utils import (
+from backend.core.security import (
     hash_password,
     verify_password,
+)
+from backend.auth.utils import (
     create_access_token,
     create_refresh_token,
     create_tokens,
