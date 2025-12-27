@@ -90,14 +90,44 @@ endstream
 endobj
 xref
 0 5
-0000000000 65535 f 
-0000000009 00000 n 
-0000000058 00000 n 
-0000000115 00000 n 
-0000000206 00000 n 
+0000000000 65535 f
+0000000009 00000 n
+0000000058 00000 n
+0000000115 00000 n
+0000000206 00000 n
 trailer
 << /Size 5 /Root 1 0 R >>
 startxref
 300
 %%EOF"""
     return pdf_content
+
+
+@pytest.fixture(autouse=True)
+def reset_singletons():
+    """Reset global singleton instances before each test for proper isolation."""
+    # Reset classifier singletons
+    import backend.services.classifiers.rule_based as rule_based_module
+    import backend.services.classifiers.hybrid as hybrid_module
+    import backend.services.classifiers.embedding_based as embedding_module
+    import backend.services.ontology_service as ontology_module
+
+    # Store original values
+    original_rule_instance = rule_based_module._classifier_instance
+    original_hybrid_instance = hybrid_module._classifier_instance
+    original_embedding_instance = embedding_module._classifier_instance
+    original_ontology_instance = ontology_module._ontology_instance
+
+    # Reset before test
+    rule_based_module._classifier_instance = None
+    hybrid_module._classifier_instance = None
+    embedding_module._classifier_instance = None
+    ontology_module._ontology_instance = None
+
+    yield
+
+    # Cleanup after test
+    rule_based_module._classifier_instance = None
+    hybrid_module._classifier_instance = None
+    embedding_module._classifier_instance = None
+    ontology_module._ontology_instance = None
