@@ -198,15 +198,21 @@ class NumericParser:
                     cleaned = value_str.replace(",", ".")
                     return Decimal(cleaned), 0.85
 
-            elif comma_count == 1 and period_count >= 1:
-                # European format: 1.234,56
-                cleaned = value_str.replace(".", "").replace(",", ".")
-                return Decimal(cleaned), 0.9
+            elif comma_count >= 1 and period_count >= 1:
+                # Mixed format - determine by position
+                # US format: 1,234.56 (comma before period)
+                # EU format: 1.234,56 (period before comma)
+                last_comma_pos = value_str.rfind(",")
+                last_period_pos = value_str.rfind(".")
 
-            elif comma_count >= 1 and period_count == 1:
-                # US format: 1,234,567.89
-                cleaned = value_str.replace(",", "")
-                return Decimal(cleaned), 0.95
+                if last_period_pos > last_comma_pos:
+                    # US format: period is decimal, comma is thousands
+                    cleaned = value_str.replace(",", "")
+                    return Decimal(cleaned), 0.95
+                else:
+                    # EU format: comma is decimal, period is thousands
+                    cleaned = value_str.replace(".", "").replace(",", ".")
+                    return Decimal(cleaned), 0.9
 
             else:
                 # Multiple periods - unusual, try to parse anyway

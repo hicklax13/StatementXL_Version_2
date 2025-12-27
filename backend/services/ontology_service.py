@@ -68,7 +68,7 @@ class OntologyService:
 
         if ontology_path is None:
             # Default path relative to project root
-            ontology_path = Path(__file__).parent.parent.parent.parent / "data" / "ontology.yaml"
+            ontology_path = Path(__file__).parent.parent.parent / "data" / "ontology.yaml"
 
         self._load_ontology(ontology_path)
 

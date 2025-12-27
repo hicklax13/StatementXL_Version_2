@@ -39,7 +39,7 @@ router = APIRouter()
 class RegisterRequest(BaseModel):
     """User registration request."""
     email: EmailStr
-    password: str = Field(..., min_length=8, description="Password must be at least 8 characters")
+    password: str  # Validation done in endpoint for proper error code
     full_name: Optional[str] = None
 
 
@@ -203,8 +203,14 @@ async def refresh_token(
     user_id = verify_refresh_token(request.refresh_token)
     if not user_id:
         raise AuthenticationError("Invalid refresh token")
-    
-    user = db.query(User).filter(User.id == user_id).first()
+
+    # Convert string user_id to UUID for database query
+    try:
+        user_uuid = uuid.UUID(user_id)
+    except (ValueError, AttributeError):
+        raise AuthenticationError("Invalid refresh token")
+
+    user = db.query(User).filter(User.id == user_uuid).first()
     if not user or not user.is_active:
         raise AuthenticationError("Invalid refresh token")
     
