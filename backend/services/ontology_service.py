@@ -67,8 +67,22 @@ class OntologyService:
         self._statement_index: Dict[str, List[OntologyItem]] = {}
 
         if ontology_path is None:
-            # Default path relative to project root
-            ontology_path = Path(__file__).parent.parent.parent.parent / "data" / "ontology.yaml"
+            # Try multiple possible paths for ontology.yaml
+            possible_paths = [
+                Path(__file__).parent.parent.parent / "data" / "ontology.yaml",  # From backend/services
+                Path(__file__).parent.parent.parent.parent / "data" / "ontology.yaml",  # From root
+                Path.cwd() / "data" / "ontology.yaml",  # From current working directory
+            ]
+
+            ontology_path = None
+            for path in possible_paths:
+                if path.exists():
+                    ontology_path = path
+                    break
+
+            if ontology_path is None:
+                # Use first option as default if file doesn't exist (will error with helpful message)
+                ontology_path = possible_paths[0]
 
         self._load_ontology(ontology_path)
 
