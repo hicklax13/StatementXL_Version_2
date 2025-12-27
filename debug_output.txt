@@ -1,0 +1,323 @@
+
+--- Diagnosing: Test_Income_Statement_EASY.pdf ---
+Checking Text Layer...
+  Page 1 Text Length: 1034
+  -> NATIVE text detected.
+  Sample: Income / Expense Report by Category
+Woodlawn Oaks Assited Living LLC
+01/01/2024 - 12/31/2024
+Income
+...
+
+Checking OCR Service...
+{"error": "No module named 'pytesseract'", "event": "Tesseract OCR not available"}
+  Tesseract is MISSING.
+
+Testing TableDetector (Standard Pipeline)...
+{"event": "Camelot not available"}
+{"event": "Detecting tables in PDF", "path": "Test_Financial_Statement_PDFs\\Test_Income_Statement_EASY.pdf"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "Inco"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "e/Expense"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "ReportbyCategory"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "Woo"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "dlawnOaks"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "AssitedLivingLLC"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "01/01/2024"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "12/31/2024"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "Income"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "210SocialS"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "ecurity"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "220Medicai"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "d"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "240Addition"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "alSupp"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "or"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "TotalIncome"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "Expenses"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "310Payroll,"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "Adminis"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "trator"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "320Payroll,"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "Certified"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "NursingAss"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "istan"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "335Payroll,"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "Projec"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "Manager"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "360Training"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "420Bankfe"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "es"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "430AHCAfe"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "es"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "450Legal&"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "Professi"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "nalFees"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "470Officeo"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "peration"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "480Advertis"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "ing"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "490Travel"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "530Insuran"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "ce,Prope"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "rty"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "540Mortga"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "geIntere"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "s"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "550Mortga"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "geIntere"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "st(HardMo"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "ney)"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "610Water/"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "Garbage/"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "Sewer/Stor"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "mWater"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "620Electrici"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "ty"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "630Gas"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "650Interne"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "/Cable"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "660Phone/F"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "ax"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "670Security"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "710Repairs"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "720Cleanin"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "gandMa"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "intenance"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "740Furnitur"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "e"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "750Improve"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "ments"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "810Food"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "820House"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "eeping"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "840Medsu"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "pply"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "870Residen"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "tFund"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "TotalExpens"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "es"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "OverallTotal"}
+{"event": "Table detection complete", "path": "Test_Financial_Statement_PDFs\\Test_Income_Statement_EASY.pdf", "table_count": 1}
+  Tables Found: 1
+    Table 1: 75 rows, Method: pdfplumber_text, Conf: 0.7
+      Row 1: ['', 'Incom', 'e / Expense', 'Report by Category', '']
+
+--- Diagnosing: Test_Income_Statement_Multi_Column_HARD.pdf ---
+Checking Text Layer...
+  Page 1 Text Length: 3369
+  -> NATIVE text detected.
+  Sample: MedLife Diagnostic Laboratories, Inc.
+Profit and Loss
+January - June, 2025
+JAN 2025 FEB 2025 MAR 202...
+
+Checking OCR Service...
+  Tesseract is MISSING.
+
+Testing TableDetector (Standard Pipeline)...
+{"event": "Detecting tables in PDF", "path": "Test_Financial_Statement_PDFs\\Test_Income_Statement_Multi_Column_HARD.pdf"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "JAN2025"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "FEB2025"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "MAR2025"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "APR2025"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "MAY2025"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "JUN2025"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "TOTAL"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "come"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "FeeforServiceI"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "ncome"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "Patients-Credi"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "tCards"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "EPX"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "Heartland"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "TotalPatients-"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "CreditCards"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "TotalFeeforSe"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "rviceIncome"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "Refunds"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "otalIncome"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "ROSSPROFI"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "xpenses"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "401(k)Employer"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "Match"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "Advertisingand"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "Marketing"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "Advertisingand"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "Promotion"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "Marketing"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "TotalAdvertising"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "andMarketing"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "AmortizationExp"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "ense"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "AutomobileExpe"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "nse"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "AutoInsurance"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "TotalAutomobile"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "Expense"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "BankServiceCh"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "arges"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "BillingServices"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "BillingService-"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "Waystar"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "TotalBillingServ"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "ices"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "BusinessLicens"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "esandPermits"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "ComputerandIn"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "ternetExpenses"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "ContinuingEduc"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "ation"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "Contributions"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "CreditCardFee"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "s"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "DepreciationEx"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "pense"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "DuesandSubsc"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "riptions"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "EmployeeBenef"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "its"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "InsuranceExpen"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "se"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "Healthinsuranc"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "e"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "Professional&"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "MedicalLiabili"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "WorkersComp"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "TotalInsurance"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "Expense"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "InterestExpense"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "JanitorialExpen"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "se"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "LabDirector"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "LaboratoryServi"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "ces"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "MealsandEnter"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "tainmen"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "Meals"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "TotalMealsand"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "Entertainmen"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "MedicalRecords"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "andSupplies"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "MedicalWaste"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "CashBasis"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "Tuesday,July2"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "9,202510:46P"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "MGMT-04:00"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "1/3"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "JAN2025"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "FEB2025"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "MAR2025"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "APR2025"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "MAY2025"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "JUN2025"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "TOTAL"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "OfficeExpen"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "ses"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "Parkingand"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "Tolls"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "Parking"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "Tolls"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "TotalParkin"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "gandTolls"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "PayrollExpe"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "nses"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "Payroll-Off"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "icer"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "TotalPayroll"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "Expenses"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "PayrollServi"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "ceFees"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "Postage"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "Professional"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "Fees"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "Accounting"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "Consulting"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "Legal"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "TotalProfes"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "sionalFees"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "QualityCon"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "rol"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "Proficiency"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "Testing-API"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "QC-Reage"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "nts"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "TotalQuality"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "Control"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "Reagents&"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "Supplies"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "MasterDiag"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "nosti"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "McKesson"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "TotalReage"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "nts&Supplies"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "RentExpens"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "e"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "Repairsand"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "Maintenance"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "Security"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "ServiceMain"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "tenance"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "LISSuppor"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "Service"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "TotalServic"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "eMaintenance"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "Taxes"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "NJBusines"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "s"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "NJPTE"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "Payroll"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "TotalTaxes"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "TelephoneE"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "xpense"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "FaxService"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "PhoneServ"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "ice"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "TotalTeleph"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "oneExpense"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "TravelExpe"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "nse"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "Utilities"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "WasteRemo"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "val"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "otalExpense"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "s"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "ETOPERA"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "INGINCOME"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "therIncome"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "InterestInco"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "me"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "otalOtherIn"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "come"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "CashBas"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "isTuesday,Jul"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "y29,202510:46"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "PMGMT-04:00"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "2/3"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "Janu"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "ary-June,2025"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "JAN2025"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "FEB2025"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "MAR2025"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "APR2025"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "MAY2025"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "JUN2025"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "TOTAL"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "OtherExpenses"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "Fines&Penalties"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "FraudulentChecks"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "TotalOtherExpenses"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "NETOTHERINCOME"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "NETINCOME"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "Cash"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "asisTuesday,Ju"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "ly29,202510:46"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "PMGMT-04:00"}
+{"error": "[<class 'decimal.ConversionSyntax'>]", "event": "Failed to parse number", "value": "3/3"}
+{"event": "Table detection complete", "path": "Test_Financial_Statement_PDFs\\Test_Income_Statement_Multi_Column_HARD.pdf", "table_count": 3}
+  Tables Found: 3
+    Table 1: 95 rows, Method: pdfplumber_text, Conf: 0.7
+      Row 1: ['', '', 'JAN 2025', 'FEB 2025', 'MAR 2025', 'APR 2025', 'MAY 2025', 'JUN 2025', 'TOTAL']
+    Table 2: 95 rows, Method: pdfplumber_text, Conf: 0.7
+      Row 1: ['', '', 'JAN 2025', 'FEB 2025', 'MAR 2025', 'APR 2025', 'MAY 2025', 'JUN 2025', 'TOTAL']
+    Table 3: 17 rows, Method: pdfplumber_text, Conf: 0.7
+      Row 1: ['', '', 'Janu', 'ary - June, 2025', '', '', '', '']

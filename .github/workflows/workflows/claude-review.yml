@@ -1,0 +1,55 @@
+name: Claude Code Review
+
+on:
+  push:
+    branches: [ main, dev ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  claude-review:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+        
+    - name: Install Anthropic SDK
+      run: pip install anthropic
+      
+    - name: Run Claude Review
+      env:
+        ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+      run: |
+        python - <<'EOF'
+        import anthropic
+        import os
+        import subprocess
+        
+        # Get recent changes
+        diff = subprocess.run(
+            ['git', 'diff', 'HEAD~1', 'HEAD'],
+            capture_output=True,
+            text=True
+        ).stdout
+        
+        # Send to Claude
+        client = anthropic.Anthropic(api_key=os.environ['ANTHROPIC_API_KEY'])
+        
+        message = client.messages.create(
+            model="claude-sonnet-4-20250514",
+            max_tokens=2000,
+            messages=[{
+                "role": "user",
+                "content": f"Review this code change for bugs, security issues, and best practices:\n\n{diff}"
+            }]
+        )
+        
+        print("=== CLAUDE'S REVIEW ===")
+        print(message.content[0].text)
+        EOF
