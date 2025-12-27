@@ -68,21 +68,34 @@ class OntologyService:
 
         if ontology_path is None:
             # Try multiple possible paths for ontology.yaml
+            # Get the absolute path of this file to handle both .py and .pyc imports
+            current_file = Path(__file__).resolve()
+
             possible_paths = [
-                Path(__file__).parent.parent.parent / "data" / "ontology.yaml",  # From backend/services
-                Path(__file__).parent.parent.parent.parent / "data" / "ontology.yaml",  # From root
-                Path.cwd() / "data" / "ontology.yaml",  # From current working directory
+                # Relative to backend/services directory (most common case)
+                current_file.parent.parent.parent / "data" / "ontology.yaml",
+                # From project root
+                Path.cwd() / "data" / "ontology.yaml",
+                # Fallback: try to find data directory in common locations
+                Path(__file__).parent.parent.parent / "data" / "ontology.yaml",
             ]
 
             ontology_path = None
             for path in possible_paths:
-                if path.exists():
-                    ontology_path = path
+                resolved_path = path.resolve() if isinstance(path, Path) else Path(path).resolve()
+                if resolved_path.exists():
+                    ontology_path = resolved_path
+                    logger.info("Found ontology.yaml", path=str(ontology_path))
                     break
 
             if ontology_path is None:
                 # Use first option as default if file doesn't exist (will error with helpful message)
-                ontology_path = possible_paths[0]
+                ontology_path = current_file.parent.parent.parent / "data" / "ontology.yaml"
+                logger.warning(
+                    "ontology.yaml not found in expected locations, using default path",
+                    attempted_paths=[str(p) for p in possible_paths],
+                    default_path=str(ontology_path)
+                )
 
         self._load_ontology(ontology_path)
 

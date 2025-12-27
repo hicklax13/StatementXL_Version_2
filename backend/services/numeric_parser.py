@@ -198,28 +198,22 @@ class NumericParser:
                     cleaned = value_str.replace(",", ".")
                     return Decimal(cleaned), 0.85
 
-            elif comma_count == 1 and period_count >= 1:
-                # European format: 1.234,56
-                cleaned = value_str.replace(".", "").replace(",", ".")
-                return Decimal(cleaned), 0.9
-
-            elif comma_count >= 1 and period_count == 1:
-                # US format: 1,234,567.89
-                cleaned = value_str.replace(",", "")
-                return Decimal(cleaned), 0.95
-
             else:
-                # Multiple periods - unusual, try to parse anyway
-                # Assume last separator is decimal
+                # Multiple separators (commas and/or periods)
+                # Determine which is decimal separator by position
+                # The rightmost separator is typically the decimal point
                 last_period = value_str.rfind(".")
                 last_comma = value_str.rfind(",")
 
                 if last_period > last_comma:
+                    # Period is rightmost - US format: 1,234.56
                     cleaned = value_str.replace(",", "")
+                    confidence = 0.95 if comma_count >= 1 else 1.0
+                    return Decimal(cleaned), confidence
                 else:
+                    # Comma is rightmost - European format: 1.234,56
                     cleaned = value_str.replace(".", "").replace(",", ".")
-
-                return Decimal(cleaned), 0.7
+                    return Decimal(cleaned), 0.9
 
         except (InvalidOperation, ValueError) as e:
             logger.warning("Failed to parse number", value=value_str, error=str(e))

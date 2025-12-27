@@ -44,7 +44,7 @@ class StatementXLError(Exception):
 class DocumentProcessingError(StatementXLError):
     """Error during document processing."""
     error_code = "SXL-100"
-    http_status = 400
+    http_status = 422
     
     def __init__(self, message: str = "Failed to process document", **kwargs):
         super().__init__(message, **kwargs)
@@ -188,31 +188,28 @@ class AuthenticationError(StatementXLError):
         super().__init__(message, **kwargs)
 
 
-class InvalidCredentialsError(StatementXLError):
+class InvalidCredentialsError(AuthenticationError):
     """Invalid username or password."""
     error_code = "SXL-501"
-    http_status = 401
-    
+
     def __init__(self, **kwargs):
         message = "Invalid email or password"
         super().__init__(message, **kwargs)
 
 
-class TokenExpiredError(StatementXLError):
+class TokenExpiredError(AuthenticationError):
     """Authentication token has expired."""
-    error_code = "SXL-502"
-    http_status = 401
-    
+    error_code = "SXL-503"
+
     def __init__(self, **kwargs):
         message = "Token has expired. Please log in again."
         super().__init__(message, **kwargs)
 
 
-class InvalidTokenError(StatementXLError):
+class InvalidTokenError(AuthenticationError):
     """Authentication token is invalid."""
-    error_code = "SXL-503"
-    http_status = 401
-    
+    error_code = "SXL-502"
+
     def __init__(self, **kwargs):
         message = "Invalid authentication token"
         super().__init__(message, **kwargs)
@@ -228,11 +225,10 @@ class AuthorizationError(StatementXLError):
         super().__init__(message, **kwargs)
 
 
-class InsufficientPermissionsError(StatementXLError):
+class InsufficientPermissionsError(AuthorizationError):
     """User lacks required permissions."""
     error_code = "SXL-601"
-    http_status = 403
-    
+
     def __init__(self, required_role: str, **kwargs):
         message = f"Requires {required_role} role"
         super().__init__(message, details={"required_role": required_role}, **kwargs)
@@ -242,11 +238,11 @@ class InsufficientPermissionsError(StatementXLError):
 class ValidationError(StatementXLError):
     """Input validation failed."""
     error_code = "SXL-700"
-    http_status = 422
-    
+    http_status = 400
+
     def __init__(self, message: str = "Validation failed", errors: list = None, **kwargs):
         details = kwargs.get("details", {})
-        details["validation_errors"] = errors or []
+        details["errors"] = errors or []
         super().__init__(message, details=details, **kwargs)
 
 

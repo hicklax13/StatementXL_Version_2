@@ -92,35 +92,47 @@ class PasswordValidator:
     def get_strength_score(cls, password: str) -> int:
         """
         Get password strength score (0-100).
-        
+
         Factors:
-        - Length (up to 30 points)
+        - Length (up to 20 points)
         - Character variety (up to 40 points)
-        - No common patterns (up to 30 points)
+        - No common patterns (up to 40 points)
         """
         score = 0
-        
-        # Length score (2 points per char, max 30)
-        score += min(len(password) * 2, 30)
-        
-        # Character variety
-        if any(c.isupper() for c in password):
+
+        # Length score (1 point per char, max 20)
+        score += min(len(password), 20)
+
+        # Character variety (10 points each, up to 40)
+        has_upper = any(c.isupper() for c in password)
+        has_lower = any(c.islower() for c in password)
+        has_digit = any(c.isdigit() for c in password)
+        has_special = any(c in cls.SPECIAL_CHARS for c in password)
+
+        if has_upper:
             score += 10
-        if any(c.islower() for c in password):
+        if has_lower:
             score += 10
-        if any(c.isdigit() for c in password):
+        if has_digit:
             score += 10
-        if any(c in cls.SPECIAL_CHARS for c in password):
+        if has_special:
             score += 10
-        
+
+        # Penalty for lack of variety (only lowercase = weak)
+        variety_count = sum([has_upper, has_lower, has_digit, has_special])
+        if variety_count >= 3:
+            score += 20  # Good variety bonus
+        elif variety_count == 2:
+            score += 10  # Some variety bonus
+
         # No common patterns bonus
         if not re.search(r'(.)\1{2,}', password):  # No 3+ repeated chars
-            score += 10
+            score += 5
         if not re.search(r'(012|123|234|345|456|567|678|789|abc|bcd)', password.lower()):
-            score += 10
-        if password.lower() not in {"password", "qwerty", "letmein", "welcome"}:
-            score += 10
-        
+            score += 5
+        if password.lower() not in {"password", "qwerty", "letmein", "welcome", "weak"}:
+            score += 5
+
         return min(score, 100)
 
 
