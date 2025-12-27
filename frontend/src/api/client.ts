@@ -1,5 +1,20 @@
 import axios from 'axios';
 
+// Type definitions
+interface ExtractedItem {
+    label: string;
+    value: string | number | null;
+    confidence?: number;
+    page?: number;
+}
+
+interface TemplateTarget {
+    address: string;
+    row?: number;
+    column?: number;
+    sheet?: string;
+}
+
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1';
 
 const api = axios.create({
@@ -63,8 +78,8 @@ export const getTemplateGraph = async (templateId: string, format: string = 'jso
 
 // Mapping APIs
 export const createMapping = async (data: {
-    extracted_items: any[];
-    template_targets: any[];
+    extracted_items: ExtractedItem[];
+    template_targets: TemplateTarget[];
     period?: string;
 }): Promise<any> => {
     const response = await api.post('/map', data);
