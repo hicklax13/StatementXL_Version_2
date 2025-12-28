@@ -76,12 +76,126 @@ class GaapClassifier:
         self.ontology = self._load_ontology()
         self._cache: Dict[str, Classification] = {}
         
+        # Load YAML mappings for comprehensive classification
+        self._is_mappings = self._load_yaml_mappings(self.IS_MAPPINGS_PATH)
+        self._bs_mappings = self._load_yaml_mappings(self.BS_MAPPINGS_PATH)
+        self._cf_mappings = self._load_yaml_mappings(self.CF_MAPPINGS_PATH)
+        
         # Initialize AI models
         self._gemini_model = None
         self._ollama_available = False
         
         self._init_gemini()
         self._init_ollama()
+    
+    def _load_yaml_mappings(self, path: Path) -> Dict:
+        """Load YAML mapping file for classification rules."""
+        if path.exists():
+            try:
+                with open(path, "r", encoding="utf-8") as f:
+                    mappings = yaml.safe_load(f) or {}
+                    logger.info("Loaded YAML mappings", path=str(path), categories=len(mappings))
+                    return mappings
+            except Exception as e:
+                logger.warning("Failed to load YAML mappings", path=str(path), error=str(e))
+        return {}
+    
+    def _classify_with_yaml(
+        self,
+        label: str,
+        value: Optional[float],
+        mappings: Dict,
+        default_category: str,
+        default_template_row: str
+    ) -> Optional[Classification]:
+        """
+        Classify a line item using YAML mapping rules.
+        
+        Args:
+            label: The line item label to classify
+            value: The line item value
+            mappings: The YAML mappings dict (e.g., self._is_mappings)
+            default_category: Default category if no match
+            default_template_row: Default template row if no match
+            
+        Returns:
+            Classification if matched, None if no match found
+        """
+        label_lower = label.lower().strip()
+        best_match = None
+        best_confidence = 0.0
+        
+        # Category normalization map: YAML category name -> Standard classifier constant
+        category_map = {
+            # Income Statement
+            "revenue": self.CATEGORY_REVENUE,
+            "contra_revenue": self.CATEGORY_REVENUE,
+            "cogs": self.CATEGORY_COGS,
+            "opex_compensation": self.CATEGORY_OPERATING_EXPENSES,
+            "opex_sga": self.CATEGORY_OPERATING_EXPENSES,
+            "opex_marketing": self.CATEGORY_OPERATING_EXPENSES,
+            "opex_rd": self.CATEGORY_OPERATING_EXPENSES,
+            "opex_da": self.CATEGORY_OPERATING_EXPENSES,
+            "opex_other": self.CATEGORY_OPERATING_EXPENSES,
+            "non_operating": self.CATEGORY_OTHER,
+            "income_tax": self.CATEGORY_OPERATING_EXPENSES,
+            "discontinued_ops": self.CATEGORY_OTHER,
+            "calculated": self.CATEGORY_CALCULATED,
+            "financial_services": self.CATEGORY_REVENUE,
+            # Balance Sheet
+            "current_assets": self.CATEGORY_CURRENT_ASSETS,
+            "noncurrent_assets": self.CATEGORY_NONCURRENT_ASSETS,
+            "current_liabilities": self.CATEGORY_CURRENT_LIABILITIES,
+            "noncurrent_liabilities": self.CATEGORY_NONCURRENT_LIABILITIES,
+            "mezzanine_equity": self.CATEGORY_NONCURRENT_LIABILITIES,
+            "equity": self.CATEGORY_EQUITY,
+            # Cash Flow
+            "operating_net_income": self.CATEGORY_OPERATING,
+            "operating_noncash_adjustments": self.CATEGORY_OPERATING,
+            "operating_working_capital": self.CATEGORY_OPERATING,
+            "operating_direct": self.CATEGORY_OPERATING,
+            "investing_capex": self.CATEGORY_INVESTING,
+            "investing_securities": self.CATEGORY_INVESTING,
+            "investing_acquisitions": self.CATEGORY_INVESTING,
+            "investing_lending": self.CATEGORY_INVESTING,
+            "financing_debt": self.CATEGORY_FINANCING,
+            "financing_equity": self.CATEGORY_FINANCING,
+            "financing_other": self.CATEGORY_FINANCING,
+            "supplemental": self.CATEGORY_CALCULATED,
+        }
+        
+        for category_name, category_data in mappings.items():
+            if not isinstance(category_data, dict) or "items" not in category_data:
+                continue
+            
+            items = category_data.get("items", [])
+            for item_rule in items:
+                if not isinstance(item_rule, dict):
+                    continue
+                    
+                keywords = item_rule.get("keywords", [])
+                template_row = item_rule.get("template_row")
+                confidence = item_rule.get("confidence", 0.8)
+                
+                # Check if any keyword matches
+                for keyword in keywords:
+                    if keyword.lower() in label_lower:
+                        # Found a match - check if it's better than current best
+                        if confidence > best_confidence:
+                            best_confidence = confidence
+                            # Normalize category name using the map
+                            normalized_category = category_map.get(category_name, category_name)
+                            best_match = Classification(
+                                original_label=label,
+                                original_value=value,
+                                category=normalized_category,
+                                template_row=template_row,
+                                confidence=confidence,
+                            )
+                        break
+        
+        return best_match
+
     
     def _init_gemini(self) -> None:
         """Initialize Google Gemini API."""
@@ -458,9 +572,38 @@ Example:
     ) -> Classification:
         """
         Enhanced rule-based classification with comprehensive GAAP knowledge.
-        Uses section context as the PRIMARY classifier.
+        
+        Priority:
+        1. YAML mappings (300+ line items)
+        2. Section context (most reliable for simple documents)
+        3. Keyword matching (fallback)
         """
         label_lower = label.lower().strip()
+        
+        # ============================================
+        # STEP 0: Try YAML mappings FIRST (most comprehensive)
+        # ============================================
+        if statement_type == "income_statement" and self._is_mappings:
+            yaml_result = self._classify_with_yaml(
+                label, value, self._is_mappings,
+                self.CATEGORY_OPERATING_EXPENSES, "Selling, General, and Administrative"
+            )
+            if yaml_result:
+                return yaml_result
+        elif statement_type == "balance_sheet" and self._bs_mappings:
+            yaml_result = self._classify_with_yaml(
+                label, value, self._bs_mappings,
+                self.CATEGORY_CURRENT_ASSETS, "Other Current Assets"
+            )
+            if yaml_result:
+                return yaml_result
+        elif statement_type == "cash_flow" and self._cf_mappings:
+            yaml_result = self._classify_with_yaml(
+                label, value, self._cf_mappings,
+                self.CATEGORY_OPERATING, "Other Non-Cash Adjustments"
+            )
+            if yaml_result:
+                return yaml_result
         
         # Default to operating expenses (safest default)
         category = self.CATEGORY_OPERATING_EXPENSES
