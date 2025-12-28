@@ -913,7 +913,7 @@ Example:
             category = self.CATEGORY_CURRENT_ASSETS
             template_row = "Accounts Receivable"
             confidence = 0.9
-        elif any(kw in label_lower for kw in ["inventory", "stock", "merchandise"]):
+        elif any(kw in label_lower for kw in ["inventory", "finished goods", "raw materials", "work in progress", "merchandise"]):
             category = self.CATEGORY_CURRENT_ASSETS
             template_row = "Inventory"
             confidence = 0.9

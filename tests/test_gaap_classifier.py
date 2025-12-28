@@ -458,3 +458,310 @@ class TestEdgeCases:
         
         assert result.category == "revenue"
         assert result.original_label == "210 Social Security"
+
+
+class TestStatementTypeDetection:
+    """Test automatic statement type detection from PDF text."""
+    
+    def setup_method(self):
+        """Create classifier instance for each test."""
+        self.classifier = GaapClassifier()
+    
+    def test_detect_income_statement(self):
+        """Test detection of Income Statement from text."""
+        text = """Income Statement
+        For the Year Ended December 31, 2024
+        Revenue: 1,000,000
+        Cost of Goods Sold: 500,000
+        Gross Profit: 500,000
+        Operating Expenses: 200,000
+        Net Income: 300,000"""
+        
+        result = self.classifier.detect_statement_type(text)
+        assert result == "income_statement"
+    
+    def test_detect_balance_sheet(self):
+        """Test detection of Balance Sheet from text."""
+        text = """Balance Sheet
+        As of December 31, 2024
+        Total Assets: 5,000,000
+        Current Assets: 1,500,000
+        Total Liabilities: 2,000,000
+        Shareholders' Equity: 3,000,000
+        Retained Earnings: 1,500,000"""
+        
+        result = self.classifier.detect_statement_type(text)
+        assert result == "balance_sheet"
+    
+    def test_detect_cash_flow(self):
+        """Test detection of Cash Flow Statement from text."""
+        text = """Statement of Cash Flows
+        For the Year Ended December 31, 2024
+        Cash Flows from Operating Activities
+        Net Income: 300,000
+        Depreciation and Amortization: 50,000
+        Cash Flows from Investing Activities
+        Capital Expenditure: (100,000)
+        Cash Flows from Financing Activities
+        Dividends Paid: (50,000)"""
+        
+        result = self.classifier.detect_statement_type(text)
+        assert result == "cash_flow"
+    
+    def test_detect_empty_text_defaults_to_income_statement(self):
+        """Test that empty text defaults to income_statement."""
+        result = self.classifier.detect_statement_type("")
+        assert result == "income_statement"
+    
+    def test_detect_low_confidence_defaults_to_income_statement(self):
+        """Test that low confidence matches default to income_statement."""
+        text = "Random text without any financial keywords"
+        result = self.classifier.detect_statement_type(text)
+        assert result == "income_statement"
+    
+    def test_detect_profit_and_loss(self):
+        """Test detection of P&L (alternative name for Income Statement)."""
+        text = "Profit and Loss Statement for Q4 2024"
+        result = self.classifier.detect_statement_type(text)
+        assert result == "income_statement"
+    
+    def test_detect_statement_of_financial_position(self):
+        """Test detection using formal IFRS terminology."""
+        text = "Statement of Financial Position as of December 31, 2024"
+        result = self.classifier.detect_statement_type(text)
+        assert result == "balance_sheet"
+
+
+class TestBalanceSheetClassification:
+    """Test Balance Sheet item classification."""
+    
+    def setup_method(self):
+        """Create classifier instance for each test."""
+        self.classifier = GaapClassifier()
+    
+    def test_cash_classifies_as_current_asset(self):
+        """Test cash and equivalents classification."""
+        result = self.classifier._classify_balance_sheet_item(
+            label="Cash and Cash Equivalents",
+            value=100000.00,
+            section_context="assets"
+        )
+        
+        assert result.category == "current_assets"
+        assert result.template_row == "Cash and Cash Equivalents"
+    
+    def test_accounts_receivable(self):
+        """Test accounts receivable classification."""
+        result = self.classifier._classify_balance_sheet_item(
+            label="Accounts Receivable, Net",
+            value=50000.00,
+            section_context="assets"
+        )
+        
+        assert result.category == "current_assets"
+        assert result.template_row == "Accounts Receivable"
+    
+    def test_inventory(self):
+        """Test inventory classification."""
+        result = self.classifier._classify_balance_sheet_item(
+            label="Inventory - Raw Materials",
+            value=25000.00,
+            section_context="assets"
+        )
+        
+        assert result.category == "current_assets"
+        assert result.template_row == "Inventory"
+    
+    def test_ppe_classifies_as_noncurrent_asset(self):
+        """Test PP&E classification."""
+        result = self.classifier._classify_balance_sheet_item(
+            label="Property, Plant and Equipment",
+            value=500000.00,
+            section_context="assets"
+        )
+        
+        assert result.category == "noncurrent_assets"
+        assert result.template_row == "Property, Plant and Equipment"
+    
+    def test_accounts_payable_classifies_as_current_liability(self):
+        """Test accounts payable classification."""
+        result = self.classifier._classify_balance_sheet_item(
+            label="Accounts Payable",
+            value=30000.00,
+            section_context="liabilities"
+        )
+        
+        assert result.category == "current_liabilities"
+        assert result.template_row == "Accounts Payable"
+    
+    def test_long_term_debt(self):
+        """Test long-term debt classification."""
+        result = self.classifier._classify_balance_sheet_item(
+            label="Long-Term Debt",
+            value=1000000.00,
+            section_context="liabilities"
+        )
+        
+        assert result.category == "noncurrent_liabilities"
+        assert result.template_row == "Long-Term Debt"
+    
+    def test_retained_earnings_classifies_as_equity(self):
+        """Test retained earnings classification."""
+        result = self.classifier._classify_balance_sheet_item(
+            label="Retained Earnings",
+            value=800000.00,
+            section_context="equity"
+        )
+        
+        assert result.category == "equity"
+        assert result.template_row == "Retained Earnings"
+    
+    def test_common_stock(self):
+        """Test common stock classification."""
+        result = self.classifier._classify_balance_sheet_item(
+            label="Common Stock",
+            value=100000.00,
+            section_context="equity"
+        )
+        
+        assert result.category == "equity"
+        assert result.template_row == "Common Stock"
+
+
+class TestCashFlowClassification:
+    """Test Cash Flow Statement item classification."""
+    
+    def setup_method(self):
+        """Create classifier instance for each test."""
+        self.classifier = GaapClassifier()
+    
+    def test_depreciation_classifies_as_operating(self):
+        """Test depreciation classification."""
+        result = self.classifier._classify_cash_flow_item(
+            label="Depreciation and Amortization",
+            value=50000.00,
+            section_context="operating"
+        )
+        
+        assert result.category == "operating_activities"
+        assert result.template_row == "Depreciation and Amortization"
+    
+    def test_change_in_accounts_receivable(self):
+        """Test working capital change classification."""
+        result = self.classifier._classify_cash_flow_item(
+            label="Change in Accounts Receivable",
+            value=-10000.00,
+            section_context="operating"
+        )
+        
+        assert result.category == "operating_activities"
+        assert result.template_row == "Change in Accounts Receivable"
+    
+    def test_capex_classifies_as_investing(self):
+        """Test capital expenditure classification."""
+        result = self.classifier._classify_cash_flow_item(
+            label="Capital Expenditures",
+            value=-100000.00,
+            section_context="investing"
+        )
+        
+        assert result.category == "investing_activities"
+        assert result.template_row == "Capital Expenditures"
+    
+    def test_debt_repayment_classifies_as_financing(self):
+        """Test debt repayment classification."""
+        result = self.classifier._classify_cash_flow_item(
+            label="Repayment of Debt",
+            value=-50000.00,
+            section_context="financing"
+        )
+        
+        assert result.category == "financing_activities"
+        assert "Debt" in result.template_row or "Financing" in result.template_row
+    
+    def test_dividends_paid(self):
+        """Test dividends paid classification."""
+        result = self.classifier._classify_cash_flow_item(
+            label="Dividends Paid",
+            value=-25000.00,
+            section_context="financing"
+        )
+        
+        assert result.category == "financing_activities"
+        assert result.template_row == "Dividends Paid"
+    
+    def test_net_cash_total_classifies_as_calculated(self):
+        """Test that cash totals are classified as calculated."""
+        result = self.classifier._classify_cash_flow_item(
+            label="Net Cash from Operating Activities",
+            value=200000.00,
+            section_context=None
+        )
+        
+        assert result.category == "calculated"
+
+
+class TestYamlMappingIntegration:
+    """Test YAML mapping loading and integration."""
+    
+    def setup_method(self):
+        """Create classifier instance for each test."""
+        self.classifier = GaapClassifier()
+    
+    def test_is_mappings_loaded(self):
+        """Test that Income Statement mappings are loaded."""
+        assert self.classifier._is_mappings is not None
+        assert len(self.classifier._is_mappings) > 0
+    
+    def test_bs_mappings_loaded(self):
+        """Test that Balance Sheet mappings are loaded."""
+        assert self.classifier._bs_mappings is not None
+        assert len(self.classifier._bs_mappings) > 0
+    
+    def test_cf_mappings_loaded(self):
+        """Test that Cash Flow mappings are loaded."""
+        assert self.classifier._cf_mappings is not None
+        assert len(self.classifier._cf_mappings) > 0
+    
+    def test_yaml_classification_returns_high_confidence(self):
+        """Test that YAML classification returns high confidence."""
+        result = self.classifier._classify_with_yaml(
+            label="Subscription Revenue",
+            value=10000.00,
+            mappings=self.classifier._is_mappings,
+            default_category="operating_expenses",
+            default_template_row="SG&A"
+        )
+        
+        assert result is not None
+        assert result.confidence >= 0.8
+    
+    def test_yaml_classification_no_match_returns_none(self):
+        """Test that no match returns None."""
+        result = self.classifier._classify_with_yaml(
+            label="XYZ123 Gibberish Item",
+            value=100.00,
+            mappings=self.classifier._is_mappings,
+            default_category="operating_expenses",
+            default_template_row="SG&A"
+        )
+        
+        assert result is None
+    
+    def test_yaml_classification_normalizes_category(self):
+        """Test that YAML categories are normalized to standard constants."""
+        # Test that opex_sga gets normalized to operating_expenses
+        result = self.classifier._classify_with_yaml(
+            label="Legal Fees",
+            value=5000.00,
+            mappings=self.classifier._is_mappings,
+            default_category="operating_expenses",
+            default_template_row="SG&A"
+        )
+        
+        if result:
+            # Should be normalized to standard category constant
+            assert result.category in [
+                "operating_expenses", "revenue", "cogs", 
+                "other_income_expenses", "calculated"
+            ]
