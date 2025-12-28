@@ -51,13 +51,49 @@ logger = structlog.get_logger(__name__)
 
 settings = get_settings()
 
-# Create FastAPI application
+# Create FastAPI application with comprehensive OpenAPI documentation
 app = FastAPI(
     title="StatementXL API",
-    description="Financial statement PDF extraction and normalization API",
+    description="""
+## Financial Statement PDF Extraction and Normalization API
+
+StatementXL provides comprehensive tools for extracting, classifying, and exporting 
+financial data from PDF documents into structured Excel templates.
+
+### Key Features
+
+- **PDF Upload & Extraction**: Upload financial statement PDFs for automatic table detection and data extraction
+- **GAAP Classification**: AI-powered classification of financial line items using YAML mappings (300+ items)
+- **Auto-Detection**: Automatic identification of statement type (Income Statement, Balance Sheet, Cash Flow)
+- **Template Export**: Export to formatted Excel templates with proper formulas and styling
+
+### Statement Types Supported
+
+| Type | Description |
+|------|-------------|
+| Income Statement | Revenue, expenses, profit & loss |
+| Balance Sheet | Assets, liabilities, equity |
+| Cash Flow | Operating, investing, financing activities |
+
+### Authentication
+
+Protected endpoints require a valid JWT token in the Authorization header.
+    """,
     version="2.0.0",
     docs_url="/docs",
     redoc_url="/redoc",
+    openapi_tags=[
+        {"name": "Authentication", "description": "User authentication and token management"},
+        {"name": "Upload", "description": "PDF document upload and processing"},
+        {"name": "Classification", "description": "GAAP line item classification"},
+        {"name": "Export", "description": "Excel template export and download"},
+        {"name": "Template", "description": "Template management and configuration"},
+        {"name": "Mapping", "description": "Data mapping between extracted items and templates"},
+        {"name": "Library", "description": "Mapping library and presets"},
+        {"name": "Batch", "description": "Batch processing operations"},
+        {"name": "Audit", "description": "Audit logging and history"},
+        {"name": "Monitoring", "description": "Health checks and metrics"},
+    ],
 )
 
 # Configure CORS with proper origins

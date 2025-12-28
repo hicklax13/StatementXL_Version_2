@@ -335,7 +335,7 @@ export interface ExportOptionsResponse {
 
 export interface ExportRequest {
     document_id: string;
-    statement_type: 'income_statement' | 'balance_sheet' | 'cash_flow';
+    statement_type: 'auto' | 'income_statement' | 'balance_sheet' | 'cash_flow';
     style: 'basic' | 'corporate' | 'professional';
     colorway: string;
     company_name?: string;

@@ -19,7 +19,7 @@ import type { StyleInfo, ColorwayInfo, ExportRequest } from '../api/client';
 import { useDocumentStore, useUIStore } from '../stores';
 
 interface ExportConfig {
-    statementType: 'income_statement' | 'balance_sheet' | 'cash_flow';
+    statementType: 'auto' | 'income_statement' | 'balance_sheet' | 'cash_flow';
     style: 'basic' | 'corporate' | 'professional';
     colorway: string;
     companyName: string;
@@ -95,9 +95,10 @@ export default function Export() {
     };
 
     const statementTypes = [
-        { id: 'income_statement', name: 'Income Statement', icon: FileSpreadsheet },
-        { id: 'balance_sheet', name: 'Balance Sheet', icon: Layout },
-        { id: 'cash_flow', name: 'Cash Flow', icon: Building2 },
+        { id: 'auto', name: 'Auto-Detect', icon: FileSpreadsheet, description: 'Automatically detect from PDF' },
+        { id: 'income_statement', name: 'Income Statement', icon: FileSpreadsheet, description: 'Revenue & expenses' },
+        { id: 'balance_sheet', name: 'Balance Sheet', icon: Layout, description: 'Assets & liabilities' },
+        { id: 'cash_flow', name: 'Cash Flow', icon: Building2, description: 'Cash movements' },
     ];
 
     if (loading) {
@@ -170,7 +171,7 @@ export default function Export() {
                     <FileSpreadsheet className="w-5 h-5 text-green-600" />
                     Statement Type
                 </h2>
-                <div className="grid grid-cols-3 gap-4">
+                <div className="grid grid-cols-4 gap-4">
                     {statementTypes.map((type) => (
                         <button
                             key={type.id}
