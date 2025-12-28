@@ -391,9 +391,16 @@ async def export_to_excel(
         
         # Classify items using GAAP classifier (with raw PDF text for context)
         classifier = get_gaap_classifier()
+        
+        # Auto-detect statement type if set to 'auto' or if raw_pdf_text is available
+        effective_statement_type = request.statement_type
+        if effective_statement_type == "auto" and raw_pdf_text:
+            effective_statement_type = classifier.detect_statement_type(raw_pdf_text)
+            logger.info(f"Auto-detected statement type: {effective_statement_type}")
+        
         classifications = await classifier.classify_items(
             items_for_classification,
-            statement_type=request.statement_type,
+            statement_type=effective_statement_type,
             raw_text=raw_pdf_text,
         )
         
@@ -412,10 +419,10 @@ async def export_to_excel(
             values=list(aggregated.values()),
         )
         
-        # Load template
+        # Load template (use auto-detected statement type if applicable)
         loader = get_template_loader()
         workbook, structure = loader.load(
-            statement_type=request.statement_type,
+            statement_type=effective_statement_type,
             style=request.style,
         )
         

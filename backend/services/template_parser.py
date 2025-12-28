@@ -71,8 +71,8 @@ class TemplateParser:
     while preserving the template's formatting and formulas.
     """
     
-    # Default template paths - use backend/templates
-    TEMPLATE_DIR = Path("backend/templates")
+    # Default template paths - use Excel Templates folder
+    TEMPLATE_DIR = Path("Excel Templates")
     
     TEMPLATES = {
         "income_statement": {

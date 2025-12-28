@@ -100,6 +100,116 @@ class GaapClassifier:
                 logger.warning("Failed to load YAML mappings", path=str(path), error=str(e))
         return {}
     
+    def detect_statement_type(self, raw_text: str) -> str:
+        """
+        Auto-detect the statement type from PDF text content.
+        
+        Analyzes keyword patterns to determine if the document is:
+        - income_statement: Revenue, expenses, net income
+        - balance_sheet: Assets, liabilities, equity
+        - cash_flow: Operating/investing/financing activities
+        
+        Returns:
+            str: One of 'income_statement', 'balance_sheet', 'cash_flow'
+        """
+        if not raw_text:
+            return "income_statement"  # Default fallback
+        
+        text_lower = raw_text.lower()
+        
+        # Score each statement type based on keyword matches
+        scores = {
+            "income_statement": 0,
+            "balance_sheet": 0,
+            "cash_flow": 0,
+        }
+        
+        # Income Statement keywords (weighted by specificity)
+        is_keywords = {
+            "income statement": 10,
+            "profit and loss": 10,
+            "statement of operations": 10,
+            "p&l": 8,
+            "revenue": 3,
+            "net income": 5,
+            "gross profit": 5,
+            "operating income": 4,
+            "cost of goods sold": 4,
+            "cogs": 3,
+            "operating expenses": 3,
+            "ebitda": 4,
+            "earnings before": 4,
+        }
+        
+        # Balance Sheet keywords
+        bs_keywords = {
+            "balance sheet": 10,
+            "statement of financial position": 10,
+            "total assets": 6,
+            "total liabilities": 6,
+            "shareholders' equity": 6,
+            "stockholders' equity": 6,
+            "current assets": 4,
+            "non-current assets": 4,
+            "current liabilities": 4,
+            "long-term debt": 4,
+            "accounts receivable": 3,
+            "accounts payable": 3,
+            "retained earnings": 5,
+            "property, plant": 4,
+            "pp&e": 3,
+        }
+        
+        # Cash Flow keywords
+        cf_keywords = {
+            "cash flow": 10,
+            "statement of cash flows": 10,
+            "cash flows from operating": 8,
+            "cash flows from investing": 8,
+            "cash flows from financing": 8,
+            "operating activities": 5,
+            "investing activities": 5,
+            "financing activities": 5,
+            "net cash provided": 5,
+            "net cash used": 5,
+            "depreciation and amortization": 3,
+            "capital expenditure": 4,
+            "capex": 3,
+            "dividends paid": 3,
+            "proceeds from": 2,
+        }
+        
+        # Calculate scores
+        for keyword, weight in is_keywords.items():
+            if keyword in text_lower:
+                scores["income_statement"] += weight
+        
+        for keyword, weight in bs_keywords.items():
+            if keyword in text_lower:
+                scores["balance_sheet"] += weight
+        
+        for keyword, weight in cf_keywords.items():
+            if keyword in text_lower:
+                scores["cash_flow"] += weight
+        
+        # Find the highest scoring type
+        detected_type = max(scores, key=scores.get)
+        max_score = scores[detected_type]
+        
+        logger.info(
+            "Statement type detected",
+            detected=detected_type,
+            scores=scores,
+            max_score=max_score
+        )
+        
+        # If no significant matches, default to income statement
+        if max_score < 5:
+            logger.info("Low confidence detection, defaulting to income_statement")
+            return "income_statement"
+        
+        return detected_type
+    
     def _classify_with_yaml(
         self,
         label: str,
