@@ -1,0 +1,591 @@
+# Balance Sheet Classification Mappings
+# Comprehensive GAAP line item classification rules
+
+# ============================================================================
+# CURRENT ASSETS
+# ============================================================================
+current_assets:
+  template_row: "Other Current Assets"  # Default fallback
+  items:
+    # Cash & Equivalents
+    - keywords: ["cash", "cash equivalents", "petty cash", "bank account", "checking", "savings", "money market"]
+      template_row: "Cash and Cash Equivalents"
+      confidence: 0.95
+    
+    - keywords: ["restricted cash", "escrow", "cash collateral"]
+      template_row: "Cash and Cash Equivalents"
+      confidence: 0.90
+    
+    # Marketable Securities
+    - keywords: ["marketable securities", "trading securities", "short-term investments", "available-for-sale", "afs securities"]
+      template_row: "Short-Term Investments"
+      confidence: 0.90
+    
+    # Receivables
+    - keywords: ["accounts receivable", "a/r", "trade receivables", "customer receivables"]
+      template_row: "Accounts Receivable"
+      confidence: 0.95
+    
+    - keywords: ["allowance for doubtful", "bad debt allowance", "allowance for uncollectible"]
+      template_row: "Accounts Receivable"
+      confidence: 0.90
+    
+    - keywords: ["unbilled receivables", "unbilled revenue", "contract assets"]
+      template_row: "Accounts Receivable"
+      confidence: 0.85
+    
+    - keywords: ["notes receivable", "note receivable current", "loan receivable current"]
+      template_row: "Other Current Assets"
+      confidence: 0.85
+    
+    - keywords: ["income tax receivable", "tax refund receivable", "income taxes recoverable"]
+      template_row: "Other Current Assets"
+      confidence: 0.90
+    
+    # Inventory
+    - keywords: ["inventory", "inventories", "stock on hand", "goods for sale"]
+      template_row: "Inventory"
+      confidence: 0.95
+    
+    - keywords: ["raw materials", "raw material inventory"]
+      template_row: "Inventory"
+      confidence: 0.95
+    
+    - keywords: ["work in process", "wip", "work in progress"]
+      template_row: "Inventory"
+      confidence: 0.95
+    
+    - keywords: ["finished goods", "finished products", "completed goods"]
+      template_row: "Inventory"
+      confidence: 0.95
+    
+    - keywords: ["packaging", "supplies", "consumables"]
+      template_row: "Inventory"
+      confidence: 0.85
+    
+    # Prepaid Expenses
+    - keywords: ["prepaid", "prepayment", "advance payment"]
+      template_row: "Prepaid Expenses"
+      confidence: 0.90
+    
+    - keywords: ["prepaid insurance"]
+      template_row: "Prepaid Expenses"
+      confidence: 0.95
+    
+    - keywords: ["prepaid rent"]
+      template_row: "Prepaid Expenses"
+      confidence: 0.95
+    
+    - keywords: ["prepaid advertising", "prepaid marketing"]
+      template_row: "Prepaid Expenses"
+      confidence: 0.90
+    
+    # Other Current Assets
+    - keywords: ["deferred tax asset", "dta current", "deferred income tax asset"]
+      template_row: "Other Current Assets"
+      confidence: 0.90
+    
+    - keywords: ["advances to suppliers", "vendor advances", "supplier deposits"]
+      template_row: "Other Current Assets"
+      confidence: 0.85
+    
+    - keywords: ["due from affiliates", "due from related parties", "intercompany receivable"]
+      template_row: "Other Current Assets"
+      confidence: 0.90
+    
+    - keywords: ["derivative asset", "hedging asset", "forward contract asset"]
+      template_row: "Other Current Assets"
+      confidence: 0.85
+    
+    - keywords: ["assets held for sale", "held for sale"]
+      template_row: "Other Current Assets"
+      confidence: 0.90
+    
+    - keywords: ["vat recoverable", "gst recoverable", "input tax credit"]
+      template_row: "Other Current Assets"
+      confidence: 0.85
+
+# ============================================================================
+# NON-CURRENT ASSETS
+# ============================================================================
+noncurrent_assets:
+  template_row: "Other Non-Current Assets"  # Default fallback
+  items:
+    # Property, Plant & Equipment
+    - keywords: ["land", "real estate", "property"]
+      template_row: "Property, Plant and Equipment"
+      confidence: 0.95
+    
+    - keywords: ["land improvements", "site improvements"]
+      template_row: "Property, Plant and Equipment"
+      confidence: 0.90
+    
+    - keywords: ["building", "buildings", "structures", "facility", "facilities"]
+      template_row: "Property, Plant and Equipment"
+      confidence: 0.95
+    
+    - keywords: ["leasehold improvements", "tenant improvements", "build-out"]
+      template_row: "Property, Plant and Equipment"
+      confidence: 0.90
+    
+    - keywords: ["machinery", "equipment", "production equipment", "manufacturing equipment"]
+      template_row: "Property, Plant and Equipment"
+      confidence: 0.95
+    
+    - keywords: ["furniture", "fixtures", "office equipment", "office furniture"]
+      template_row: "Property, Plant and Equipment"
+      confidence: 0.90
+    
+    - keywords: ["computer", "hardware", "software", "it equipment", "servers"]
+      template_row: "Property, Plant and Equipment"
+      confidence: 0.85
+    
+    - keywords: ["vehicle", "vehicles", "automobiles", "fleet", "trucks"]
+      template_row: "Property, Plant and Equipment"
+      confidence: 0.90
+    
+    - keywords: ["construction in progress", "cip", "assets under construction"]
+      template_row: "Property, Plant and Equipment"
+      confidence: 0.90
+    
+    # Accumulated Depreciation
+    - keywords: ["accumulated depreciation", "depreciation", "accum depreciation", "accum depr"]
+      template_row: "Accumulated Depreciation"
+      confidence: 0.95
+    
+    # Lease Assets
+    - keywords: ["right-of-use", "rou asset", "lease asset", "operating lease asset", "finance lease asset"]
+      template_row: "Property, Plant and Equipment"
+      confidence: 0.85
+    
+    # Intangible Assets
+    - keywords: ["goodwill"]
+      template_row: "Intangible Assets"
+      confidence: 0.95
+    
+    - keywords: ["patent", "patents"]
+      template_row: "Intangible Assets"
+      confidence: 0.95
+    
+    - keywords: ["trademark", "trade name", "brand"]
+      template_row: "Intangible Assets"
+      confidence: 0.95
+    
+    - keywords: ["copyright", "copyrights"]
+      template_row: "Intangible Assets"
+      confidence: 0.90
+    
+    - keywords: ["franchise", "franchise rights"]
+      template_row: "Intangible Assets"
+      confidence: 0.90
+    
+    - keywords: ["customer list", "customer relationship", "customer contracts"]
+      template_row: "Intangible Assets"
+      confidence: 0.85
+    
+    - keywords: ["domain name", "website"]
+      template_row: "Intangible Assets"
+      confidence: 0.80
+    
+    - keywords: ["broadcast rights", "media rights"]
+      template_row: "Intangible Assets"
+      confidence: 0.85
+    
+    - keywords: ["non-compete", "covenant not to compete"]
+      template_row: "Intangible Assets"
+      confidence: 0.85
+    
+    - keywords: ["license", "licensing agreement", "licensing rights"]
+      template_row: "Intangible Assets"
+      confidence: 0.85
+    
+    - keywords: ["in-process r&d", "ipr&d", "in-process research"]
+      template_row: "Intangible Assets"
+      confidence: 0.85
+    
+    - keywords: ["accumulated amortization", "amortization"]
+      template_row: "Intangible Assets"
+      confidence: 0.90
+    
+    # Long-Term Investments
+    - keywords: ["long-term investment", "held-to-maturity", "htm securities"]
+      template_row: "Long-Term Investments"
+      confidence: 0.90
+    
+    - keywords: ["equity method investment", "investment in affiliate", "investment in subsidiary"]
+      template_row: "Long-Term Investments"
+      confidence: 0.90
+    
+    - keywords: ["joint venture", "jv investment"]
+      template_row: "Long-Term Investments"
+      confidence: 0.85
+    
+    # Other Non-Current Assets
+    - keywords: ["deferred tax asset non-current", "long-term dta"]
+      template_row: "Other Non-Current Assets"
+      confidence: 0.85
+    
+    - keywords: ["deferred financing", "debt issuance cost", "loan origination"]
+      template_row: "Other Non-Current Assets"
+      confidence: 0.85
+    
+    - keywords: ["security deposit", "deposits paid", "rental deposit"]
+      template_row: "Other Non-Current Assets"
+      confidence: 0.90
+    
+    - keywords: ["pension asset", "defined benefit asset", "overfunded pension"]
+      template_row: "Other Non-Current Assets"
+      confidence: 0.85
+    
+    - keywords: ["cash surrender value", "life insurance", "coli", "boli"]
+      template_row: "Other Non-Current Assets"
+      confidence: 0.85
+    
+    # Industry-Specific (Financial Services)
+    - keywords: ["loans receivable", "loan portfolio", "net loans"]
+      template_row: "Long-Term Investments"
+      confidence: 0.80
+    
+    - keywords: ["mortgage-backed", "mbs", "cmo"]
+      template_row: "Long-Term Investments"
+      confidence: 0.80
+    
+    - keywords: ["federal funds sold", "fed funds"]
+      template_row: "Long-Term Investments"
+      confidence: 0.75
+    
+    - keywords: ["reverse repo", "securities purchased under agreement"]
+      template_row: "Long-Term Investments"
+      confidence: 0.75
+    
+    - keywords: ["trading account", "trading assets"]
+      template_row: "Long-Term Investments"
+      confidence: 0.80
+    
+    - keywords: ["reinsurance recoverable", "reinsurance receivable"]
+      template_row: "Other Non-Current Assets"
+      confidence: 0.80
+    
+    - keywords: ["premiums receivable", "insurance receivable"]
+      template_row: "Accounts Receivable"
+      confidence: 0.80
+    
+    - keywords: ["deferred acquisition cost", "dac"]
+      template_row: "Other Non-Current Assets"
+      confidence: 0.80
+    
+    - keywords: ["separate account asset"]
+      template_row: "Other Non-Current Assets"
+      confidence: 0.75
+    
+    - keywords: ["real estate held for investment", "investment property"]
+      template_row: "Property, Plant and Equipment"
+      confidence: 0.85
+    
+    - keywords: ["regulatory asset"]
+      template_row: "Other Non-Current Assets"
+      confidence: 0.75
+
+# ============================================================================
+# CURRENT LIABILITIES
+# ============================================================================
+current_liabilities:
+  template_row: "Other Current Liabilities"  # Default fallback
+  items:
+    # Accounts Payable
+    - keywords: ["accounts payable", "a/p", "trade payable", "vendor payable", "supplier payable"]
+      template_row: "Accounts Payable"
+      confidence: 0.95
+    
+    # Accrued Expenses
+    - keywords: ["accrued expense", "accrued liabilities", "accruals"]
+      template_row: "Accrued Expenses"
+      confidence: 0.90
+    
+    - keywords: ["accrued compensation", "wages payable", "salaries payable", "accrued payroll"]
+      template_row: "Accrued Expenses"
+      confidence: 0.95
+    
+    - keywords: ["accrued bonus", "bonus payable"]
+      template_row: "Accrued Expenses"
+      confidence: 0.90
+    
+    - keywords: ["accrued interest", "interest payable"]
+      template_row: "Accrued Expenses"
+      confidence: 0.90
+    
+    - keywords: ["accrued rent", "rent payable"]
+      template_row: "Accrued Expenses"
+      confidence: 0.90
+    
+    - keywords: ["accrued professional", "professional fees payable", "legal payable", "audit payable"]
+      template_row: "Accrued Expenses"
+      confidence: 0.85
+    
+    - keywords: ["accrued marketing", "marketing payable"]
+      template_row: "Accrued Expenses"
+      confidence: 0.85
+    
+    # Taxes Payable
+    - keywords: ["income tax payable", "taxes payable", "income taxes payable"]
+      template_row: "Other Current Liabilities"
+      confidence: 0.90
+    
+    - keywords: ["sales tax payable", "use tax payable"]
+      template_row: "Other Current Liabilities"
+      confidence: 0.90
+    
+    - keywords: ["vat payable", "gst payable", "output tax"]
+      template_row: "Other Current Liabilities"
+      confidence: 0.85
+    
+    - keywords: ["payroll tax", "fica payable", "withholding payable"]
+      template_row: "Accrued Expenses"
+      confidence: 0.90
+    
+    # Dividends & Deferred Revenue
+    - keywords: ["dividend payable", "dividends payable"]
+      template_row: "Other Current Liabilities"
+      confidence: 0.90
+    
+    - keywords: ["deferred revenue", "unearned revenue", "contract liability", "deferred income"]
+      template_row: "Other Current Liabilities"
+      confidence: 0.90
+    
+    - keywords: ["customer deposit", "customer prepayment", "advance from customer"]
+      template_row: "Other Current Liabilities"
+      confidence: 0.90
+    
+    # Short-Term Debt
+    - keywords: ["short-term debt", "short term loan", "commercial paper", "st debt"]
+      template_row: "Short-Term Debt"
+      confidence: 0.95
+    
+    - keywords: ["current portion of long-term debt", "cpltd", "current maturities"]
+      template_row: "Current Portion of Long-Term Debt"
+      confidence: 0.95
+    
+    - keywords: ["current portion of lease", "lease liability current"]
+      template_row: "Other Current Liabilities"
+      confidence: 0.85
+    
+    - keywords: ["line of credit", "credit line", "revolver", "revolving credit"]
+      template_row: "Short-Term Debt"
+      confidence: 0.90
+    
+    # Other Current Liabilities
+    - keywords: ["due to affiliate", "due to related party", "intercompany payable"]
+      template_row: "Other Current Liabilities"
+      confidence: 0.90
+    
+    - keywords: ["derivative liability", "hedging liability", "forward contract liability"]
+      template_row: "Other Current Liabilities"
+      confidence: 0.85
+    
+    - keywords: ["warranty", "warranty reserve", "product warranty"]
+      template_row: "Other Current Liabilities"
+      confidence: 0.85
+    
+    - keywords: ["restructuring", "restructuring reserve", "restructuring liability"]
+      template_row: "Other Current Liabilities"
+      confidence: 0.85
+
+# ============================================================================
+# NON-CURRENT LIABILITIES
+# ============================================================================
+noncurrent_liabilities:
+  template_row: "Other Non-Current Liabilities"  # Default fallback
+  items:
+    # Long-Term Debt
+    - keywords: ["long-term debt", "long term loan", "notes payable", "bonds payable", "term loan"]
+      template_row: "Long-Term Debt"
+      confidence: 0.95
+    
+    - keywords: ["convertible debt", "convertible notes", "convertible bonds"]
+      template_row: "Long-Term Debt"
+      confidence: 0.90
+    
+    - keywords: ["senior secured", "senior notes", "senior debt"]
+      template_row: "Long-Term Debt"
+      confidence: 0.90
+    
+    - keywords: ["subordinated debt", "junior debt", "mezzanine debt"]
+      template_row: "Long-Term Debt"
+      confidence: 0.90
+    
+    - keywords: ["mortgage payable", "mortgage loan"]
+      template_row: "Long-Term Debt"
+      confidence: 0.95
+    
+    - keywords: ["debt issuance cost", "deferred financing", "loan fees"]
+      template_row: "Long-Term Debt"
+      confidence: 0.80
+    
+    - keywords: ["debt discount", "bond discount"]
+      template_row: "Long-Term Debt"
+      confidence: 0.80
+    
+    - keywords: ["debt premium", "bond premium"]
+      template_row: "Long-Term Debt"
+      confidence: 0.80
+    
+    # Lease Liabilities
+    - keywords: ["lease liability", "operating lease liability", "finance lease liability", "capital lease obligation"]
+      template_row: "Other Non-Current Liabilities"
+      confidence: 0.90
+    
+    # Deferred Items
+    - keywords: ["deferred revenue non-current", "long-term deferred revenue"]
+      template_row: "Other Non-Current Liabilities"
+      confidence: 0.85
+    
+    - keywords: ["deferred tax liability", "dtl", "deferred income tax liability"]
+      template_row: "Deferred Tax Liabilities"
+      confidence: 0.95
+    
+    # Pension & Other
+    - keywords: ["pension", "post-retirement", "defined benefit obligation", "pension liability"]
+      template_row: "Other Non-Current Liabilities"
+      confidence: 0.90
+    
+    - keywords: ["asset retirement obligation", "aro", "decommissioning"]
+      template_row: "Other Non-Current Liabilities"
+      confidence: 0.85
+    
+    - keywords: ["environmental", "remediation", "environmental liability"]
+      template_row: "Other Non-Current Liabilities"
+      confidence: 0.85
+    
+    - keywords: ["legal contingency", "litigation", "settlement", "lawsuit"]
+      template_row: "Other Non-Current Liabilities"
+      confidence: 0.80
+    
+    - keywords: ["minority interest liability", "mandatorily redeemable"]
+      template_row: "Other Non-Current Liabilities"
+      confidence: 0.80
+    
+    # Industry-Specific (Financial Services)
+    - keywords: ["deposits", "customer deposits bank", "non-interest bearing deposit", "interest bearing deposit"]
+      template_row: "Other Non-Current Liabilities"
+      confidence: 0.80
+    
+    - keywords: ["federal funds purchased", "fed funds purchased"]
+      template_row: "Other Non-Current Liabilities"
+      confidence: 0.75
+    
+    - keywords: ["repo", "securities sold under agreement", "repurchase agreement"]
+      template_row: "Other Non-Current Liabilities"
+      confidence: 0.75
+    
+    - keywords: ["policy reserve", "future policy benefit", "insurance reserve"]
+      template_row: "Other Non-Current Liabilities"
+      confidence: 0.80
+    
+    - keywords: ["unearned premium", "unearned insurance"]
+      template_row: "Other Non-Current Liabilities"
+      confidence: 0.80
+    
+    - keywords: ["claims reserve", "loss reserve", "claims payable"]
+      template_row: "Other Non-Current Liabilities"
+      confidence: 0.80
+    
+    - keywords: ["separate account liability"]
+      template_row: "Other Non-Current Liabilities"
+      confidence: 0.75
+    
+    - keywords: ["regulatory liability"]
+      template_row: "Other Non-Current Liabilities"
+      confidence: 0.75
+
+# ============================================================================
+# MEZZANINE / TEMPORARY EQUITY
+# ============================================================================
+mezzanine_equity:
+  template_row: "Other Non-Current Liabilities"  # Default maps to liabilities
+  items:
+    - keywords: ["redeemable preferred", "mandatorily redeemable preferred"]
+      template_row: "Other Non-Current Liabilities"
+      confidence: 0.80
+    
+    - keywords: ["redeemable non-controlling", "redeemable nci", "redeemable minority"]
+      template_row: "Other Non-Current Liabilities"
+      confidence: 0.80
+
+# ============================================================================
+# SHAREHOLDERS' EQUITY
+# ============================================================================
+equity:
+  template_row: "Retained Earnings"  # Default fallback
+  items:
+    # Capital Stock
+    - keywords: ["preferred stock", "preferred shares"]
+      template_row: "Common Stock"
+      confidence: 0.85
+    
+    - keywords: ["common stock", "ordinary shares", "capital stock", "share capital"]
+      template_row: "Common Stock"
+      confidence: 0.95
+    
+    - keywords: ["class a", "class b", "voting shares", "non-voting shares"]
+      template_row: "Common Stock"
+      confidence: 0.85
+    
+    # Additional Paid-In Capital
+    - keywords: ["additional paid-in capital", "apic", "paid-in capital", "share premium", "capital surplus"]
+      template_row: "Additional Paid-In Capital"
+      confidence: 0.95
+    
+    - keywords: ["stock-based compensation", "share-based compensation", "equity compensation"]
+      template_row: "Additional Paid-In Capital"
+      confidence: 0.85
+    
+    - keywords: ["warrant", "warrants outstanding"]
+      template_row: "Additional Paid-In Capital"
+      confidence: 0.80
+    
+    - keywords: ["stock subscribed", "common stock subscribed"]
+      template_row: "Additional Paid-In Capital"
+      confidence: 0.80
+    
+    # Retained Earnings
+    - keywords: ["retained earnings", "accumulated earnings", "undistributed earnings"]
+      template_row: "Retained Earnings"
+      confidence: 0.95
+    
+    - keywords: ["accumulated deficit", "retained deficit"]
+      template_row: "Retained Earnings"
+      confidence: 0.95
+    
+    # AOCI
+    - keywords: ["accumulated other comprehensive", "aoci", "oci"]
+      template_row: "Accumulated Other Comprehensive Income"
+      confidence: 0.95
+    
+    - keywords: ["unrealized gain", "unrealized loss", "afs unrealized"]
+      template_row: "Accumulated Other Comprehensive Income"
+      confidence: 0.85
+    
+    - keywords: ["foreign currency translation", "currency translation adjustment", "cta"]
+      template_row: "Accumulated Other Comprehensive Income"
+      confidence: 0.85
+    
+    - keywords: ["pension adjustment", "defined benefit adjustment"]
+      template_row: "Accumulated Other Comprehensive Income"
+      confidence: 0.85
+    
+    - keywords: ["cash flow hedge", "hedge gain", "hedge loss"]
+      template_row: "Accumulated Other Comprehensive Income"
+      confidence: 0.85
+    
+    # Treasury Stock & Other
+    - keywords: ["treasury stock", "treasury shares", "repurchased shares"]
+      template_row: "Treasury Stock"
+      confidence: 0.95
+    
+    - keywords: ["esop", "employee stock ownership"]
+      template_row: "Treasury Stock"
+      confidence: 0.80
+    
+    - keywords: ["non-controlling interest", "nci", "minority interest"]
+      template_row: "Accumulated Other Comprehensive Income"
+      confidence: 0.80

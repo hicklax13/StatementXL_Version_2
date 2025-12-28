@@ -61,6 +61,16 @@ class GaapClassifier:
     CATEGORY_NONCURRENT_LIABILITIES = "noncurrent_liabilities"
     CATEGORY_EQUITY = "equity"
     
+    # Cash Flow category constants
+    CATEGORY_OPERATING = "operating_activities"
+    CATEGORY_INVESTING = "investing_activities"
+    CATEGORY_FINANCING = "financing_activities"
+    
+    # Mapping files for comprehensive classification
+    IS_MAPPINGS_PATH = Path("data/income_statement_mappings.yaml")
+    BS_MAPPINGS_PATH = Path("data/balance_sheet_mappings.yaml")
+    CF_MAPPINGS_PATH = Path("data/cash_flow_mappings.yaml")
+    
     def __init__(self):
         """Initialize the classifier with Gemini and Ollama."""
         self.ontology = self._load_ontology()
@@ -726,6 +736,175 @@ Example:
             category = self.CATEGORY_EQUITY
             template_row = "Accumulated Other Comprehensive Income"
             confidence = 0.9
+        
+        return Classification(
+            original_label=label,
+            original_value=value,
+            category=category,
+            template_row=template_row,
+            confidence=confidence,
+        )
+    
+    def _classify_cash_flow_item(
+        self,
+        label: str,
+        value: Optional[float],
+        section_context: Optional[str] = None
+    ) -> Classification:
+        """
+        Classify cash flow statement line items to GAAP categories.
+        
+        Cash Flow sections:
+        - Operating Activities (Indirect/Direct)
+        - Investing Activities
+        - Financing Activities
+        """
+        label_lower = label.lower().strip()
+        
+        # Default to operating activities
+        category = self.CATEGORY_OPERATING
+        template_row = "Other Non-Cash Adjustments"
+        confidence = 0.7
+        
+        # ============================================
+        # STEP 1: Check for calculated/total rows
+        # ============================================
+        calculated_keywords = [
+            "net cash from operating", "net cash used in operating",
+            "net cash from investing", "net cash used in investing",
+            "net cash from financing", "net cash used in financing",
+            "net change in cash", "net increase", "net decrease",
+            "cash beginning", "cash ending", "beginning of period", "end of period"
+        ]
+        if any(ck in label_lower for ck in calculated_keywords):
+            return Classification(
+                original_label=label,
+                original_value=value,
+                category=self.CATEGORY_CALCULATED,
+                template_row=None,
+                confidence=0.98,
+            )
+        
+        # ============================================
+        # STEP 2: Use section context if available
+        # ============================================
+        if section_context:
+            section_lower = section_context.lower()
+            
+            if "operating" in section_lower:
+                category = self.CATEGORY_OPERATING
+                template_row = "Other Non-Cash Adjustments"
+                confidence = 0.85
+            elif "investing" in section_lower:
+                category = self.CATEGORY_INVESTING
+                template_row = "Other Investing Activities"
+                confidence = 0.85
+            elif "financing" in section_lower:
+                category = self.CATEGORY_FINANCING
+                template_row = "Other Financing Activities"
+                confidence = 0.85
+        
+        # ============================================
+        # STEP 3: Keyword-based classification
+        # ============================================
+        
+        # OPERATING ACTIVITIES
+        if any(kw in label_lower for kw in ["net income", "net loss", "net profit"]):
+            category = self.CATEGORY_OPERATING
+            template_row = "Net Income"
+            confidence = 0.95
+        elif any(kw in label_lower for kw in ["depreciation", "amortization"]):
+            category = self.CATEGORY_OPERATING
+            template_row = "Depreciation and Amortization"
+            confidence = 0.95
+        elif any(kw in label_lower for kw in ["stock-based compensation", "stock compensation", "share-based"]):
+            category = self.CATEGORY_OPERATING
+            template_row = "Stock-Based Compensation"
+            confidence = 0.90
+        elif any(kw in label_lower for kw in ["deferred tax", "deferred income tax"]):
+            category = self.CATEGORY_OPERATING
+            template_row = "Deferred Income Taxes"
+            confidence = 0.90
+        elif any(kw in label_lower for kw in ["gain on sale", "loss on sale", "gain on disposal", "loss on disposal"]):
+            category = self.CATEGORY_OPERATING
+            template_row = "Gain/Loss on Sale of Assets"
+            confidence = 0.85
+        elif any(kw in label_lower for kw in ["change in accounts receivable", "receivable change"]):
+            category = self.CATEGORY_OPERATING
+            template_row = "Change in Accounts Receivable"
+            confidence = 0.90
+        elif any(kw in label_lower for kw in ["change in inventory", "inventory change"]):
+            category = self.CATEGORY_OPERATING
+            template_row = "Change in Inventory"
+            confidence = 0.90
+        elif any(kw in label_lower for kw in ["change in prepaid", "prepaid change"]):
+            category = self.CATEGORY_OPERATING
+            template_row = "Change in Prepaid Expenses"
+            confidence = 0.85
+        elif any(kw in label_lower for kw in ["change in accounts payable", "payable change"]):
+            category = self.CATEGORY_OPERATING
+            template_row = "Change in Accounts Payable"
+            confidence = 0.90
+        elif any(kw in label_lower for kw in ["change in accrued", "accrued change"]):
+            category = self.CATEGORY_OPERATING
+            template_row = "Change in Accrued Expenses"
+            confidence = 0.85
+        elif any(kw in label_lower for kw in ["change in deferred revenue", "deferred revenue change"]):
+            category = self.CATEGORY_OPERATING
+            template_row = "Change in Deferred Revenue"
+            confidence = 0.85
+        
+        # INVESTING ACTIVITIES
+        elif any(kw in label_lower for kw in ["capital expenditure", "capex", "purchase of ppe", "purchase of property"]):
+            category = self.CATEGORY_INVESTING
+            template_row = "Capital Expenditures"
+            confidence = 0.95
+        elif any(kw in label_lower for kw in ["proceeds from sale of asset", "proceeds from sale of property"]):
+            category = self.CATEGORY_INVESTING
+            template_row = "Proceeds from Sale of Assets"
+            confidence = 0.90
+        elif any(kw in label_lower for kw in ["purchase of investment", "purchase of securities"]):
+            category = self.CATEGORY_INVESTING
+            template_row = "Purchase of Investments"
+            confidence = 0.90
+        elif any(kw in label_lower for kw in ["proceeds from sale of investment", "proceeds from maturity"]):
+            category = self.CATEGORY_INVESTING
+            template_row = "Proceeds from Sale of Investments"
+            confidence = 0.90
+        elif any(kw in label_lower for kw in ["acquisition", "business combination", "cash paid for acquisition"]):
+            category = self.CATEGORY_INVESTING
+            template_row = "Acquisitions, Net of Cash"
+            confidence = 0.90
+        elif any(kw in label_lower for kw in ["divestiture", "proceeds from sale of business"]):
+            category = self.CATEGORY_INVESTING
+            template_row = "Proceeds from Divestitures"
+            confidence = 0.85
+        
+        # FINANCING ACTIVITIES
+        elif any(kw in label_lower for kw in ["proceeds from debt", "debt issuance", "borrowings"]):
+            category = self.CATEGORY_FINANCING
+            template_row = "Proceeds from Debt"
+            confidence = 0.90
+        elif any(kw in label_lower for kw in ["repayment of debt", "debt repayment", "principal payment"]):
+            category = self.CATEGORY_FINANCING
+            template_row = "Repayments of Debt"
+            confidence = 0.90
+        elif any(kw in label_lower for kw in ["proceeds from stock", "stock issuance", "equity issuance"]):
+            category = self.CATEGORY_FINANCING
+            template_row = "Proceeds from Stock Issuance"
+            confidence = 0.90
+        elif any(kw in label_lower for kw in ["repurchase of stock", "treasury stock", "buyback"]):
+            category = self.CATEGORY_FINANCING
+            template_row = "Stock Repurchases"
+            confidence = 0.90
+        elif any(kw in label_lower for kw in ["dividend paid", "dividends", "cash dividend"]):
+            category = self.CATEGORY_FINANCING
+            template_row = "Dividends Paid"
+            confidence = 0.95
+        elif any(kw in label_lower for kw in ["finance lease", "capital lease", "lease payment"]):
+            category = self.CATEGORY_FINANCING
+            template_row = "Other Financing Activities"
+            confidence = 0.85
         
         return Classification(
             original_label=label,

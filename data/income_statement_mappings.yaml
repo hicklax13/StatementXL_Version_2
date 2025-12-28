@@ -1,0 +1,757 @@
+# Income Statement Classification Mappings
+# Comprehensive GAAP line item classification rules
+
+# ============================================================================
+# REVENUE / TOP LINE
+# ============================================================================
+revenue:
+  template_row: "Services" # Default fallback
+  items:
+    # Operating Revenue - Products
+    - keywords:
+        ["gross sales", "product sales", "merchandise sales", "product revenue"]
+      template_row: "Products"
+      confidence: 0.95
+
+    - keywords: ["net sales", "net revenue"]
+      template_row: "Products"
+      confidence: 0.90
+
+    # Operating Revenue - Services
+    - keywords:
+        ["service revenue", "services revenue", "fee revenue", "fee income"]
+      template_row: "Services"
+      confidence: 0.95
+
+    - keywords:
+        ["subscription", "membership", "recurring revenue", "saas revenue"]
+      template_row: "Services"
+      confidence: 0.90
+
+    - keywords: ["licensing revenue", "license fees", "license income"]
+      template_row: "Services"
+      confidence: 0.90
+
+    - keywords: ["royalty", "royalties", "royalty income", "royalty revenue"]
+      template_row: "Services"
+      confidence: 0.90
+
+    - keywords: ["franchise fee", "franchise income", "franchise revenue"]
+      template_row: "Services"
+      confidence: 0.85
+
+    - keywords: ["commission income", "commissions earned"]
+      template_row: "Services"
+      confidence: 0.85
+
+    - keywords: ["consulting fee", "consulting revenue", "advisory fees"]
+      template_row: "Services"
+      confidence: 0.90
+
+    - keywords: ["contract revenue", "percentage of completion", "poc revenue"]
+      template_row: "Services"
+      confidence: 0.85
+
+    - keywords: ["rental income", "lease income", "rent revenue"]
+      template_row: "Services"
+      confidence: 0.85
+
+    - keywords: ["grant revenue", "grant income", "government grant"]
+      template_row: "Services"
+      confidence: 0.80
+
+    - keywords: ["tuition", "tuition revenue", "student fees"]
+      template_row: "Services"
+      confidence: 0.85
+
+    - keywords: ["patient service", "patient revenue", "healthcare revenue"]
+      template_row: "Services"
+      confidence: 0.90
+
+    # Healthcare Revenue (from previous work)
+    - keywords: ["social security", "medicaid", "medicare"]
+      template_row: "Services"
+      confidence: 0.95
+
+    - keywords: ["resident", "resident fees", "resident charges"]
+      template_row: "Services"
+      confidence: 0.90
+
+# ============================================================================
+# CONTRA-REVENUE (DEDUCTIONS)
+# ============================================================================
+contra_revenue:
+  template_row: "Products" # Contra reduces revenue
+  items:
+    - keywords: ["sales return", "returns", "merchandise returns"]
+      template_row: "Products"
+      confidence: 0.90
+
+    - keywords: ["sales allowance", "allowances", "allowance for returns"]
+      template_row: "Products"
+      confidence: 0.90
+
+    - keywords: ["sales discount", "cash discount", "prompt payment discount"]
+      template_row: "Products"
+      confidence: 0.90
+
+    - keywords: ["volume rebate", "rebates", "customer rebate"]
+      template_row: "Products"
+      confidence: 0.85
+
+    - keywords: ["early payment discount"]
+      template_row: "Products"
+      confidence: 0.85
+
+# ============================================================================
+# COST OF GOODS SOLD (COGS)
+# ============================================================================
+cogs:
+  template_row: "Products" # COGS section in template
+  items:
+    - keywords: ["cost of goods sold", "cogs", "cost of sales", "cos"]
+      template_row: "Products"
+      confidence: 0.95
+
+    - keywords:
+        [
+          "cost of goods - raw material",
+          "raw material cost",
+          "direct materials",
+        ]
+      template_row: "Products"
+      confidence: 0.95
+
+    - keywords: ["direct labor", "labor cost - direct", "manufacturing labor"]
+      template_row: "Products"
+      confidence: 0.95
+
+    - keywords:
+        ["manufacturing overhead", "factory overhead", "production overhead"]
+      template_row: "Products"
+      confidence: 0.90
+
+    - keywords: ["cost of services", "service delivery cost", "delivery cost"]
+      template_row: "Services"
+      confidence: 0.90
+
+    - keywords: ["freight-in", "freight in", "shipping cost", "inbound freight"]
+      template_row: "Products"
+      confidence: 0.85
+
+    - keywords: ["packaging cost", "packaging expense", "packing material"]
+      template_row: "Products"
+      confidence: 0.85
+
+    - keywords:
+        ["inventory shrinkage", "shrinkage", "spoilage", "inventory loss"]
+      template_row: "Products"
+      confidence: 0.85
+
+    - keywords:
+        ["inventory obsolescence", "inventory write-down", "obsolete inventory"]
+      template_row: "Products"
+      confidence: 0.85
+
+    - keywords:
+        ["amortization of capitalized software", "software amortization cos"]
+      template_row: "Products"
+      confidence: 0.80
+
+    - keywords: ["warranty expense", "warranty cost", "product warranty"]
+      template_row: "Products"
+      confidence: 0.85
+
+    - keywords:
+        ["merchant fee", "credit card processing", "payment processing fee"]
+      template_row: "Products"
+      confidence: 0.80
+
+    - keywords:
+        [
+          "occupancy cost - retail",
+          "store occupancy",
+          "manufacturing occupancy",
+        ]
+      template_row: "Products"
+      confidence: 0.80
+
+    - keywords: ["royalties paid", "royalty expense", "royalty cost"]
+      template_row: "Products"
+      confidence: 0.85
+
+    - keywords: ["subcontractor", "subcontractor cost", "outsourced production"]
+      template_row: "Products"
+      confidence: 0.85
+
+# ============================================================================
+# OPERATING EXPENSES - COMPENSATION & BENEFITS
+# ============================================================================
+opex_compensation:
+  template_row: "Selling, General, and Administrative"
+  items:
+    - keywords:
+        ["salaries", "wages", "salary expense", "wage expense", "base salary"]
+      template_row: "Selling, General, and Administrative"
+      confidence: 0.95
+
+    - keywords:
+        ["executive compensation", "officer compensation", "management salary"]
+      template_row: "Selling, General, and Administrative"
+      confidence: 0.90
+
+    - keywords:
+        [
+          "employee benefit",
+          "health insurance",
+          "dental",
+          "vision",
+          "medical insurance",
+        ]
+      template_row: "Selling, General, and Administrative"
+      confidence: 0.90
+
+    - keywords: ["payroll tax", "fica", "futa", "suta", "employer tax"]
+      template_row: "Selling, General, and Administrative"
+      confidence: 0.90
+
+    - keywords:
+        [
+          "stock-based compensation",
+          "equity compensation",
+          "stock option expense",
+          "rsu expense",
+        ]
+      template_row: "Selling, General, and Administrative"
+      confidence: 0.90
+
+    - keywords: ["401k", "pension", "retirement", "matching contribution"]
+      template_row: "Selling, General, and Administrative"
+      confidence: 0.90
+
+    - keywords: ["bonus", "performance bonus", "incentive compensation"]
+      template_row: "Selling, General, and Administrative"
+      confidence: 0.90
+
+    - keywords: ["sales commission", "commission expense"]
+      template_row: "Selling, General, and Administrative"
+      confidence: 0.90
+
+    - keywords: ["severance", "severance cost", "termination benefit"]
+      template_row: "Selling, General, and Administrative"
+      confidence: 0.85
+
+    - keywords: ["workers compensation", "workers comp", "workman's comp"]
+      template_row: "Selling, General, and Administrative"
+      confidence: 0.90
+
+    # Payroll from healthcare (previous work)
+    - keywords: ["payroll", "payroll expense"]
+      template_row: "Selling, General, and Administrative"
+      confidence: 0.95
+
+    - keywords: ["payroll cna", "payroll administrator", "staff payroll"]
+      template_row: "Selling, General, and Administrative"
+      confidence: 0.95
+
+# ============================================================================
+# OPERATING EXPENSES - SG&A
+# ============================================================================
+opex_sga:
+  template_row: "Selling, General, and Administrative"
+  items:
+    - keywords: ["rent", "lease expense", "rent expense", "lease payment"]
+      template_row: "Selling, General, and Administrative"
+      confidence: 0.95
+
+    - keywords:
+        [
+          "utilities",
+          "utility expense",
+          "electricity",
+          "water",
+          "gas",
+          "internet",
+        ]
+      template_row: "Selling, General, and Administrative"
+      confidence: 0.95
+
+    - keywords: ["property tax", "real estate tax"]
+      template_row: "Selling, General, and Administrative"
+      confidence: 0.90
+
+    - keywords:
+        [
+          "maintenance",
+          "repairs",
+          "facilities maintenance",
+          "building maintenance",
+        ]
+      template_row: "Selling, General, and Administrative"
+      confidence: 0.90
+
+    - keywords: ["office supplies", "supplies expense", "consumables"]
+      template_row: "Selling, General, and Administrative"
+      confidence: 0.90
+
+    - keywords: ["postage", "delivery", "shipping expense", "courier"]
+      template_row: "Selling, General, and Administrative"
+      confidence: 0.85
+
+    - keywords:
+        ["telecommunications", "telephone", "phone expense", "cell phone"]
+      template_row: "Selling, General, and Administrative"
+      confidence: 0.90
+
+    - keywords:
+        ["dues", "subscriptions", "membership dues", "professional dues"]
+      template_row: "Selling, General, and Administrative"
+      confidence: 0.85
+
+    - keywords: ["legal fee", "legal expense", "attorney fee"]
+      template_row: "Selling, General, and Administrative"
+      confidence: 0.90
+
+    - keywords: ["accounting fee", "audit fee", "cpa fee"]
+      template_row: "Selling, General, and Administrative"
+      confidence: 0.90
+
+    - keywords: ["consulting fee", "consulting expense", "advisory fee"]
+      template_row: "Selling, General, and Administrative"
+      confidence: 0.90
+
+    - keywords:
+        [
+          "insurance expense",
+          "insurance premium",
+          "liability insurance",
+          "property insurance",
+          "d&o insurance",
+        ]
+      template_row: "Selling, General, and Administrative"
+      confidence: 0.90
+
+    - keywords: ["bank fee", "bank charge", "service charge", "bank service"]
+      template_row: "Selling, General, and Administrative"
+      confidence: 0.90
+
+    - keywords: ["travel", "entertainment", "t&e", "travel expense"]
+      template_row: "Selling, General, and Administrative"
+      confidence: 0.85
+
+    - keywords: ["meals", "representation", "client entertainment"]
+      template_row: "Selling, General, and Administrative"
+      confidence: 0.85
+
+    - keywords: ["recruitment", "hiring cost", "staffing fee", "headhunter"]
+      template_row: "Selling, General, and Administrative"
+      confidence: 0.85
+
+    - keywords:
+        ["training", "development", "education", "professional development"]
+      template_row: "Selling, General, and Administrative"
+      confidence: 0.85
+
+    - keywords:
+        ["software license", "saas", "software subscription", "cloud service"]
+      template_row: "Selling, General, and Administrative"
+      confidence: 0.85
+
+    - keywords:
+        [
+          "bad debt",
+          "credit loss",
+          "allowance for doubtful",
+          "provision for credit",
+        ]
+      template_row: "Selling, General, and Administrative"
+      confidence: 0.90
+
+    - keywords: ["director fee", "board fee"]
+      template_row: "Selling, General, and Administrative"
+      confidence: 0.85
+
+    # Healthcare specific (previous work)
+    - keywords: ["ahca fee", "license fee", "regulatory fee"]
+      template_row: "Selling, General, and Administrative"
+      confidence: 0.90
+
+# ============================================================================
+# OPERATING EXPENSES - MARKETING & ADVERTISING
+# ============================================================================
+opex_marketing:
+  template_row: "Selling, General, and Administrative"
+  items:
+    - keywords:
+        [
+          "advertising",
+          "ad expense",
+          "digital advertising",
+          "print advertising",
+          "tv advertising",
+        ]
+      template_row: "Selling, General, and Administrative"
+      confidence: 0.90
+
+    - keywords: ["public relations", "pr expense", "media relations"]
+      template_row: "Selling, General, and Administrative"
+      confidence: 0.85
+
+    - keywords: ["trade show", "event expense", "conference", "exhibition"]
+      template_row: "Selling, General, and Administrative"
+      confidence: 0.85
+
+    - keywords: ["promotional material", "marketing material", "collateral"]
+      template_row: "Selling, General, and Administrative"
+      confidence: 0.85
+
+    - keywords: ["branding", "design fee", "creative fee"]
+      template_row: "Selling, General, and Administrative"
+      confidence: 0.85
+
+    - keywords: ["marketing expense", "marketing cost"]
+      template_row: "Selling, General, and Administrative"
+      confidence: 0.90
+
+# ============================================================================
+# OPERATING EXPENSES - R&D
+# ============================================================================
+opex_rd:
+  template_row: "Research & Development"
+  items:
+    - keywords: ["research and development", "r&d", "r & d", "research expense"]
+      template_row: "Research & Development"
+      confidence: 0.95
+
+    - keywords: ["r&d salaries", "r&d wages", "research salaries"]
+      template_row: "Research & Development"
+      confidence: 0.90
+
+    - keywords: ["r&d materials", "r&d supplies", "research materials"]
+      template_row: "Research & Development"
+      confidence: 0.90
+
+    - keywords: ["prototype", "prototype cost", "product development"]
+      template_row: "Research & Development"
+      confidence: 0.85
+
+    - keywords: ["testing", "certification", "quality testing"]
+      template_row: "Research & Development"
+      confidence: 0.85
+
+    - keywords: ["lab equipment", "laboratory", "research equipment"]
+      template_row: "Research & Development"
+      confidence: 0.85
+
+    - keywords: ["outsourced r&d", "contract research", "external research"]
+      template_row: "Research & Development"
+      confidence: 0.85
+
+# ============================================================================
+# OPERATING EXPENSES - DEPRECIATION & AMORTIZATION
+# ============================================================================
+opex_da:
+  template_row: "Selling, General, and Administrative"
+  items:
+    - keywords: ["depreciation expense", "depreciation", "depr expense"]
+      template_row: "Selling, General, and Administrative"
+      confidence: 0.90
+
+    - keywords:
+        [
+          "amortization expense",
+          "amortization of intangible",
+          "intangible amortization",
+        ]
+      template_row: "Selling, General, and Administrative"
+      confidence: 0.90
+
+    - keywords: ["amortization of leasehold", "leasehold amortization"]
+      template_row: "Selling, General, and Administrative"
+      confidence: 0.85
+
+# ============================================================================
+# OPERATING EXPENSES - OTHER
+# ============================================================================
+opex_other:
+  template_row: "Selling, General, and Administrative"
+  items:
+    - keywords: ["restructuring", "restructuring charge", "reorganization"]
+      template_row: "Selling, General, and Administrative"
+      confidence: 0.85
+
+    - keywords: ["asset impairment", "impairment charge", "write-down"]
+      template_row: "Selling, General, and Administrative"
+      confidence: 0.85
+
+    - keywords: ["goodwill impairment"]
+      template_row: "Selling, General, and Administrative"
+      confidence: 0.85
+
+    - keywords: ["intangible impairment", "intangible asset impairment"]
+      template_row: "Selling, General, and Administrative"
+      confidence: 0.85
+
+    - keywords: ["litigation", "legal settlement", "lawsuit", "judgment"]
+      template_row: "Selling, General, and Administrative"
+      confidence: 0.85
+
+    - keywords: ["m&a", "merger", "acquisition cost", "integration cost"]
+      template_row: "Selling, General, and Administrative"
+      confidence: 0.80
+
+    - keywords:
+        ["gain on sale of asset", "loss on sale of asset", "disposal of asset"]
+      template_row: "Selling, General, and Administrative"
+      confidence: 0.80
+
+# ============================================================================
+# NON-OPERATING INCOME & EXPENSES
+# ============================================================================
+non_operating:
+  template_row: "Other Income/(Expenses), Net"
+  items:
+    - keywords: ["interest income", "interest earned", "interest revenue"]
+      template_row: "Other Income/(Expenses), Net"
+      confidence: 0.95
+
+    - keywords: ["interest expense", "interest cost", "interest paid"]
+      template_row: "Other Income/(Expenses), Net"
+      confidence: 0.95
+
+    - keywords: ["mortgage interest", "loan interest"]
+      template_row: "Other Income/(Expenses), Net"
+      confidence: 0.95
+
+    - keywords: ["amortization of debt discount", "debt discount amortization"]
+      template_row: "Other Income/(Expenses), Net"
+      confidence: 0.85
+
+    - keywords:
+        ["amortization of deferred financing", "financing cost amortization"]
+      template_row: "Other Income/(Expenses), Net"
+      confidence: 0.85
+
+    - keywords:
+        [
+          "gain on sale of investment",
+          "loss on sale of investment",
+          "investment gain",
+          "investment loss",
+        ]
+      template_row: "Other Income/(Expenses), Net"
+      confidence: 0.90
+
+    - keywords: ["unrealized gain", "unrealized loss", "mark-to-market"]
+      template_row: "Other Income/(Expenses), Net"
+      confidence: 0.85
+
+    - keywords:
+        [
+          "foreign exchange",
+          "fx gain",
+          "fx loss",
+          "currency gain",
+          "currency loss",
+        ]
+      template_row: "Other Income/(Expenses), Net"
+      confidence: 0.90
+
+    - keywords: ["dividend income", "dividends received"]
+      template_row: "Other Income/(Expenses), Net"
+      confidence: 0.90
+
+    - keywords:
+        [
+          "equity in earnings",
+          "equity method",
+          "affiliate earnings",
+          "equity income",
+        ]
+      template_row: "Other Income/(Expenses), Net"
+      confidence: 0.85
+
+    - keywords: ["derivative", "hedging", "fair value change"]
+      template_row: "Other Income/(Expenses), Net"
+      confidence: 0.80
+
+    - keywords: ["debt extinguishment", "early debt retirement", "gain on debt"]
+      template_row: "Other Income/(Expenses), Net"
+      confidence: 0.85
+
+    - keywords:
+        ["other income", "miscellaneous income", "other non-operating income"]
+      template_row: "Other Income/(Expenses), Net"
+      confidence: 0.80
+
+    - keywords:
+        [
+          "other expense",
+          "miscellaneous expense",
+          "other non-operating expense",
+        ]
+      template_row: "Other Income/(Expenses), Net"
+      confidence: 0.80
+
+# ============================================================================
+# INCOME TAX
+# ============================================================================
+income_tax:
+  template_row: "Provision for Income Taxes"
+  items:
+    - keywords: ["income tax", "tax provision", "provision for tax"]
+      template_row: "Provision for Income Taxes"
+      confidence: 0.95
+
+    - keywords: ["current tax", "current income tax", "current tax provision"]
+      template_row: "Provision for Income Taxes"
+      confidence: 0.90
+
+    - keywords: ["federal tax", "federal income tax"]
+      template_row: "Provision for Income Taxes"
+      confidence: 0.90
+
+    - keywords: ["state tax", "state income tax", "local tax"]
+      template_row: "Provision for Income Taxes"
+      confidence: 0.90
+
+    - keywords: ["foreign tax", "international tax"]
+      template_row: "Provision for Income Taxes"
+      confidence: 0.85
+
+    - keywords: ["deferred tax", "deferred income tax", "deferred provision"]
+      template_row: "Provision for Income Taxes"
+      confidence: 0.90
+
+    - keywords: ["tax benefit", "tax credit"]
+      template_row: "Provision for Income Taxes"
+      confidence: 0.85
+
+# ============================================================================
+# DISCONTINUED OPERATIONS
+# ============================================================================
+discontinued_ops:
+  template_row: "Net Income" # Falls through to bottom line
+  items:
+    - keywords:
+        [
+          "discontinued operation",
+          "discontinued segment",
+          "discontinued component",
+        ]
+      template_row: "Net Income"
+      confidence: 0.80
+
+    - keywords: ["disposal of discontinued", "gain on disposal"]
+      template_row: "Net Income"
+      confidence: 0.80
+
+# ============================================================================
+# NET INCOME & EPS (Calculated - Skip)
+# ============================================================================
+calculated:
+  template_row: null
+  items:
+    - keywords: ["net income", "net loss", "net profit", "bottom line"]
+      template_row: null
+      confidence: 0.95
+
+    - keywords: ["net income attributable", "income attributable to common"]
+      template_row: null
+      confidence: 0.90
+
+    - keywords: ["non-controlling interest", "minority interest income"]
+      template_row: null
+      confidence: 0.85
+
+    - keywords: ["preferred dividend", "preferred stock dividend"]
+      template_row: null
+      confidence: 0.85
+
+    - keywords: ["earnings per share", "eps", "basic eps", "diluted eps"]
+      template_row: null
+      confidence: 0.95
+
+    - keywords: ["weighted average shares", "shares outstanding"]
+      template_row: null
+      confidence: 0.90
+
+    - keywords: ["gross profit", "gross margin"]
+      template_row: null
+      confidence: 0.95
+
+    - keywords:
+        ["operating income", "operating profit", "income from operations"]
+      template_row: null
+      confidence: 0.95
+
+    - keywords: ["income before tax", "pretax income", "ebt"]
+      template_row: null
+      confidence: 0.95
+
+    - keywords: ["ebit", "ebitda"]
+      template_row: null
+      confidence: 0.90
+
+    - keywords: ["total income", "total revenue"]
+      template_row: null
+      confidence: 0.95
+
+    - keywords: ["total expenses", "total operating expense"]
+      template_row: null
+      confidence: 0.95
+
+# ============================================================================
+# INDUSTRY-SPECIFIC (FINANCIAL SERVICES / BANKS)
+# ============================================================================
+financial_services:
+  template_row: "Services" # Default for revenue-like items
+  items:
+    - keywords: ["interest income on loans", "loan interest income"]
+      template_row: "Services"
+      confidence: 0.85
+
+    - keywords: ["interest income on securities", "investment interest income"]
+      template_row: "Services"
+      confidence: 0.85
+
+    - keywords: ["interest expense on deposits", "deposit interest expense"]
+      template_row: "Other Income/(Expenses), Net"
+      confidence: 0.85
+
+    - keywords: ["interest expense on borrowings", "borrowing interest"]
+      template_row: "Other Income/(Expenses), Net"
+      confidence: 0.85
+
+    - keywords:
+        [
+          "provision for loan loss",
+          "provision for credit loss",
+          "loan loss provision",
+        ]
+      template_row: "Selling, General, and Administrative"
+      confidence: 0.85
+
+    - keywords: ["non-interest income", "fee income", "service fee income"]
+      template_row: "Services"
+      confidence: 0.85
+
+    - keywords: ["non-interest expense", "efficiency ratio"]
+      template_row: "Selling, General, and Administrative"
+      confidence: 0.80
+
+    - keywords: ["trust income", "fiduciary income", "trust fee"]
+      template_row: "Services"
+      confidence: 0.80
+
+    - keywords: ["service charge", "deposit service charge"]
+      template_row: "Services"
+      confidence: 0.80
+
+    - keywords: ["trading gain", "trading loss", "trading income"]
+      template_row: "Other Income/(Expenses), Net"
+      confidence: 0.85
+
+    - keywords: ["underwriting fee", "underwriting income"]
+      template_row: "Services"
+      confidence: 0.80

@@ -1,0 +1,557 @@
+# Cash Flow Statement Classification Mappings
+# Comprehensive GAAP line item classification rules
+
+# ============================================================================
+# OPERATING ACTIVITIES - INDIRECT METHOD
+# ============================================================================
+operating_net_income:
+  template_row: "Net Income"
+  items:
+    - keywords: ["net income", "net loss", "net profit"]
+      template_row: "Net Income"
+      confidence: 0.95
+
+operating_noncash_adjustments:
+  template_row: "Non-Cash Adjustments"
+  items:
+    # Depreciation & Amortization
+    - keywords: ["depreciation", "depreciation expense"]
+      template_row: "Depreciation and Amortization"
+      confidence: 0.95
+
+    - keywords: ["amortization of intangible", "intangible amortization"]
+      template_row: "Depreciation and Amortization"
+      confidence: 0.95
+
+    - keywords:
+        ["amortization of deferred financing", "financing cost amortization"]
+      template_row: "Depreciation and Amortization"
+      confidence: 0.85
+
+    - keywords:
+        ["amortization of debt discount", "debt discount", "debt premium"]
+      template_row: "Depreciation and Amortization"
+      confidence: 0.85
+
+    - keywords:
+        [
+          "amortization of rou",
+          "right-of-use amortization",
+          "lease amortization",
+        ]
+      template_row: "Depreciation and Amortization"
+      confidence: 0.85
+
+    # Stock Compensation & Deferred Tax
+    - keywords:
+        [
+          "stock-based compensation",
+          "stock compensation",
+          "equity compensation",
+          "share-based",
+        ]
+      template_row: "Stock-Based Compensation"
+      confidence: 0.95
+
+    - keywords:
+        ["deferred tax", "deferred income tax", "dta change", "dtl change"]
+      template_row: "Deferred Income Taxes"
+      confidence: 0.90
+
+    # Provisions & Write-downs
+    - keywords:
+        ["provision for bad debt", "bad debt expense", "credit loss provision"]
+      template_row: "Other Non-Cash Adjustments"
+      confidence: 0.85
+
+    - keywords:
+        [
+          "impairment",
+          "goodwill impairment",
+          "intangible impairment",
+          "asset impairment",
+        ]
+      template_row: "Other Non-Cash Adjustments"
+      confidence: 0.90
+
+    - keywords: ["inventory write-down", "inventory obsolescence"]
+      template_row: "Other Non-Cash Adjustments"
+      confidence: 0.85
+
+    # Unrealized Gains/Losses
+    - keywords:
+        ["unrealized foreign currency", "unrealized fx", "currency translation"]
+      template_row: "Other Non-Cash Adjustments"
+      confidence: 0.85
+
+    - keywords:
+        ["unrealized derivative", "unrealized hedging", "mark-to-market"]
+      template_row: "Other Non-Cash Adjustments"
+      confidence: 0.85
+
+    - keywords:
+        ["undistributed earnings", "equity method", "unconsolidated affiliate"]
+      template_row: "Other Non-Cash Adjustments"
+      confidence: 0.80
+
+    - keywords: ["pik interest", "non-cash interest", "paid-in-kind"]
+      template_row: "Other Non-Cash Adjustments"
+      confidence: 0.80
+
+    # Gains/Losses
+    - keywords:
+        [
+          "gain on sale of ppe",
+          "loss on sale of ppe",
+          "gain on disposal",
+          "loss on disposal",
+        ]
+      template_row: "Gain/Loss on Sale of Assets"
+      confidence: 0.90
+
+    - keywords: ["gain on sale of investment", "loss on sale of investment"]
+      template_row: "Gain/Loss on Sale of Assets"
+      confidence: 0.90
+
+    - keywords:
+        [
+          "gain on sale of business",
+          "loss on divestiture",
+          "divestiture gain/loss",
+        ]
+      template_row: "Gain/Loss on Sale of Assets"
+      confidence: 0.85
+
+    - keywords:
+        [
+          "gain on extinguishment",
+          "loss on extinguishment",
+          "debt extinguishment",
+        ]
+      template_row: "Gain/Loss on Debt Extinguishment"
+      confidence: 0.90
+
+    - keywords: ["pension adjustment", "post-retirement adjustment"]
+      template_row: "Other Non-Cash Adjustments"
+      confidence: 0.80
+
+operating_working_capital:
+  template_row: "Changes in Working Capital"
+  items:
+    # Receivables
+    - keywords:
+        [
+          "change in accounts receivable",
+          "decrease in receivable",
+          "increase in receivable",
+        ]
+      template_row: "Change in Accounts Receivable"
+      confidence: 0.95
+
+    # Inventory
+    - keywords:
+        [
+          "change in inventory",
+          "decrease in inventory",
+          "increase in inventory",
+        ]
+      template_row: "Change in Inventory"
+      confidence: 0.95
+
+    # Prepaid & Other Assets
+    - keywords:
+        ["change in prepaid", "decrease in prepaid", "increase in prepaid"]
+      template_row: "Change in Prepaid Expenses"
+      confidence: 0.90
+
+    - keywords: ["change in other current asset", "other current assets change"]
+      template_row: "Change in Other Assets"
+      confidence: 0.85
+
+    - keywords: ["change in other non-current asset", "other asset change"]
+      template_row: "Change in Other Assets"
+      confidence: 0.80
+
+    # Payables & Accruals
+    - keywords:
+        [
+          "change in accounts payable",
+          "increase in payable",
+          "decrease in payable",
+        ]
+      template_row: "Change in Accounts Payable"
+      confidence: 0.95
+
+    - keywords:
+        [
+          "change in accrued",
+          "accrued expense change",
+          "accrued liability change",
+        ]
+      template_row: "Change in Accrued Expenses"
+      confidence: 0.90
+
+    - keywords: ["change in income tax payable", "tax payable change"]
+      template_row: "Change in Other Liabilities"
+      confidence: 0.85
+
+    - keywords: ["change in deferred revenue", "unearned revenue change"]
+      template_row: "Change in Deferred Revenue"
+      confidence: 0.90
+
+    - keywords: ["change in operating lease", "lease liability change"]
+      template_row: "Change in Other Liabilities"
+      confidence: 0.85
+
+    - keywords: ["change in other liability", "other liabilities change"]
+      template_row: "Change in Other Liabilities"
+      confidence: 0.80
+
+# Direct Method (Alternative)
+operating_direct:
+  template_row: "Cash from Operating Activities"
+  items:
+    - keywords: ["cash received from customer", "customer collections"]
+      template_row: "Cash from Operating Activities"
+      confidence: 0.90
+
+    - keywords: ["cash paid to supplier", "supplier payments"]
+      template_row: "Cash from Operating Activities"
+      confidence: 0.90
+
+    - keywords: ["cash paid to employee", "employee wages paid"]
+      template_row: "Cash from Operating Activities"
+      confidence: 0.90
+
+    - keywords: ["cash paid for operating", "operating expense paid"]
+      template_row: "Cash from Operating Activities"
+      confidence: 0.85
+
+    - keywords: ["cash paid for interest", "interest paid"]
+      template_row: "Cash from Operating Activities"
+      confidence: 0.90
+
+    - keywords: ["cash paid for tax", "income tax paid"]
+      template_row: "Cash from Operating Activities"
+      confidence: 0.90
+
+# ============================================================================
+# INVESTING ACTIVITIES
+# ============================================================================
+investing_capex:
+  template_row: "Capital Expenditures"
+  items:
+    - keywords:
+        [
+          "purchase of ppe",
+          "purchase of property",
+          "capital expenditure",
+          "capex",
+        ]
+      template_row: "Capital Expenditures"
+      confidence: 0.95
+
+    - keywords:
+        ["proceeds from sale of ppe", "sale of property", "disposal proceeds"]
+      template_row: "Proceeds from Sale of Assets"
+      confidence: 0.95
+
+    - keywords: ["capitalized software", "software development cost"]
+      template_row: "Capital Expenditures"
+      confidence: 0.85
+
+    - keywords: ["purchase of intangible", "acquisition of intangible"]
+      template_row: "Capital Expenditures"
+      confidence: 0.85
+
+    - keywords: ["proceeds from sale of intangible"]
+      template_row: "Proceeds from Sale of Assets"
+      confidence: 0.85
+
+investing_securities:
+  template_row: "Investment Activities"
+  items:
+    - keywords:
+        [
+          "purchase of marketable securities",
+          "purchase of investment",
+          "securities purchased",
+        ]
+      template_row: "Purchase of Investments"
+      confidence: 0.90
+
+    - keywords:
+        [
+          "proceeds from sale of securities",
+          "sale of investments",
+          "securities sold",
+        ]
+      template_row: "Proceeds from Sale of Investments"
+      confidence: 0.90
+
+    - keywords: ["proceeds from maturity", "maturity of securities"]
+      template_row: "Proceeds from Sale of Investments"
+      confidence: 0.85
+
+    - keywords:
+        ["purchase of long-term investment", "long-term investment paid"]
+      template_row: "Purchase of Investments"
+      confidence: 0.85
+
+    - keywords: ["proceeds from long-term investment"]
+      template_row: "Proceeds from Sale of Investments"
+      confidence: 0.85
+
+investing_acquisitions:
+  template_row: "Acquisitions"
+  items:
+    - keywords:
+        ["acquisition", "business combination", "cash paid for acquisition"]
+      template_row: "Acquisitions, Net of Cash"
+      confidence: 0.90
+
+    - keywords:
+        [
+          "investment in joint venture",
+          "joint venture contribution",
+          "jv investment",
+        ]
+      template_row: "Acquisitions, Net of Cash"
+      confidence: 0.85
+
+    - keywords: ["investment in affiliate", "affiliate investment"]
+      template_row: "Acquisitions, Net of Cash"
+      confidence: 0.85
+
+    - keywords:
+        ["divestiture", "proceeds from sale of business", "sale of subsidiary"]
+      template_row: "Proceeds from Divestitures"
+      confidence: 0.90
+
+    - keywords:
+        ["derivative settlement investing", "hedge settlement investing"]
+      template_row: "Other Investing Activities"
+      confidence: 0.75
+
+investing_lending:
+  template_row: "Notes Receivable"
+  items:
+    - keywords:
+        ["issuance of note receivable", "loan issued", "lending activities"]
+      template_row: "Other Investing Activities"
+      confidence: 0.80
+
+    - keywords:
+        [
+          "repayment of note receivable",
+          "principal collected",
+          "loan repayment received",
+        ]
+      template_row: "Other Investing Activities"
+      confidence: 0.80
+
+# ============================================================================
+# FINANCING ACTIVITIES
+# ============================================================================
+financing_debt:
+  template_row: "Debt Activities"
+  items:
+    # Short-Term Debt
+    - keywords: ["proceeds from short-term debt", "short-term borrowing"]
+      template_row: "Proceeds from Debt"
+      confidence: 0.90
+
+    - keywords: ["repayment of short-term debt", "short-term debt repaid"]
+      template_row: "Repayments of Debt"
+      confidence: 0.90
+
+    # Long-Term Debt
+    - keywords:
+        [
+          "proceeds from long-term debt",
+          "bond issuance",
+          "note issuance",
+          "debt issuance",
+        ]
+      template_row: "Proceeds from Debt"
+      confidence: 0.95
+
+    - keywords:
+        ["repayment of long-term debt", "debt repayment", "principal payment"]
+      template_row: "Repayments of Debt"
+      confidence: 0.95
+
+    - keywords: ["debt issuance cost", "financing fee", "loan fee paid"]
+      template_row: "Repayments of Debt"
+      confidence: 0.80
+
+    - keywords: ["debt extinguishment", "early payoff", "debt retirement"]
+      template_row: "Repayments of Debt"
+      confidence: 0.85
+
+    # Revolving Credit
+    - keywords:
+        [
+          "revolver borrowing",
+          "credit facility borrowing",
+          "line of credit draw",
+        ]
+      template_row: "Proceeds from Debt"
+      confidence: 0.85
+
+    - keywords:
+        [
+          "revolver repayment",
+          "credit facility repayment",
+          "line of credit repaid",
+        ]
+      template_row: "Repayments of Debt"
+      confidence: 0.85
+
+financing_equity:
+  template_row: "Equity Activities"
+  items:
+    # Stock Issuance
+    - keywords:
+        [
+          "proceeds from common stock",
+          "stock issuance",
+          "ipo proceeds",
+          "equity issuance",
+        ]
+      template_row: "Proceeds from Stock Issuance"
+      confidence: 0.95
+
+    - keywords:
+        ["proceeds from stock option", "option exercise", "warrant exercise"]
+      template_row: "Proceeds from Stock Issuance"
+      confidence: 0.90
+
+    # Stock Repurchase
+    - keywords:
+        [
+          "repurchase of common stock",
+          "treasury stock",
+          "buyback",
+          "share repurchase",
+        ]
+      template_row: "Stock Repurchases"
+      confidence: 0.95
+
+    # Dividends
+    - keywords: ["dividend paid", "dividends to common", "cash dividend"]
+      template_row: "Dividends Paid"
+      confidence: 0.95
+
+    - keywords: ["preferred dividend", "preferred stock dividend"]
+      template_row: "Dividends Paid"
+      confidence: 0.90
+
+    # Preferred Stock
+    - keywords: ["proceeds from preferred stock", "preferred issuance"]
+      template_row: "Proceeds from Stock Issuance"
+      confidence: 0.85
+
+    - keywords: ["redemption of preferred", "preferred stock redemption"]
+      template_row: "Stock Repurchases"
+      confidence: 0.85
+
+financing_other:
+  template_row: "Other Financing Activities"
+  items:
+    - keywords:
+        ["finance lease payment", "capital lease payment", "lease principal"]
+      template_row: "Other Financing Activities"
+      confidence: 0.85
+
+    - keywords:
+        [
+          "distribution to nci",
+          "non-controlling interest distribution",
+          "minority distribution",
+        ]
+      template_row: "Other Financing Activities"
+      confidence: 0.80
+
+    - keywords:
+        ["contribution from nci", "nci contribution", "minority contribution"]
+      template_row: "Other Financing Activities"
+      confidence: 0.80
+
+    - keywords: ["contingent consideration", "earnout payment"]
+      template_row: "Other Financing Activities"
+      confidence: 0.75
+
+    - keywords: ["deferred financing", "financing cost paid"]
+      template_row: "Other Financing Activities"
+      confidence: 0.75
+
+# ============================================================================
+# RECONCILIATION & SUMMARY (Calculated - Skip)
+# ============================================================================
+calculated:
+  template_row: null
+  items:
+    - keywords:
+        ["effect of exchange rate", "fx effect on cash", "currency effect"]
+      template_row: null
+      confidence: 0.90
+
+    - keywords:
+        ["net increase in cash", "net decrease in cash", "net change in cash"]
+      template_row: null
+      confidence: 0.95
+
+    - keywords: ["cash beginning", "beginning cash balance", "opening cash"]
+      template_row: null
+      confidence: 0.95
+
+    - keywords: ["cash ending", "ending cash balance", "closing cash"]
+      template_row: null
+      confidence: 0.95
+
+    - keywords: ["restricted cash beginning", "restricted cash ending"]
+      template_row: null
+      confidence: 0.90
+
+    - keywords: ["net cash from operating", "net cash used in operating"]
+      template_row: null
+      confidence: 0.95
+
+    - keywords: ["net cash from investing", "net cash used in investing"]
+      template_row: null
+      confidence: 0.95
+
+    - keywords: ["net cash from financing", "net cash used in financing"]
+      template_row: null
+      confidence: 0.95
+
+# ============================================================================
+# SUPPLEMENTAL DISCLOSURES (Non-Cash - Skip)
+# ============================================================================
+supplemental:
+  template_row: null
+  items:
+    - keywords: ["cash paid for interest", "interest paid supplemental"]
+      template_row: null
+      confidence: 0.80
+
+    - keywords: ["cash paid for tax", "taxes paid supplemental"]
+      template_row: null
+      confidence: 0.80
+
+    - keywords: ["non-cash investing", "non-cash financing"]
+      template_row: null
+      confidence: 0.75
+
+    - keywords: ["capital lease acquired", "finance lease assumed"]
+      template_row: null
+      confidence: 0.75
+
+    - keywords: ["debt converted to equity", "conversion of debt"]
+      template_row: null
+      confidence: 0.75
+
+    - keywords: ["dividend declared not paid"]
+      template_row: null
+      confidence: 0.75
