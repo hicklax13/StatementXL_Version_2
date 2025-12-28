@@ -46,13 +46,20 @@ class GaapClassifier:
     
     ONTOLOGY_PATH = Path("data/gaap_ontology.yaml")
     
-    # Category constants
+    # Income Statement category constants
     CATEGORY_REVENUE = "revenue"
     CATEGORY_COGS = "cost_of_goods_sold"
     CATEGORY_OPERATING_EXPENSES = "operating_expenses"
     CATEGORY_OTHER = "other_income_expenses"
     CATEGORY_TAX = "tax_provision"
     CATEGORY_CALCULATED = "calculated"
+    
+    # Balance Sheet category constants
+    CATEGORY_CURRENT_ASSETS = "current_assets"
+    CATEGORY_NONCURRENT_ASSETS = "noncurrent_assets"
+    CATEGORY_CURRENT_LIABILITIES = "current_liabilities"
+    CATEGORY_NONCURRENT_LIABILITIES = "noncurrent_liabilities"
+    CATEGORY_EQUITY = "equity"
     
     def __init__(self):
         """Initialize the classifier with Gemini and Ollama."""
@@ -563,6 +570,170 @@ Example:
                 aggregated[template_row] = classification.original_value
         
         return aggregated
+    
+    def _classify_balance_sheet_item(
+        self,
+        label: str,
+        value: Optional[float],
+        section_context: Optional[str] = None
+    ) -> Classification:
+        """
+        Classify balance sheet line items to GAAP categories.
+        
+        Balance Sheet sections:
+        - Assets (Current, Non-Current)
+        - Liabilities (Current, Non-Current)
+        - Shareholders' Equity
+        """
+        label_lower = label.lower().strip()
+        
+        # Default to current assets
+        category = self.CATEGORY_CURRENT_ASSETS
+        template_row = "Other Current Assets"
+        confidence = 0.7
+        
+        # ============================================
+        # STEP 1: Check for calculated/total rows
+        # ============================================
+        calculated_keywords = [
+            "total assets", "total liabilities", "total equity",
+            "total current assets", "total non-current assets",
+            "total current liabilities", "total non-current liabilities",
+            "total shareholders", "total liabilities and equity"
+        ]
+        if any(ck in label_lower for ck in calculated_keywords):
+            return Classification(
+                original_label=label,
+                original_value=value,
+                category=self.CATEGORY_CALCULATED,
+                template_row=None,
+                confidence=0.98,
+            )
+        
+        # ============================================
+        # STEP 2: Use section context if available
+        # ============================================
+        if section_context:
+            section_lower = section_context.lower()
+            
+            if "current asset" in section_lower:
+                category = self.CATEGORY_CURRENT_ASSETS
+                template_row = "Other Current Assets"
+                confidence = 0.9
+            elif "non-current asset" in section_lower or "fixed asset" in section_lower:
+                category = self.CATEGORY_NONCURRENT_ASSETS
+                template_row = "Other Non-Current Assets"
+                confidence = 0.9
+            elif "current liabilit" in section_lower:
+                category = self.CATEGORY_CURRENT_LIABILITIES
+                template_row = "Other Current Liabilities"
+                confidence = 0.9
+            elif "non-current liabilit" in section_lower or "long-term" in section_lower:
+                category = self.CATEGORY_NONCURRENT_LIABILITIES
+                template_row = "Other Non-Current Liabilities"
+                confidence = 0.9
+            elif "equity" in section_lower or "shareholder" in section_lower:
+                category = self.CATEGORY_EQUITY
+                template_row = "Retained Earnings"
+                confidence = 0.9
+        
+        # ============================================
+        # STEP 3: Keyword-based classification
+        # ============================================
+        
+        # CURRENT ASSETS
+        if any(kw in label_lower for kw in ["cash", "bank account", "checking", "savings"]):
+            category = self.CATEGORY_CURRENT_ASSETS
+            template_row = "Cash and Cash Equivalents"
+            confidence = 0.95
+        elif any(kw in label_lower for kw in ["accounts receivable", "a/r", "receivable", "due from"]):
+            category = self.CATEGORY_CURRENT_ASSETS
+            template_row = "Accounts Receivable"
+            confidence = 0.9
+        elif any(kw in label_lower for kw in ["inventory", "stock", "merchandise"]):
+            category = self.CATEGORY_CURRENT_ASSETS
+            template_row = "Inventory"
+            confidence = 0.9
+        elif any(kw in label_lower for kw in ["prepaid", "advance payment"]):
+            category = self.CATEGORY_CURRENT_ASSETS
+            template_row = "Prepaid Expenses"
+            confidence = 0.9
+        
+        # NON-CURRENT ASSETS
+        elif any(kw in label_lower for kw in ["property", "building", "land", "equipment", "machinery", "furniture", "vehicle"]):
+            category = self.CATEGORY_NONCURRENT_ASSETS
+            template_row = "Property, Plant and Equipment"
+            confidence = 0.9
+        elif any(kw in label_lower for kw in ["depreciation", "accumulated depreciation"]):
+            category = self.CATEGORY_NONCURRENT_ASSETS
+            template_row = "Accumulated Depreciation"
+            confidence = 0.95
+        elif any(kw in label_lower for kw in ["intangible", "goodwill", "patent", "trademark", "copyright"]):
+            category = self.CATEGORY_NONCURRENT_ASSETS
+            template_row = "Intangible Assets"
+            confidence = 0.9
+        elif any(kw in label_lower for kw in ["investment", "securities", "long-term investment"]):
+            category = self.CATEGORY_NONCURRENT_ASSETS
+            template_row = "Long-Term Investments"
+            confidence = 0.85
+        
+        # CURRENT LIABILITIES
+        elif any(kw in label_lower for kw in ["accounts payable", "a/p", "payable", "due to"]):
+            category = self.CATEGORY_CURRENT_LIABILITIES
+            template_row = "Accounts Payable"
+            confidence = 0.9
+        elif any(kw in label_lower for kw in ["accrued", "accrual", "accrued expense"]):
+            category = self.CATEGORY_CURRENT_LIABILITIES
+            template_row = "Accrued Expenses"
+            confidence = 0.9
+        elif any(kw in label_lower for kw in ["short-term debt", "short term loan", "line of credit", "credit line"]):
+            category = self.CATEGORY_CURRENT_LIABILITIES
+            template_row = "Short-Term Debt"
+            confidence = 0.9
+        elif any(kw in label_lower for kw in ["current portion", "current maturities"]):
+            category = self.CATEGORY_CURRENT_LIABILITIES
+            template_row = "Current Portion of Long-Term Debt"
+            confidence = 0.9
+        
+        # NON-CURRENT LIABILITIES
+        elif any(kw in label_lower for kw in ["long-term debt", "long term loan", "mortgage", "notes payable", "bonds"]):
+            category = self.CATEGORY_NONCURRENT_LIABILITIES
+            template_row = "Long-Term Debt"
+            confidence = 0.9
+        elif any(kw in label_lower for kw in ["deferred tax", "deferred liability"]):
+            category = self.CATEGORY_NONCURRENT_LIABILITIES
+            template_row = "Deferred Tax Liabilities"
+            confidence = 0.9
+        
+        # EQUITY
+        elif any(kw in label_lower for kw in ["common stock", "capital stock", "share capital"]):
+            category = self.CATEGORY_EQUITY
+            template_row = "Common Stock"
+            confidence = 0.95
+        elif any(kw in label_lower for kw in ["additional paid", "paid-in capital", "apic"]):
+            category = self.CATEGORY_EQUITY
+            template_row = "Additional Paid-In Capital"
+            confidence = 0.9
+        elif any(kw in label_lower for kw in ["retained earnings", "accumulated deficit", "retained profit"]):
+            category = self.CATEGORY_EQUITY
+            template_row = "Retained Earnings"
+            confidence = 0.95
+        elif any(kw in label_lower for kw in ["treasury stock", "treasury shares"]):
+            category = self.CATEGORY_EQUITY
+            template_row = "Treasury Stock"
+            confidence = 0.9
+        elif any(kw in label_lower for kw in ["accumulated other comprehensive", "aoci", "oci"]):
+            category = self.CATEGORY_EQUITY
+            template_row = "Accumulated Other Comprehensive Income"
+            confidence = 0.9
+        
+        return Classification(
+            original_label=label,
+            original_value=value,
+            category=category,
+            template_row=template_row,
+            confidence=confidence,
+        )
 
 
 # Singleton instance
