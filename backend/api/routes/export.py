@@ -343,24 +343,26 @@ async def export_to_excel(
                         detected_year = year_val
                         break
         
-        # Final fallback: Extract text directly from PDF file
-        if detected_year is None and document.file_path:
+        # Extract text directly from PDF file for year detection AND context
+        raw_pdf_text = None
+        if document.file_path:
             try:
                 import pdfplumber
                 pdf_path = Path(document.file_path)
                 if pdf_path.exists():
                     with pdfplumber.open(pdf_path) as pdf:
                         if pdf.pages:
-                            text = pdf.pages[0].extract_text() or ""
-                            # Look for date range patterns
-                            date_range_match = re.search(r'(\d{1,2}/\d{1,2}/(\d{4}))\s*[-–]\s*(\d{1,2}/\d{1,2}/(\d{4}))', text)
-                            if date_range_match:
-                                year_val = int(date_range_match.group(4))
-                                if 2000 <= year_val <= 2100:
-                                    detected_year = year_val
-                                    logger.info(f"Detected year from PDF text: {detected_year}")
+                            raw_pdf_text = pdf.pages[0].extract_text() or ""
+                            # Use for year detection if not already found
+                            if detected_year is None:
+                                date_range_match = re.search(r'(\d{1,2}/\d{1,2}/(\d{4}))\s*[-–]\s*(\d{1,2}/\d{1,2}/(\d{4}))', raw_pdf_text)
+                                if date_range_match:
+                                    year_val = int(date_range_match.group(4))
+                                    if 2000 <= year_val <= 2100:
+                                        detected_year = year_val
+                                        logger.info(f"Detected year from PDF text: {detected_year}")
             except Exception as e:
-                logger.warning(f"Failed to extract year from PDF: {e}")
+                logger.warning(f"Failed to extract PDF text: {e}")
         
         # Override the hardcoded 2025 with detected year
         if detected_year:
@@ -387,11 +389,12 @@ async def export_to_excel(
                 "value": value,
             })
         
-        # Classify items using GAAP classifier
+        # Classify items using GAAP classifier (with raw PDF text for context)
         classifier = get_gaap_classifier()
         classifications = await classifier.classify_items(
             items_for_classification,
             statement_type=request.statement_type,
+            raw_text=raw_pdf_text,
         )
         
         logger.info(

@@ -35,6 +35,9 @@ class Settings(BaseSettings):
 
     # OCR Settings
     tesseract_cmd: Optional[str] = None
+    
+    # AI API Keys
+    google_api_key: Optional[str] = None  # For Gemini API
 
     @property
     def max_upload_size_bytes(self) -> int:
