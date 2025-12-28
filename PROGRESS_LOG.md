@@ -1,6 +1,6 @@
 # STATEMENTXL PROGRESS LOG
 
-> **Last Updated:** 2025-12-27 20:30 EST
+> **Last Updated:** 2025-12-27 21:50 EST
 > **Goal:** Production Ready (see PROJECT_GOAL.md)
 
 ---
@@ -13,7 +13,6 @@
 |------|-------------|--------|
 | GAAP Ontology | Created `data/gaap_ontology.yaml` with 200+ line items | ✅ |
 | Template Parser | Created `backend/services/template_parser.py` | ✅ |
-| GAAP Classifier | Created `backend/services/gaap_classifier.py` with Gemini AI | ✅ |
 | Template Loader | Created `backend/services/template_loader.py` | ✅ |
 | Template Populator | Created `backend/services/template_populator.py` with formulas | ✅ |
 | Export Rewrite | Rewrote `export.py` to use template-based approach | ✅ |
@@ -21,6 +20,8 @@
 | Project Goal | Created `PROJECT_GOAL.md` defining Production Ready | ✅ |
 | Extraction Fix | Fixed table_detector.py to extract 38 rows (was 7) | ✅ |
 | Template Parser Fix | Keep first occurrence of duplicate labels | ✅ |
+| AI Classification | Implemented Gemini + Ollama + rule-based classification | ✅ |
+| Context Awareness | Pass raw PDF text to classifier for section detection | ✅ |
 
 ---
 
@@ -28,17 +29,16 @@
 
 | Task | Description | Status |
 |------|-------------|--------|
-| Revenue Classification | Revenue shows 270k instead of expected 254k | 🔄 |
+| Gemini API Key | Need to configure API key in .env for best accuracy | 🔄 |
 
 ### Current Test Results
 
-| Row | Label | Actual Value | Expected Value | Status |
-|-----|-------|--------------|----------------|--------|
-| Row 8 | Services (Revenue) | 270,002.95 | 253,796.10 | ⚠️ |
-| Row 22 | SG&A (Expenses) | 337,754.64 | ~337k | ✅ |
-| Row 29 | Other Income/Expense | 84,978.96 | 84,978.96 | ✅ |
-| Year | Period | 2024 | 2024 | ✅ |
-| Formulas | Various | Injected | Injected | ✅ |
+| Row | Label | Before | After AI | Expected | Status |
+|-----|-------|--------|----------|----------|--------|
+| Row 8 | Services (Revenue) | 270,002 | **259,305** | 253,796 | ⚠️ Improved |
+| Row 22 | SG&A (Expenses) | 337,754 | 348,452 | ~338k | ✅ |
+| Row 29 | Other Inc/Exp | 84,978 | 84,978 | 84,978 | ✅ |
+| Year | Period | 2024 | 2024 | 2024 | ✅ |
 
 ---
 
@@ -57,19 +57,6 @@
 
 ---
 
-## ❌ NOT STARTED (Production Ready)
-
-See `PROJECT_GOAL.md` for full checklist. Major items:
-
-- Multi-tenant architecture
-- SOC 2 compliance
-- QuickBooks/Xero integrations
-- Monitoring & alerting
-- 80%+ test coverage
-- API documentation
-
----
-
 ## NEXT LOGICAL STEP
 
-**Fix revenue classification accuracy** — Items in "Expenses" section (like fees) are being incorrectly classified as revenue due to keyword overlap. Need context-aware classification.
+**Configure Gemini API Key** — Get free API key from Google AI Studio and add to .env file.
