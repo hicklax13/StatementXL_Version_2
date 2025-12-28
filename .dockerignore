@@ -1,0 +1,93 @@
+# Git
+.git
+.gitignore
+
+# Node/Frontend
+node_modules/
+frontend/
+*.log
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.Python
+*.so
+.eggs/
+*.egg-info/
+.installed.cfg
+*.egg
+venv/
+.venv/
+ENV/
+env/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.nox/
+
+# Documentation
+docs/
+*.md
+!README.md
+
+# Large files
+*.pdf
+*.xlsx
+*.xls
+*.doc
+*.docx
+exports/
+*.zip
+*.tar
+*.tar.gz
+
+# Test data
+tests/
+test_data/
+Sample_*.pdf
+
+# Config files not needed in container
+.env
+.env.local
+*.toml
+docker-compose*.yml
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Large artifacts found in repo
+statementxl.db
+test_json.db
+upload_response.json
+upload_result.txt
+debug_output.txt
+roadmap_content.txt
+*.db
+
+# More directories to exclude
+uploads/
+Kubs/
+Test_Financial_Statement_PDFs/
+backend-test_run_log/
+alembic/
+scripts/
+data/
+
+# GitHub workflows not needed
+.github/
+
+# Claude config
+.claude/
+.agent/
