@@ -233,8 +233,10 @@ class TemplateParser:
                 fill_color=fill_color,
             )
             
-            # Store in structure
-            structure.rows[label] = template_row
+            # Store in structure - ONLY if not already present (keep first occurrence)
+            # This ensures Products (row 7 under Revenue) is kept, not overwritten by Products (row 13 under COGS)
+            if label not in structure.rows:
+                structure.rows[label] = template_row
             
             # Track categories
             if is_section:

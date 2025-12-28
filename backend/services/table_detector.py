@@ -373,21 +373,21 @@ class TableDetector:
             
             cells: List[CellData] = []
             
-            # Find all numeric values in the line
-            numbers = number_pattern.findall(line)
+            # Pattern to find FINANCIAL numeric values (with comma/decimal formatting or $ sign)
+            # This excludes plain numbers like "210" which could be account codes
+            money_pattern = re.compile(r'[\$]?[\(]?[0-9]{1,3}(?:,[0-9]{3})*\.[0-9]{2}[\)]?')
+            numbers = money_pattern.findall(line)
             
             if numbers:
-                # Extract label (text before first number)
+                # Extract label: everything up to the first money value
                 first_num_pos = line.find(numbers[0])
                 label = line[:first_num_pos].strip() if first_num_pos > 0 else ""
                 
                 # Skip header rows that contain year patterns like "JAN 2025 FEB 2025"
-                if not label or any(m in line.upper() for m in ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"]) and len(numbers) > 3:
-                    # Check if this is a data row by looking for a label
-                    if not label or len(label) < 3:
-                        continue
+                if any(m in line.upper() for m in ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"]) and len(numbers) > 3:
+                    continue
                 
-                # Label cell
+                # Label cell (include even if label is account code like "210 Payroll")
                 if label:
                     cells.append(
                         CellData(
@@ -424,7 +424,8 @@ class TableDetector:
                     )
                 )
             
-            rows.append(TableRow(cells=cells, row_index=row_idx))
+            if cells:  # Only add row if we have cells
+                rows.append(TableRow(cells=cells, row_index=row_idx))
         
         if rows:
             return [

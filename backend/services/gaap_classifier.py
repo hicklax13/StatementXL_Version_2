@@ -220,47 +220,68 @@ Return ONLY a JSON array with objects containing:
         
         category = self.CATEGORY_OPERATING_EXPENSES  # Default
         subcategory = "sga"
-        template_row = "Selling, General, and Administrative"
+        template_row = "Selling, General, and Administrative"  # Matches template row 22
         confidence = 0.7
         
-        # Check for revenue
+        # Check for revenue keywords
         revenue_keywords = rules.get("revenue_keywords", [])
         if any(kw in label_lower for kw in revenue_keywords):
             # Check if it's truly income (not expense that mentions income)
             if not any(exp in label_lower for exp in ["expense", "cost"]):
                 category = self.CATEGORY_REVENUE
-                template_row = "Revenue"
+                template_row = "Services"  # Map to template row 8 (Services under Revenue)
                 confidence = 0.85
         
-        # Check for specific revenue items (healthcare)
-        healthcare_revenue = ["social security", "medicaid", "medicare", "patient", "resident"]
-        if any(hr in label_lower for hr in healthcare_revenue):
+        # Check for specific revenue items (healthcare, services)
+        # NOTE: 'fee' and 'support' removed as they match expense items like 'Bank fees'
+        revenue_specific_keywords = [
+            "social security", "medicaid", "medicare", "patient", "resident",
+            "funding", "grant", "contribution", "donation", "rental income", 
+            "service revenue", "subscription", "license", "royalty"
+        ]
+        if any(rk in label_lower for rk in revenue_specific_keywords):
             category = self.CATEGORY_REVENUE
-            template_row = "Revenue"
+            template_row = "Services"  # Revenue goes to Services row
             confidence = 0.9
         
-        # Check for COGS
-        cogs_keywords = ["cost of goods", "cogs", "direct cost", "materials cost"]
+        # Check for product-related revenue
+        product_keywords = ["product", "merchandise", "goods", "retail", "wholesale"]
+        if any(pk in label_lower for pk in product_keywords) and "cost" not in label_lower:
+            category = self.CATEGORY_REVENUE
+            template_row = "Products"  # Map to template row 7
+            confidence = 0.9
+        
+        # Check for COGS (only for explicit cost of goods items)
+        cogs_keywords = ["cost of goods sold", "cogs", "direct materials", "direct labor"]
         if any(kw in label_lower for kw in cogs_keywords):
             category = self.CATEGORY_COGS
-            template_row = "Cost of Goods Sold"
+            # For non-product businesses, COGS is rare - don't aggregate
+            template_row = "Products"  # Use Products row 13 under COGS section
+            confidence = 0.9
+        
+        # Check for R&D expenses
+        rd_keywords = ["research", "development", "r&d", "r & d"]
+        if any(kw in label_lower for kw in rd_keywords):
+            category = self.CATEGORY_OPERATING_EXPENSES
+            subcategory = "r_and_d"
+            template_row = "Research & Development"  # Map to template row 21
             confidence = 0.9
         
         # Check for other income/expenses (interest, mortgage)
-        other_keywords = rules.get("other_keywords", [])
+        other_keywords = rules.get("other_keywords", ["interest", "mortgage", "gain", "loss"])
         if any(kw in label_lower for kw in other_keywords):
             category = self.CATEGORY_OTHER
-            template_row = "Other Income/(Expenses), Net"
+            template_row = "Other Income/(Expenses), Net"  # Map to template row 29
             confidence = 0.85
         
         # Check for tax
-        if "tax" in label_lower and "income" in label_lower:
+        if "tax" in label_lower and ("income" in label_lower or "provision" in label_lower):
             category = self.CATEGORY_TAX
-            template_row = "Provision for Income Taxes"
+            template_row = "Provision for Income Taxes"  # Map to template row 34
             confidence = 0.9
         
-        # Check for calculated rows
-        calculated_keywords = ["gross profit", "operating income", "net income", "net profit", "overall total", "total income"]
+        # Check for calculated/total rows (don't aggregate these, they're calculated)
+        calculated_keywords = ["gross profit", "operating income", "net income", "net profit", "overall total"]
         if any(ck in label_lower for ck in calculated_keywords):
             category = self.CATEGORY_CALCULATED
             
@@ -270,23 +291,25 @@ Return ONLY a JSON array with objects containing:
                 template_row = "Operating Income"
             elif "net" in label_lower or "overall" in label_lower:
                 template_row = "Net Income"
-            elif "total income" in label_lower:
-                template_row = "Total Revenue"
-                category = self.CATEGORY_REVENUE
                 
             confidence = 0.95
         
-        # Check for total rows
+        # Check for total rows - these become the aggregated category totals
         if label_lower.startswith("total "):
-            # Keep the category but mark as total
             if "expense" in label_lower:
                 template_row = "Total Operating Expenses"
+                category = self.CATEGORY_CALCULATED  # Treat as calculated
             elif "revenue" in label_lower or "income" in label_lower:
                 template_row = "Total Revenue"
-                category = self.CATEGORY_REVENUE
+                category = self.CATEGORY_CALCULATED  # Treat as calculated
         
-        # Check SG&A specific keywords
-        sga_keywords = rules.get("sga_keywords", [])
+        # IMPORTANT: For SG&A items, use consistent template_row
+        # All operating expenses (except R&D) go to SG&A
+        sga_keywords = rules.get("sga_keywords", [
+            "payroll", "salary", "wage", "rent", "utility", "insurance",
+            "legal", "professional", "office", "travel", "training", "bank",
+            "advertising", "marketing", "repair", "maintenance", "fee"
+        ])
         if category == self.CATEGORY_OPERATING_EXPENSES:
             if any(kw in label_lower for kw in sga_keywords):
                 subcategory = "sga"
