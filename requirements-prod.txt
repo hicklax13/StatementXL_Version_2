@@ -1,0 +1,51 @@
+# StatementXL Version 2 - Production Dependencies (Slim)
+# Core Framework
+fastapi>=0.109.0
+uvicorn[standard]>=0.27.0
+python-multipart>=0.0.9
+
+# Database
+sqlalchemy>=2.0.25
+alembic>=1.13.0
+psycopg2-binary>=2.9.9
+
+# Validation & Settings
+pydantic>=2.6.0
+pydantic-settings>=2.1.0
+email-validator>=2.0.0
+
+# PDF Processing
+pdfplumber>=0.10.0
+PyMuPDF>=1.23.0
+Pillow>=10.0.0
+
+# Logging
+structlog>=24.1.0
+
+# HTTP Client
+httpx>=0.26.0
+
+# Utilities
+python-dotenv>=1.0.0
+aiofiles>=23.2.0
+
+# Classification (lightweight)
+numpy>=2.0.0,<2.3.0
+PyYAML>=6.0.1
+
+# Excel Template Parsing
+openpyxl>=3.1.0
+
+# Authentication
+python-jose[cryptography]>=3.3.0
+passlib[bcrypt]>=1.7.4
+bcrypt==4.2.0
+
+# Rate Limiting
+slowapi>=0.1.9
+
+# Payments
+stripe>=14.0.0
+
+# AI (Google Gemini API - lightweight)
+google-generativeai>=0.3.0
