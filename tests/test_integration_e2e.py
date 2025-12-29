@@ -96,9 +96,10 @@ class TestIncomeStatementPipeline:
             if formula_cell:
                 assert '=0+0' not in str(formula_cell), "Formula bug: =0+0 found"
             
-            # Verify company name was set
-            company_cell = ws.cell(row=1, column=2).value
-            assert company_cell is not None, "Company name not set"
+            # Verify company name was set (check col 1 or 2 due to potential merged cells)
+            company_cell_a = ws.cell(row=1, column=1).value
+            company_cell_b = ws.cell(row=1, column=2).value
+            assert company_cell_a is not None or company_cell_b is not None, "Company name not set in header"
             
         finally:
             os.unlink(tmp_path)
