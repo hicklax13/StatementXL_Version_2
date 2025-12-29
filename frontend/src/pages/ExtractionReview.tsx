@@ -183,6 +183,7 @@ const ExtractionReview: React.FC = () => {
                                     <th className="px-6 py-3 text-left text-xs font-medium text-green-800 uppercase tracking-wider">Label</th>
                                     <th className="px-6 py-3 text-right text-xs font-medium text-green-800 uppercase tracking-wider">Value</th>
                                     <th className="px-6 py-3 text-center text-xs font-medium text-green-800 uppercase tracking-wider w-24">Confidence</th>
+                                    <th className="px-6 py-3 text-center text-xs font-medium text-green-800 uppercase tracking-wider w-24">Reasoning</th>
                                     <th className="px-6 py-3 text-center text-xs font-medium text-green-800 uppercase tracking-wider w-24">Actions</th>
                                 </tr>
                             </thead>
@@ -224,6 +225,22 @@ const ExtractionReview: React.FC = () => {
                                                 >
                                                     {((valueCell?.confidence || 0) * 100).toFixed(0)}%
                                                 </span>
+                                            </td>
+                                            <td className="px-6 py-4 text-center">
+                                                {valueCell?.reasoning ? (
+                                                    <div className="group relative flex justify-center">
+                                                        <div className="cursor-help p-1 rounded-full bg-blue-50 text-blue-600 hover:bg-blue-100">
+                                                            <div className="w-4 h-4 text-xs font-bold font-serif italic">i</div>
+                                                        </div>
+                                                        <div className="absolute bottom-full mb-2 hidden group-hover:block w-64 p-3 bg-gray-900 text-white text-xs rounded-lg shadow-xl z-10 text-left">
+                                                            <div className="font-semibold mb-1 text-blue-300">AI Reasoning:</div>
+                                                            {valueCell.reasoning}
+                                                            <div className="absolute top-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-t-gray-900"></div>
+                                                        </div>
+                                                    </div>
+                                                ) : (
+                                                    <span className="text-gray-300">-</span>
+                                                )}
                                             </td>
                                             <td className="px-6 py-4 text-center">
                                                 {isEditing ? (

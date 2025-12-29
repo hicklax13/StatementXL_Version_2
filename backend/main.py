@@ -144,6 +144,15 @@ app.include_router(payments.router, prefix="/api/v1", tags=["Payments"])
 from backend.api.routes import monitoring
 app.include_router(monitoring.router, tags=["Monitoring"])
 
+# Mount static files (Frontend)
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
+import os
+
+# Serve static files if they exist (Production)
+static_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "frontend", "dist")
+if os.path.exists(static_dir):
+    app.mount("/", StaticFiles(directory=static_dir, html=True), name="static")
 
 # Global Exception Handlers
 from fastapi import Request

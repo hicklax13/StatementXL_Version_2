@@ -106,6 +106,7 @@ export interface CellData {
     parsed_value?: number;
     confidence: number;
     is_numeric?: boolean;
+    reasoning?: string;
 }
 
 export interface TableRow {

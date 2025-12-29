@@ -1,6 +1,23 @@
+# Stage 1: Build Frontend
+FROM node:18-alpine as frontend-builder
+
+WORKDIR /app/frontend
+
+# Copy frontend dependency files
+COPY frontend/package*.json ./
+
+# Install dependencies
+RUN npm ci
+
+# Copy frontend source code
+COPY frontend/ .
+
+# Build frontend
+RUN npm run build
+
+# Stage 2: Build Backend
 FROM python:3.11-slim
 
-# Set working directory
 WORKDIR /app
 
 # Set environment variables
@@ -21,6 +38,9 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy application code
 COPY . .
+
+# Copy built frontend from Stage 1
+COPY --from=frontend-builder /app/frontend/dist /app/frontend/dist
 
 # Create exports directory
 RUN mkdir -p /app/exports

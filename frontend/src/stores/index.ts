@@ -4,7 +4,7 @@ import { create } from 'zustand';
 export interface Document {
     id: string;
     filename: string;
-    status: 'pending' | 'processing' | 'completed' | 'failed';
+    status: 'pending' | 'processing' | 'completed' | 'failed' | 'reasoning';
     pageCount?: number;
     createdAt: string;
 }
@@ -15,6 +15,7 @@ export interface ExtractedTable {
         cells: Array<{
             value: string;
             confidence: number;
+            reasoning?: string;
         }>;
     }>;
 }
