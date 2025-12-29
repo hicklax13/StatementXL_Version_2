@@ -129,8 +129,11 @@ class TemplatePopulator:
             if row_info:
                 row_num = row_info.row_number
                 
+                # Round to 2 decimal places to fix floating point precision
+                rounded_value = round(value, 2) if isinstance(value, (int, float)) else value
+                
                 # Write value
-                cell = ws.cell(row=row_num, column=data_col, value=value)
+                cell = ws.cell(row=row_num, column=data_col, value=rounded_value)
                 
                 # Apply number formatting
                 cell.number_format = '#,##0.00'
@@ -195,36 +198,33 @@ class TemplatePopulator:
         
         This removes any placeholder values from the template so only
         real aggregated data appears in the output.
-        """
-        # List of rows that should have their value cells cleared
-        # These are the data rows (not headers or section labels)
-        data_rows = [
-            "Products", "Services",  # Revenue
-            "Products", "Services",  # COGS (same names, different section)
-            "Research & Development", "Selling, General, and Administrative",  # OpEx
-            "Other Income/(Expenses), Net",  # Other
-            "Provision for Income Taxes",  # Tax
-        ]
         
-        # Also clear all numeric cells in the data column
-        for label, row_info in structure.rows.items():
-            row_num = row_info.row_number
-            cell = ws.cell(row=row_num, column=data_col)
+        Note: We iterate over ALL worksheet rows (not just structure.rows)
+        because templates can have duplicate labels like "Products" appearing
+        in both Revenue and COGS sections.
+        """
+        # Iterate over all rows in the worksheet (up to row 50 or max_row)
+        max_row = min(ws.max_row, 50) if ws.max_row else 50
+        
+        for row_num in range(1, max_row + 1):
+            label_cell = ws.cell(row=row_num, column=2)  # Column B has labels
+            data_cell = ws.cell(row=row_num, column=data_col)
             
-            # Skip header rows and section labels (only clear data rows)
-            skip_labels = ["income statement", "line items", "year", "revenue", 
-                          "cost of goods sold", "operating expenses", 
-                          "other income/(expenses)", "total", "profit", 
-                          "operating income", "income before", "net income"]
+            label = str(label_cell.value or "").lower()
             
-            is_header = any(skip in label.lower() for skip in skip_labels)
+            # Skip section headers and calculated rows (they have formulas)
+            skip_keywords = ["income statement", "balance sheet", "cash flow",
+                            "line items", "year", "ended",
+                            "total", "profit", "gross profit",
+                            "operating income", "income before", "net income"]
             
-            # Clear if it's a data row (has a numeric placeholder)
-            if not is_header and cell.value is not None:
-                # Only clear numeric values (not formulas we want to keep)
-                if isinstance(cell.value, (int, float)):
-                    cell.value = None
-                    logger.debug(f"Cleared placeholder value at row {row_num}: {label}")
+            is_header = any(skip in label for skip in skip_keywords)
+            
+            # Clear ALL numeric placeholder values from data cells
+            if not is_header and data_cell.value is not None:
+                if isinstance(data_cell.value, (int, float)):
+                    logger.debug(f"Clearing placeholder {data_cell.value} at row {row_num}: {label}")
+                    data_cell.value = None
     
     def _track_row_for_formulas(
         self,
