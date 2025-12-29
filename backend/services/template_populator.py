@@ -46,6 +46,30 @@ class TemplatePopulator:
         """Initialize the populator."""
         pass
     
+    def _safe_cell_write(self, ws: Worksheet, row: int, col: int, value) -> bool:
+        """
+        Safely write to a cell, handling merged cells.
+        
+        Returns True if write succeeded, False if cell was read-only.
+        """
+        try:
+            cell = ws.cell(row=row, column=col)
+            cell.value = value
+            return True
+        except AttributeError as e:
+            if "read-only" in str(e):
+                # Cell is part of a merged range - find the top-left cell
+                for merged_range in ws.merged_cells.ranges:
+                    if (row, col) in [(r, c) for r in range(merged_range.min_row, merged_range.max_row + 1) 
+                                               for c in range(merged_range.min_col, merged_range.max_col + 1)]:
+                        # Write to the top-left cell of the merged range
+                        top_left = ws.cell(row=merged_range.min_row, column=merged_range.min_col)
+                        top_left.value = value
+                        return True
+                logger.warning(f"Could not write to cell ({row}, {col}): {e}")
+                return False
+            raise
+    
     def populate(
         self,
         workbook: Workbook,
@@ -85,6 +109,10 @@ class TemplatePopulator:
         if periods:
             self._set_period_headers(ws, structure, periods)
         
+        # Clear existing placeholder values in data columns before populating
+        data_col = structure.data_start_column
+        self._clear_data_columns(ws, structure, data_col)
+        
         # Track row ranges for formula injection
         row_ranges = {
             "revenue_items": [],
@@ -94,7 +122,6 @@ class TemplatePopulator:
         }
         
         # Populate aggregated data
-        data_col = structure.data_start_column
         
         for template_row, value in aggregated_data.items():
             row_info = structure.rows.get(template_row)
@@ -131,11 +158,11 @@ class TemplatePopulator:
         # Look for "Company Name" placeholder
         for label, row_info in structure.rows.items():
             if "company" in label.lower():
-                ws.cell(row=row_info.row_number, column=2, value=company_name)
+                self._safe_cell_write(ws, row_info.row_number, 2, company_name)
                 return
         
         # Default to row 1, column B
-        ws.cell(row=1, column=2, value=company_name)
+        self._safe_cell_write(ws, 1, 2, company_name)
     
     def _set_period_headers(
         self,
@@ -156,6 +183,48 @@ class TemplatePopulator:
         for i, year in enumerate(periods):
             col = structure.data_start_column + i
             ws.cell(row=header_row, column=col, value=year)
+    
+    def _clear_data_columns(
+        self,
+        ws: Worksheet,
+        structure: TemplateStructure,
+        data_col: int
+    ) -> None:
+        """
+        Clear all existing values in data columns before populating.
+        
+        This removes any placeholder values from the template so only
+        real aggregated data appears in the output.
+        """
+        # List of rows that should have their value cells cleared
+        # These are the data rows (not headers or section labels)
+        data_rows = [
+            "Products", "Services",  # Revenue
+            "Products", "Services",  # COGS (same names, different section)
+            "Research & Development", "Selling, General, and Administrative",  # OpEx
+            "Other Income/(Expenses), Net",  # Other
+            "Provision for Income Taxes",  # Tax
+        ]
+        
+        # Also clear all numeric cells in the data column
+        for label, row_info in structure.rows.items():
+            row_num = row_info.row_number
+            cell = ws.cell(row=row_num, column=data_col)
+            
+            # Skip header rows and section labels (only clear data rows)
+            skip_labels = ["income statement", "line items", "year", "revenue", 
+                          "cost of goods sold", "operating expenses", 
+                          "other income/(expenses)", "total", "profit", 
+                          "operating income", "income before", "net income"]
+            
+            is_header = any(skip in label.lower() for skip in skip_labels)
+            
+            # Clear if it's a data row (has a numeric placeholder)
+            if not is_header and cell.value is not None:
+                # Only clear numeric values (not formulas we want to keep)
+                if isinstance(cell.value, (int, float)):
+                    cell.value = None
+                    logger.debug(f"Cleared placeholder value at row {row_num}: {label}")
     
     def _track_row_for_formulas(
         self,
@@ -267,12 +336,33 @@ class TemplatePopulator:
             ws.cell(row=row_num, column=data_col, value=f"=SUM({refs['other_range']})")
             self._format_total_cell(ws.cell(row=row_num, column=data_col))
             refs["other_total"] = f"{col_letter}{row_num}"
+        elif "Total Other Income/(Expense)" in rows:
+            # Even without other_range, set the reference for downstream formulas
+            refs["other_total"] = f"{col_letter}{rows['Total Other Income/(Expense)'].row_number}"
         
         # Income Before Income Taxes formula
+        # Build formula from available components (operating income + other total)
         if "Income Before Income Taxes" in rows:
             row_num = rows["Income Before Income Taxes"].row_number
-            operating = refs.get("operating_income", "0")
-            other = refs.get("other_total", "0")
+            
+            # Get operating income reference (prefer existing ref, fall back to row)
+            if refs.get("operating_income"):
+                operating = refs["operating_income"]
+            elif "Operating Income" in rows:
+                operating = f"{col_letter}{rows['Operating Income'].row_number}"
+                refs["operating_income"] = operating
+            else:
+                operating = "0"
+            
+            # Get other total reference (prefer existing ref, fall back to row)
+            if refs.get("other_total"):
+                other = refs["other_total"]
+            elif "Total Other Income/(Expense)" in rows:
+                other = f"{col_letter}{rows['Total Other Income/(Expense)'].row_number}"
+                refs["other_total"] = other
+            else:
+                other = "0"
+            
             ws.cell(row=row_num, column=data_col, value=f"={operating}+{other}")
             self._format_calculated_cell(ws.cell(row=row_num, column=data_col))
             refs["income_before_tax"] = f"{col_letter}{row_num}"
@@ -280,7 +370,15 @@ class TemplatePopulator:
         # Net Income formula
         if "Net Income" in rows:
             row_num = rows["Net Income"].row_number
-            income_before_tax = refs.get("income_before_tax", "0")
+            
+            # Get income before tax reference
+            if refs.get("income_before_tax"):
+                income_before_tax = refs["income_before_tax"]
+            elif "Income Before Income Taxes" in rows:
+                income_before_tax = f"{col_letter}{rows['Income Before Income Taxes'].row_number}"
+            else:
+                income_before_tax = "0"
+            
             tax_row = rows.get("Provision for Income Taxes")
             tax = f"{col_letter}{tax_row.row_number}" if tax_row else "0"
             ws.cell(row=row_num, column=data_col, value=f"={income_before_tax}-{tax}")

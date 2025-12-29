@@ -76,14 +76,14 @@ class TemplateParser:
     
     TEMPLATES = {
         "income_statement": {
-            "basic": TEMPLATE_DIR / "income_statement" / "basic.xlsx",
-            "corporate": TEMPLATE_DIR / "income_statement" / "corporate.xlsx",
-            "professional": TEMPLATE_DIR / "income_statement" / "professional.xlsx",
+            "basic": TEMPLATE_DIR / "income_statement" / "Basic_Style_IS" / "StatementXL_Income_Statement_Template_Basic.xlsx",
+            "corporate": TEMPLATE_DIR / "income_statement" / "Corporate_Style_IS" / "StatementXL_Income_Statement_Template_Corporate.xlsx",
+            "professional": TEMPLATE_DIR / "income_statement" / "Professional_Style_IS" / "StatementXL_Income_Statement_Template_Professional.xlsx",
         },
         "balance_sheet": {
-            "basic": TEMPLATE_DIR / "balance_sheet" / "basic.xlsx",
-            "corporate": TEMPLATE_DIR / "balance_sheet" / "corporate.xlsx",
-            "professional": TEMPLATE_DIR / "balance_sheet" / "professional.xlsx",
+            "basic": TEMPLATE_DIR / "balance_sheet" / "Basic_Style" / "StatementXL_Balance_Sheet_Template_Basic.xlsx",
+            "corporate": TEMPLATE_DIR / "balance_sheet" / "Corporate_Style" / "StatementXL_Balance_Sheet_Template_Corporate.xlsx",
+            "professional": TEMPLATE_DIR / "balance_sheet" / "Professional_Style" / "StatementXL_Balance_Sheet_Template_Professional.xlsx",
         },
         "cash_flow": {
             "basic": TEMPLATE_DIR / "cash_flow" / "basic.xlsx",
