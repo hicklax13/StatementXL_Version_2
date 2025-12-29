@@ -1,0 +1,54 @@
+"""Company Name""",,
+,,
+,Balance Sheet,
+,Line Items,Year(s) Ended
+,Assets,2025
+,Current Assets,
+,,
+,Cash & Cash Equivalents,5.00
+,Accounts Receivable ,5.00
+,Inventory,5.00
+,Prepaid Expenses ,5.00
+,Other Current Assets,5.00
+,Total Current Assets, $25.00 
+,,
+,Non-Current Assets,
+,,
+,"Plant, Property & Equipment",5.00
+,"Intangible Assets, Net",5.00
+,Goodwill,5.00
+,Other Non-Current Assets,5.00
+,Total Non-Current Assets, $20.00 
+,,
+,Total Assests, $45.00 
+,,
+,Liabilities,
+,Current Liabilities,
+,,
+,Accounts Payable,5.00
+,Accrued Expenses,5.00
+,Deferred Revenue,5.00
+,Short-Term Debt,5.00
+,Total Current Liabilities, $20.00 
+,,
+,Non-Current Liabilities,
+,,
+,Long-Term Debt,5.00
+,Deferred Tax Liabilities,5.00
+,Other Long-Term Liabilities,5.00
+,Total Non-Current Liabilities, $15.00 
+,,
+,Total Liabilities, $35.00 
+,,
+,Equity,
+,,
+,Common Stock,5.00
+,Additional Paid-in-Capital,5.00
+,Retained Earnings,5.00
+,Accumulated Other Comprehensive Income,-5.00
+,Total Equity, $10.00 
+,,
+,Total Liabilities & Equity, $45.00 
+,,
+, Balance Check, $-   
+,,

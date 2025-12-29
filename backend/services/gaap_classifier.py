@@ -430,7 +430,122 @@ class GaapClassifier:
             classification = self._classify_with_enhanced_rules(label, value, statement_type, current_section)
             classifications.append(classification)
         
+        
+        # Trigger Reasoning Logic for ambiguous items (low confidence or generic "Other")
+        classifications = await self._reason_about_ambiguous_items(classifications, statement_type)
+        
         return classifications
+
+    def _build_reasoning_prompt(
+        self, 
+        items: List[Dict], 
+        statement_type: str,
+    ) -> str:
+        """
+        Build a prompt that forces the AI to REASON about the nature of the item.
+        """
+        items_text = "\n".join([f"- {item['label']} (Value: {item['value']}, Current: {item['current_category']})" for item in items])
+        
+        prompt = f'''You are a Senior Technical Accountant. Your goal is to determine the correct GAAP classification for ambiguous line items by REASONING about their nature.
+        
+=== CONTEXT ===
+Statement: {statement_type}
+Items to Analyze:
+{items_text}
+
+=== TASK ===
+For each item:
+1. Analyze the label text. What is the business nature? (e.g., "AHCA Fees" -> Regulatory Agency -> License/Fee)
+2. Based on this, determines if it is Revenue, COGS, OpEx, or Other.
+3. Assign the correct standard category.
+
+=== RULES ===
+- "AHCA Fees" / "License" -> Operating Expenses (SG&A)
+- "Amazon" / "Office Depot" -> Operating Expenses (Supplies)
+- "Zelle" / "Venmo" -> If no context, defaulting to Operating Expenses is safer than Revenue.
+- "Interest" -> Other Income/(Expense)
+
+=== OUTPUT JSON ===
+Return a JSON array where each object has:
+- "label": The input label
+- "reasoning": A 1-sentence explanation of WHY.
+- "category": [revenue, cost_of_goods_sold, operating_expenses, other_income_expenses]
+- "template_row": The best template row match.
+
+Example:
+[
+  {{"label": "AHCA Fees", "reasoning": "AHCA is the Agency for Health Care Administration; this is a regulatory license fee.", "category": "operating_expenses", "template_row": "Selling, General, and Administrative"}},
+  {{"label": "Amazon Mktp", "reasoning": "Generic vendor likely indicates office supplies or small equipment.", "category": "operating_expenses", "template_row": "Selling, General, and Administrative"}}
+]
+'''
+        return prompt
+
+    async def _reason_about_ambiguous_items(
+        self,
+        classifications: List[Classification],
+        statement_type: str,
+    ) -> List[Classification]:
+        """
+        Identify ambiguous items and run a secondary 'Reasoning' pass on them.
+        """
+        # Criteria for ambiguity:
+        # 1. Low confidence (< 0.85) AND not calculated
+        # 2. Category is 'other_income_expenses' (often a dumping ground) IF it's not clearly Interest/Depreciation
+        ambiguous_indices = []
+        for i, c in enumerate(classifications):
+            if c.category == self.CATEGORY_CALCULATED:
+                continue
+            
+            is_low_conf = c.confidence < 0.85
+            is_generic_other = (c.category == self.CATEGORY_OTHER and "interest" not in c.original_label.lower())
+            
+            if is_low_conf or is_generic_other:
+                ambiguous_indices.append(i)
+        
+        if not ambiguous_indices:
+            return classifications
+            
+        # Prepare items for reasoning
+        items_to_reason = []
+        for i in ambiguous_indices:
+            c = classifications[i]
+            items_to_reason.append({
+                "label": c.original_label,
+                "value": c.original_value,
+                "current_category": c.category
+            })
+            
+        logger.info(f"Triggering Reasoning Logic for {len(items_to_reason)} items")
+        
+        try:
+            # Use Gemini for reasoning (highest intelligence)
+            if self._gemini_model:
+                prompt = self._build_reasoning_prompt(items_to_reason, statement_type)
+                response = await self._gemini_model.generate_content_async(prompt)
+                
+                # Parse JSON
+                json_match = re.search(r'\[[\s\S]*\]', response.text)
+                if json_match:
+                    reasoned_data = json.loads(json_match.group())
+                    reasoned_map = {r['label'].lower(): r for r in reasoned_data}
+                    
+                    # Update classifications
+                    for i in ambiguous_indices:
+                        c = classifications[i]
+                        r_data = reasoned_map.get(c.original_label.lower())
+                        
+                        if r_data:
+                            # Update with reasoned conclusion
+                            c.category = r_data.get('category', c.category)
+                            c.template_row = r_data.get('template_row', c.template_row)
+                            c.reasoning = r_data.get('reasoning')
+                            c.confidence = 0.95 # High confidence after reasoning
+                            logger.info(f"Reasoning updated '{c.original_label}': {c.category}")
+                            
+        except Exception as e:
+            logger.warning(f"Reasoning pass failed: {e}")
+            
+        return classifications 
     
     def _build_gaap_expert_prompt(
         self, 
