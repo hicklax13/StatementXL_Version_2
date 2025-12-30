@@ -16,6 +16,7 @@ export interface ExtractedTable {
             value: string;
             confidence: number;
             reasoning?: string;
+            bbox?: number[];
         }>;
     }>;
 }

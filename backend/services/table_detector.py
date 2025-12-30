@@ -188,7 +188,7 @@ class TableDetector:
         self, page: pdfplumber.page.Page, page_num: int
     ) -> List[ExtractedTable]:
         """
-        Detect tables using pdfplumber.
+        Detect tables using pdfplumber's find_tables.
 
         Args:
             page: pdfplumber page object.
@@ -198,7 +198,8 @@ class TableDetector:
             List of extracted tables.
         """
         try:
-            tables = page.extract_tables(
+            # First try line-based detection
+            tables = page.find_tables(
                 table_settings={
                     "vertical_strategy": "lines_strict",
                     "horizontal_strategy": "lines_strict",
@@ -206,41 +207,72 @@ class TableDetector:
                     "join_tolerance": 3,
                 }
             )
-
-            extracted: List[ExtractedTable] = []
-
-            for table_data in tables:
-                if table_data and len(table_data) > 1:  # At least header + 1 row
-                    rows = self._process_pdfplumber_table(table_data, page_num)
-                    extracted.append(
-                        ExtractedTable(
-                            page=page_num,
-                            rows=rows,
-                            confidence=0.85,  # pdfplumber has decent accuracy
-                            detection_method="pdfplumber_lines",
-                        )
-                    )
-
-            # Try stream mode for borderless tables if no tables found
-            if not extracted:
-                tables = page.extract_tables(
+            
+            # If empty, try stream-based (text-based) detection
+            detection_method = "pdfplumber_lines"
+            if not tables:
+                tables = page.find_tables(
                     table_settings={
                         "vertical_strategy": "text",
                         "horizontal_strategy": "text",
                     }
                 )
+                detection_method = "pdfplumber_text"
 
-                for table_data in tables:
-                    if table_data and len(table_data) > 1:
-                        rows = self._process_pdfplumber_table(table_data, page_num)
-                        extracted.append(
-                            ExtractedTable(
-                                page=page_num,
-                                rows=rows,
-                                confidence=0.7,  # Lower confidence for stream mode
-                                detection_method="pdfplumber_text",
+            extracted: List[ExtractedTable] = []
+
+            for table in tables:
+                # table is a pdfplumber.table.Table object
+                # table.extract() returns List[List[str]]
+                # table.rows is List[List[rect]] (where rect is (x0, top, x1, bottom))
+                
+                text_data = table.extract()
+                if not text_data or len(text_data) <= 1:
+                    continue
+
+                rows: List[TableRow] = []
+                
+                for row_idx, row_text in enumerate(text_data):
+                    cells: List[CellData] = []
+                    
+                    for col_idx, cell_value in enumerate(row_text):
+                        val_str = str(cell_value).strip() if cell_value else ""
+                        
+                        # Get bbox from table.rows
+                        # Note: table.rows is a list of lists of cells (rects)
+                        bbox = None
+                        if row_idx < len(table.rows) and col_idx < len(table.rows[row_idx]):
+                            cell_rect = table.rows[row_idx][col_idx]
+                            if cell_rect:
+                                bbox = list(cell_rect)
+
+                        # Try to parse numeric value
+                        parsed = self._numeric_parser.parse(val_str)
+                        is_numeric = parsed.value is not None
+
+                        cells.append(
+                            CellData(
+                                value=val_str,
+                                row=row_idx,
+                                column=col_idx,
+                                bbox=bbox,
+                                confidence=parsed.confidence if is_numeric else 0.9,
+                                parsed_value=float(parsed.value) if parsed.value else None,
+                                is_numeric=is_numeric,
                             )
                         )
+                    
+                    rows.append(TableRow(cells=cells, row_index=row_idx))
+
+                extracted.append(
+                    ExtractedTable(
+                        page=page_num,
+                        rows=rows,
+                        bbox=list(table.bbox),
+                        confidence=0.85 if detection_method == "pdfplumber_lines" else 0.7,
+                        detection_method=detection_method,
+                    )
+                )
 
             return extracted
 
@@ -347,95 +379,196 @@ class TableDetector:
     
     def _extract_text_lines(self, page, page_num: int) -> List[ExtractedTable]:
         """
-        Extract structured data from text lines (fallback for tables that truncate).
-        
-        Uses full line text extraction and regex parsing to separate labels from values.
-        This preserves full label text that table extraction might truncate.
-        Handles both single-column (label value) and multi-column (label v1 v2 v3...) formats.
+        Extract structured data from text lines with bounding boxes.
         """
         import re
         
-        text = page.extract_text()
-        if not text:
+        # Get words with bounding boxes
+        # Each word: {'text': str, 'x0': float, 'x1': float, 'top': float, 'bottom': float, ...}
+        words = page.extract_words()
+        if not words:
             return []
+
+        # Group words into lines
+        # Determine strict line height or tolerance
+        lines_of_words = []
+        current_line = []
+        last_top = None
         
-        lines = text.strip().split('\n')
+        # Sort by top, then x0
+        sorted_words = sorted(words, key=lambda w: (w['top'], w['x0']))
+        
+        for word in sorted_words:
+            if last_top is None:
+                current_line.append(word)
+                last_top = word['top']
+            else:
+                # Tolerance of 3 points (approx 1mm)
+                if abs(word['top'] - last_top) < 3:
+                    current_line.append(word)
+                else:
+                    lines_of_words.append(sorted(current_line, key=lambda w: w['x0']))
+                    current_line = [word]
+                    last_top = word['top']
+        
+        if current_line:
+            lines_of_words.append(sorted(current_line, key=lambda w: w['x0']))
+
         rows: List[TableRow] = []
-        
-        # Pattern to find all numeric values in a line
-        # Matches: 123,456.78, $1,234.56, (1,234.56), 1234
-        number_pattern = re.compile(r'\$?[\(\-]?[\d,]+\.?\d*[\)]?')
-        
-        for row_idx, line in enumerate(lines):
-            line = line.strip()
-            if not line:
-                continue
+        money_pattern = re.compile(r'[\$]?[\(]?[0-9]{1,3}(?:,[0-9]{3})*\.[0-9]{2}[\)]?')
+
+        for row_idx, word_line in enumerate(lines_of_words):
+            # Reconstruct line text
+            line_text = " ".join(w['text'] for w in word_line)
             
+            # Skip if empty or header
+            if not line_text.strip():
+                continue
+                
+            # Skip header rows
+            if any(m in line_text.upper() for m in ["JAN", "FEB", "MAR", "APR", "DEC"]) and len(money_pattern.findall(line_text)) > 3:
+                continue
+
             cells: List[CellData] = []
             
-            # Pattern to find FINANCIAL numeric values (with comma/decimal formatting or $ sign)
-            # This excludes plain numbers like "210" which could be account codes
-            money_pattern = re.compile(r'[\$]?[\(]?[0-9]{1,3}(?:,[0-9]{3})*\.[0-9]{2}[\)]?')
-            numbers = money_pattern.findall(line)
+            # Find numbers using regex on the FULL line text
+            # This is safer than word-by-word because "$ 1,000.00" might be multiple words
+            # BUT we need to map back to words/bboxes.
+            
+            # Strategy: Identify value strings, then find roughly corresponding words.
+            # This is fuzzy but robust enough for overlays.
+            
+            numbers = money_pattern.findall(line_text)
             
             if numbers:
-                # Extract label: everything up to the first money value
-                first_num_pos = line.find(numbers[0])
-                label = line[:first_num_pos].strip() if first_num_pos > 0 else ""
+                # Split label vs values
+                # Heuristic: Label is everything before the first number
+                first_num_pos = line_text.find(numbers[0])
+                label_text = line_text[:first_num_pos].strip() if first_num_pos > 0 else ""
                 
-                # Skip header rows that contain year patterns like "JAN 2025 FEB 2025"
-                if any(m in line.upper() for m in ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"]) and len(numbers) > 3:
-                    continue
+                # Create Label Cell
+                if label_text:
+                    # Estimate bbox: Union of words that are left of the first number's approximate x position
+                    # Better: Words that contributed to label_text.
+                    # Since we sort by x0, first N words are likely the label.
+                    
+                    # We can iterate words and see where the break happens
+                    # But finding exact word split is tricky if spacing is normalized.
+                    
+                    # Simple Approach: 
+                    # Use all words whose x1 is less than the first number's estimated start?
+                    # No, we don't know first number's start yet.
+                    
+                    # Let's count characters approx?
+                    # Let's just create a bbox from the first N words that roughly match the length?
+                    
+                    # Alternative: Assume last M words are numbers match the `numbers` list count.
+                    # This holds if every number is separate words.
+                    # If "$1,000" is one word, good. If "$ 1,000" is two words, tricky.
+                    
+                    # Let's take the union of all words in the line for now as the row bbox?
+                    # No, we want cell bboxes.
+                    
+                    # "Best Effort": 
+                    # Union of all words in the line is the ROW bbox.
+                    # Label bbox: Union of first word to K-th word.
+                    # Value bbox: Union of words near the value?
+                    
+                    # Given the complexity, let's just assign the WHOLE LINE bbox to the label for now? 
+                    # And maybe leave value bboxes empty or approximate?
+                    
+                    # Correct approach for MVP:
+                    # Union all words -> Row BBox.
+                    # Assign Label BBox = Union of words up to the first number-like word.
+                    # Assign Value BBox = The specific word corresponding to the value.
+                    
+                    label_words = []
+                    value_words_pool = list(word_line) # Copy
+                    
+                    # Scan for label words
+                    # If a word looks like a number part, stop?
+                    
+                    pass 
+
+                # Re-implementation using simpler word scanning
+                current_label_words = []
+                value_cells = []
                 
-                # Label cell (include even if label is account code like "210 Payroll")
-                if label:
-                    cells.append(
-                        CellData(
-                            value=label,
-                            row=row_idx,
-                            column=0,
-                            confidence=0.95,
-                            is_numeric=False,
-                        )
-                    )
+                # We need to match valid numbers
+                for word in word_line:
+                    # Check if word is part of a number (contains digit, $, etc)
+                    # Use simpler check
+                    if re.search(r'[\d]', word['text']) and (re.search(r'\.', word['text']) or re.search(r',', word['text'])):
+                         # Likely a number value
+                         # Parse it
+                         parsed = self._numeric_parser.parse(word['text'])
+                         if parsed.value is not None:
+                             value_cells.append(CellData(
+                                 value=word['text'],
+                                 row=row_idx,
+                                 column=len(cells) + 1, # Placeholder, updated later
+                                 bbox=[word['x0'], word['top'], word['x1'], word['bottom']],
+                                 confidence=parsed.confidence,
+                                 parsed_value=float(parsed.value),
+                                 is_numeric=True
+                             ))
+                         else:
+                             # Maybe part of label (e.g. "Year 2024")
+                             current_label_words.append(word)
+                    else:
+                        current_label_words.append(word)
                 
-                # Add numeric cells
-                for col_idx, num_str in enumerate(numbers):
-                    parsed = self._numeric_parser.parse(num_str)
-                    cells.append(
-                        CellData(
-                            value=num_str,
-                            row=row_idx,
-                            column=col_idx + 1 if label else col_idx,
-                            confidence=parsed.confidence if parsed.value else 0.9,
-                            parsed_value=float(parsed.value) if parsed.value else None,
-                            is_numeric=parsed.value is not None,
-                        )
-                    )
-            else:
-                # Line is label-only (section header or total without value)
-                cells.append(
-                    CellData(
-                        value=line,
+                # Construct Label
+                if current_label_words:
+                    lbl_text = " ".join(w['text'] for w in current_label_words)
+                    lbl_bbox = [
+                        min(w['x0'] for w in current_label_words),
+                        min(w['top'] for w in current_label_words),
+                        max(w['x1'] for w in current_label_words),
+                        max(w['bottom'] for w in current_label_words)
+                    ]
+                    cells.append(CellData(
+                        value=lbl_text,
                         row=row_idx,
                         column=0,
+                        bbox=lbl_bbox,
                         confidence=0.9,
-                        is_numeric=False,
-                    )
-                )
-            
-            if cells:  # Only add row if we have cells
+                        is_numeric=False
+                    ))
+                
+                # Add value cells (fix columns)
+                for i, vc in enumerate(value_cells):
+                    vc.column = len(cells) # Append after label
+                    cells.append(vc)
+
+            else:
+                # Text-only line (header or note)
+                full_bbox = [
+                    min(w['x0'] for w in word_line),
+                    min(w['top'] for w in word_line),
+                    max(w['x1'] for w in word_line),
+                    max(w['bottom'] for w in word_line)
+                ] if word_line else None
+                
+                cells.append(CellData(
+                    value=line_text,
+                    row=row_idx,
+                    column=0,
+                    bbox=full_bbox,
+                    confidence=0.9,
+                    is_numeric=False
+                ))
+
+            if cells:
                 rows.append(TableRow(cells=cells, row_index=row_idx))
-        
+
         if rows:
-            return [
-                ExtractedTable(
-                    page=page_num,
-                    rows=rows,
-                    confidence=0.95,  # High confidence for text extraction
-                    detection_method="text_lines",
-                )
-            ]
+            return [ExtractedTable(
+                page=page_num,
+                rows=rows,
+                confidence=0.9,
+                detection_method="text_lines_bbox"
+            )]
         
         return []
 

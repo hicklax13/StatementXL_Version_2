@@ -90,6 +90,15 @@ class ExportResponse(BaseModel):
     rows_populated: int
 
 
+class ExportPreviewResponse(BaseModel):
+    """Response for export preview."""
+    
+    structure: dict
+    aggregated_data: dict
+    periods: List[int]
+    statement_type: str
+
+
 # =============================================================================
 # API Endpoints
 # =============================================================================
@@ -139,27 +148,16 @@ async def get_export_options() -> ExportOptionsResponse:
     summary="Export to Excel",
     description="Generate a formatted Excel file from extracted document data.",
 )
-async def export_to_excel(
+async def prepare_export_data(
     request: ExportRequest,
-    db: Session = Depends(get_db),
-) -> ExportResponse:
+    db: Session,
+):
     """
-    Export extracted document data to a formatted Excel file.
+    Prepare data for export or preview.
     
-    Args:
-        request: Export configuration.
-        db: Database session.
-        
     Returns:
-        ExportResponse with download URL.
+        Tuple of (aggregated_data, classifications, periods, effective_statement_type, document, extracted_items)
     """
-    logger.info(
-        "Export requested",
-        document_id=request.document_id,
-        style=request.style,
-        colorway=request.colorway,
-    )
-    
     # Validate colorway
     if request.colorway not in COLORWAYS:
         raise HTTPException(
@@ -270,174 +268,276 @@ async def export_to_excel(
                 
                 if value_count > 0 or is_section_header:
                     extracted_items.append(item)
-                    logger.debug("Extracted item", label=label, values=value_count, is_section=is_section_header)
-    
-    logger.info(
-        "Data extraction complete",
-        total_items=len(extracted_items),
-        periods=list(periods),
-    )
     
     if not periods:
         periods = {2025}  # Default to current year
     
-    # Build Excel file using Template-based approach with GAAP classification
-    try:
-        import re
-        from backend.services.gaap_classifier import get_gaap_classifier
-        from backend.services.template_loader import get_template_loader
-        from backend.services.template_populator import get_template_populator
-        
-        # Detect year from raw tables_json (look for date patterns)
-        detected_year = None
-        
-        # Search through all extract tables for date patterns
-        for extract in extracts:
-            if not extract.tables_json:
-                continue
-            for table in extract.tables_json:
-                rows = table.get("rows", [])
-                for row in rows:
-                    cells = row.get("cells", [])
-                    for cell in cells:
-                        cell_value = ""
-                        if isinstance(cell, dict):
-                            cell_value = str(cell.get("value", ""))
-                        else:
-                            cell_value = str(cell)
-                        
-                        # Look for date range patterns like "01/01/2024 - 12/31/2024"
-                        date_range_match = re.search(r'(\d{1,2}/\d{1,2}/(\d{4}))\s*[-–]\s*(\d{1,2}/\d{1,2}/(\d{4}))', cell_value)
-                        if date_range_match:
-                            # Use the end year (second date)
-                            year_val = int(date_range_match.group(4))
-                            if 2000 <= year_val <= 2100:
-                                detected_year = year_val
-                                logger.info(f"Detected year from date range: {detected_year}")
-                                break
-                        
-                        # Look for "Year Ended 2024" patterns
-                        year_ended_match = re.search(r'year\s*ended.*?(\d{4})', cell_value, re.IGNORECASE)
-                        if year_ended_match:
-                            year_val = int(year_ended_match.group(1))
-                            if 2000 <= year_val <= 2100:
-                                detected_year = year_val
-                                logger.info(f"Detected year from 'year ended': {detected_year}")
-                                break
+    # GAAP Classification Logic
+    import re
+    from backend.services.gaap_classifier import get_gaap_classifier
+    
+    # Detect year from raw tables_json (look for date patterns)
+    detected_year = None
+    
+    # Search through all extract tables for date patterns
+    for extract in extracts:
+        if not extract.tables_json:
+            continue
+        for table in extract.tables_json:
+            rows = table.get("rows", [])
+            for row in rows:
+                cells = row.get("cells", [])
+                for cell in cells:
+                    cell_value = ""
+                    if isinstance(cell, dict):
+                        cell_value = str(cell.get("value", ""))
+                    else:
+                        cell_value = str(cell)
                     
-                    if detected_year:
-                        break
+                    # Look for date range patterns like "01/01/2024 - 12/31/2024"
+                    date_range_match = re.search(r'(\d{1,2}/\d{1,2}/(\d{4}))\s*[-–]\s*(\d{1,2}/\d{1,2}/(\d{4}))', cell_value)
+                    if date_range_match:
+                        # Use the end year (second date)
+                        year_val = int(date_range_match.group(4))
+                        if 2000 <= year_val <= 2100:
+                            detected_year = year_val
+                            break
+                    
+                    # Look for "Year Ended 2024" patterns
+                    year_ended_match = re.search(r'year\s*ended.*?(\d{4})', cell_value, re.IGNORECASE)
+                    if year_ended_match:
+                        year_val = int(year_ended_match.group(1))
+                        if 2000 <= year_val <= 2100:
+                            detected_year = year_val
+                            break
+                
                 if detected_year:
                     break
             if detected_year:
                 break
-        
-        # Fallback to extracted_items if still not found
-        if detected_year is None:
-            for item in extracted_items:
-                label = item.get("label", "")
-                year_match = re.search(r'(\d{4})', label)
-                if year_match:
-                    year_val = int(year_match.group(1))
-                    if 2000 <= year_val <= 2100:
-                        detected_year = year_val
-                        break
-        
-        # Extract text directly from PDF file for year detection AND context
-        raw_pdf_text = None
-        if document.file_path:
-            try:
-                import pdfplumber
-                pdf_path = Path(document.file_path)
-                if pdf_path.exists():
-                    with pdfplumber.open(pdf_path) as pdf:
-                        if pdf.pages:
-                            raw_pdf_text = pdf.pages[0].extract_text() or ""
-                            # Use for year detection if not already found
-                            if detected_year is None:
-                                date_range_match = re.search(r'(\d{1,2}/\d{1,2}/(\d{4}))\s*[-–]\s*(\d{1,2}/\d{1,2}/(\d{4}))', raw_pdf_text)
-                                if date_range_match:
-                                    year_val = int(date_range_match.group(4))
-                                    if 2000 <= year_val <= 2100:
-                                        detected_year = year_val
-                                        logger.info(f"Detected year from PDF text: {detected_year}")
-            except Exception as e:
-                logger.warning(f"Failed to extract PDF text: {e}")
-        
-        # Override the hardcoded 2025 with detected year
         if detected_year:
-            # Remap items to use detected year
-            for item in extracted_items:
-                if "2025" in item:
-                    item[str(detected_year)] = item.pop("2025")
-            periods = {detected_year}
-            logger.info(f"Using detected year: {detected_year}")
-        
-        # Convert extracted items to classifier format
-        items_for_classification = []
+            break
+    
+    # Fallback to extracted_items if still not found
+    if detected_year is None:
         for item in extracted_items:
             label = item.get("label", "")
-            # Get first available value
-            value = None
-            for key in item.keys():
-                if key != "label" and isinstance(item[key], (int, float)):
-                    value = item[key]
+            year_match = re.search(r'(\d{4})', label)
+            if year_match:
+                year_val = int(year_match.group(1))
+                if 2000 <= year_val <= 2100:
+                    detected_year = year_val
                     break
+    
+    # Extract text directly from PDF file for year detection AND context
+    raw_pdf_text = None
+    if document.file_path:
+        try:
+            import pdfplumber
+            pdf_path = Path(document.file_path)
+            if pdf_path.exists():
+                with pdfplumber.open(pdf_path) as pdf:
+                    if pdf.pages:
+                        raw_pdf_text = pdf.pages[0].extract_text() or ""
+                        # Use for year detection if not already found
+                        if detected_year is None:
+                            date_range_match = re.search(r'(\d{1,2}/\d{1,2}/(\d{4}))\s*[-–]\s*(\d{1,2}/\d{1,2}/(\d{4}))', raw_pdf_text)
+                            if date_range_match:
+                                year_val = int(date_range_match.group(4))
+                                if 2000 <= year_val <= 2100:
+                                    detected_year = year_val
+        except Exception as e:
+            logger.warning(f"Failed to extract PDF text: {e}")
+    
+    # Override the hardcoded 2025 with detected year
+    if detected_year:
+        # Remap items to use detected year
+        for item in extracted_items:
+            if "2025" in item:
+                item[str(detected_year)] = item.pop("2025")
+        periods = {detected_year}
+    
+    # Convert extracted items to classifier format
+    items_for_classification = []
+    for item in extracted_items:
+        label = item.get("label", "")
+        # Get first available value
+        value = None
+        for key in item.keys():
+            if key != "label" and isinstance(item[key], (int, float)):
+                value = item[key]
+                break
+        
+        items_for_classification.append({
+            "label": label,
+            "value": value,
+        })
+    
+    # Classify items using GAAP classifier (with raw PDF text for context)
+    classifier = get_gaap_classifier()
+    
+    # Auto-detect statement type if set to 'auto' or if raw_pdf_text is available
+    effective_statement_type = request.statement_type
+    if effective_statement_type == "auto" and raw_pdf_text:
+        effective_statement_type = classifier.detect_statement_type(raw_pdf_text)
+    
+    classifications = await classifier.classify_items(
+        items_for_classification,
+        statement_type=effective_statement_type,
+        raw_text=raw_pdf_text,
+    )
+    
+    # Aggregate by GAAP category
+    aggregated = classifier.aggregate_by_category(classifications)
+    
+    return aggregated, classifications, periods, effective_statement_type, document, extracted_items
+
+
+@router.post(
+    "/export/preview",
+    response_model=ExportPreviewResponse,
+    summary="Preview Export",
+    description="Get a JSON preview of the final Excel structure.",
+)
+async def preview_export(
+    request: ExportRequest,
+    db: Session = Depends(get_db),
+) -> ExportPreviewResponse:
+    """Generate preview data."""
+    try:
+        (
+            aggregated, 
+            classifications, 
+            periods, 
+            effective_statement_type, 
+            _, 
+            _
+        ) = await prepare_export_data(request, db)
+        
+        # Load template structure (lightweight load)
+        from backend.services.template_loader import get_template_loader
+        loader = get_template_loader()
+        # Note: We just need structure, so we might not need the actual workbook object heavily
+        # But for now, using the same loader is fine
+        _, structure = loader.load(
+            statement_type=effective_statement_type, 
+            style=request.style
+        )
+        
+        # Transform flat aggregated data into nested structure for frontend preview
+        # { Category: { Label: { Period: Value } } }
+        nested_data = {}
+        primary_period = str(periods[0]) if periods else str(datetime.now().year)
+
+        # Helper to get category for a row
+        def get_category_for_row(row_label):
+            # Check classifications
+            for c in classifications:
+                if c.template_row == row_label:
+                    return c.category
+            # Check if calculated row
+            if row_label in structure.calculated_rows:
+                return "calculated"
+            return "uncategorized"
+
+        # Category display name mapping
+        category_map = {
+            "revenue": "Revenue",
+            "cost_of_goods_sold": "Cost of Goods Sold",
+            "operating_expenses": "Operating Expenses",
+            "other_income_expenses": "Other Income & Expenses",
+            "tax_provision": "Tax Provision",
+            "calculated": "Summary",
+            "current_assets": "Current Assets",
+            "noncurrent_assets": "Non-Current Assets",
+            "current_liabilities": "Current Liabilities",
+            "noncurrent_liabilities": "Non-Current Liabilities",
+            "equity": "Equity",
+            "operating_activities": "Operating Activities",
+            "investing_activities": "Investing Activities",
+            "financing_activities": "Financing Activities",
+        }
+
+        for row_label, value in aggregated.items():
+            raw_category = get_category_for_row(row_label)
+            display_category = category_map.get(raw_category, raw_category.replace("_", " ").title())
             
-            items_for_classification.append({
-                "label": label,
-                "value": value,
-            })
+            if display_category not in nested_data:
+                nested_data[display_category] = {}
+            
+            # Format value as dict keyed by period (frontend expects this structure)
+            nested_data[display_category][row_label] = {
+                primary_period: value
+            }
         
-        # Classify items using GAAP classifier (with raw PDF text for context)
-        classifier = get_gaap_classifier()
-        
-        # Auto-detect statement type if set to 'auto' or if raw_pdf_text is available
-        effective_statement_type = request.statement_type
-        if effective_statement_type == "auto" and raw_pdf_text:
-            effective_statement_type = classifier.detect_statement_type(raw_pdf_text)
-            logger.info(f"Auto-detected statement type: {effective_statement_type}")
-        
-        classifications = await classifier.classify_items(
-            items_for_classification,
-            statement_type=effective_statement_type,
-            raw_text=raw_pdf_text,
+        return ExportPreviewResponse(
+            structure=structure,
+            aggregated_data=nested_data,
+            periods=sorted(list(periods), reverse=True),
+            statement_type=effective_statement_type
         )
         
-        logger.info(
-            "Classification complete",
-            total_classified=len(classifications),
-            sample=[c.category for c in classifications[:5]],
+    except Exception as e:
+        logger.error("Preview failed", error=str(e), exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Preview failed: {str(e)}",
         )
+
+
+@router.post(
+    "/export/excel",
+    response_model=ExportResponse,
+    summary="Export to Excel",
+    description="Generate a formatted Excel file from extracted document data.",
+)
+async def export_to_excel(
+    request: ExportRequest,
+    db: Session = Depends(get_db),
+) -> ExportResponse:
+    """
+    Export extracted document data to a formatted Excel file.
+    """
+    logger.info(
+        "Export requested",
+        document_id=request.document_id,
+        style=request.style,
+        colorway=request.colorway,
+    )
+    
+    try:
+        # 1. Prepare Data
+        (
+            aggregated, 
+            classifications, 
+            periods, 
+            effective_statement_type, 
+            document, 
+            _
+        ) = await prepare_export_data(request, db)
+
+        # 2. Load Template
+        from backend.services.template_loader import get_template_loader
+        from backend.services.template_populator import get_template_populator
         
-        # Aggregate by GAAP category
-        aggregated = classifier.aggregate_by_category(classifications)
-        
-        logger.info(
-            "Aggregation complete",
-            categories=list(aggregated.keys()),
-            values=list(aggregated.values()),
-        )
-        
-        # Load template (use auto-detected statement type if applicable)
         loader = get_template_loader()
         workbook, structure = loader.load(
             statement_type=effective_statement_type,
             style=request.style,
         )
         
-        # Populate template
+        # 3. Populate Template
         populator = get_template_populator()
         workbook = populator.populate(
             workbook=workbook,
             structure=structure,
             aggregated_data=aggregated,
             classifications=classifications,
-            periods=sorted(periods, reverse=True),
+            periods=sorted(list(periods), reverse=True),
             company_name=request.company_name,
         )
         
-        # Save to exports directory
+        # 4. Save to File
         export_dir = settings.upload_dir / "exports"
         export_dir.mkdir(parents=True, exist_ok=True)
         
@@ -462,7 +562,7 @@ async def export_to_excel(
             download_url=f"/api/v1/export/download/{export_id}",
             style=request.style,
             colorway=request.colorway,
-            periods=sorted(periods, reverse=True),
+            periods=sorted(list(periods), reverse=True),
             rows_populated=len(aggregated),
         )
         

@@ -107,6 +107,7 @@ export interface CellData {
     confidence: number;
     is_numeric?: boolean;
     reasoning?: string;
+    bbox?: number[];
 }
 
 export interface TableRow {
@@ -263,6 +264,24 @@ export const getDocumentExtractions = async (documentId: string): Promise<Extrac
     return response.data;
 };
 
+export const updateExtractionCell = async (
+    documentId: string,
+    pageIndex: number,
+    rowIndex: number,
+    columnIndex: number,
+    reasoning?: string,
+    value?: string
+): Promise<{ success: boolean; message: string }> => {
+    const response = await api.patch(`/documents/${documentId}/extractions/cell`, {
+        page_index: pageIndex,
+        row_index: rowIndex,
+        column_index: columnIndex,
+        reasoning,
+        value,
+    });
+    return response.data;
+};
+
 // Audit APIs
 export const getAuditLog = async (
     page: number = 1,
@@ -352,6 +371,20 @@ export interface ExportResponse {
     rows_populated: number;
 }
 
+export interface ExportPreviewResponse {
+    structure: {
+        sections?: unknown[];
+        [key: string]: unknown;
+    };
+    aggregated_data: {
+        [category: string]: {
+            [label: string]: Record<string, number | null | string>;
+        };
+    };
+    periods: number[];
+    statement_type: string;
+}
+
 // Export APIs
 export const getExportOptions = async (): Promise<ExportOptionsResponse> => {
     const response = await api.get('/export/options');
@@ -360,6 +393,11 @@ export const getExportOptions = async (): Promise<ExportOptionsResponse> => {
 
 export const exportToExcel = async (request: ExportRequest): Promise<ExportResponse> => {
     const response = await api.post('/export/excel', request);
+    return response.data;
+};
+
+export const getExportPreview = async (request: ExportRequest): Promise<ExportPreviewResponse> => {
+    const response = await api.post('/export/preview', request);
     return response.data;
 };
 

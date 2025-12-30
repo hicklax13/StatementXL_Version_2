@@ -216,6 +216,8 @@ async def upload_pdf(
                             "confidence": cell.confidence,
                             "is_numeric": cell.is_numeric,
                             "parsed_value": float(cell.parsed_value) if cell.parsed_value is not None else None,
+                            "bbox": list(cell.bbox) if cell.bbox else None,
+                            "reasoning": getattr(cell, "reasoning", None),
                         })
                     rows_data.append({
                         "cells": cells_data,
@@ -415,3 +417,82 @@ async def get_document_extractions(
         "total_tables": len(tables),
     }
 
+
+from pydantic import BaseModel
+class CellUpdate(BaseModel):
+    page_index: int
+    row_index: int
+    column_index: int
+    reasoning: str | None = None
+    value: str | None = None
+
+@router.patch("/documents/{document_id}/extractions/cell")
+async def update_extraction_cell(
+    document_id: uuid.UUID,
+    update: CellUpdate,
+    db: Session = Depends(get_db),
+):
+    """Update a specific cell's data (reasoning or value) in the storage."""
+    extract = db.query(Extract).filter(Extract.document_id == document_id).first()
+    if not extract or not extract.tables_json:
+        raise HTTPException(404, "Extraction not found")
+
+    modified = False
+    new_tables = list(extract.tables_json)
+    
+    # Iterate to find the matching cell
+    for table in new_tables:
+        if table.get("page") == update.page_index:
+            for row in table.get("rows", []):
+                if row.get("row_index") == update.row_index:
+                    for cell in row.get("cells", []):
+                        if cell.get("column") == update.column_index:
+                            # Found the cell, update it
+                            if update.reasoning is not None:
+                                cell["reasoning"] = update.reasoning
+                                modified = True
+                            if update.value is not None:
+                                cell["value"] = update.value
+                                modified = True
+    
+    if modified:
+        # Create a new list to force SQLAlchemy to detect the change
+        # (JSONB mutation tracking can be tricky)
+        extract.tables_json = list(new_tables)
+        # Force the update
+        from sqlalchemy.orm.attributes import flag_modified
+        flag_modified(extract, "tables_json")
+        
+        db.commit()
+        return {"success": True, "message": "Cell updated"}
+    
+    raise HTTPException(404, "Cell not found")
+
+    raise HTTPException(404, "Cell not found")
+
+from fastapi.responses import FileResponse
+
+@router.get(
+    "/documents/{document_id}/download",
+    response_class=FileResponse,
+    summary="Download PDF document",
+    description="Download the original PDF document.",
+)
+async def download_pdf(
+    document_id: uuid.UUID,
+    db: Session = Depends(get_db),
+):
+    """Download the PDF file."""
+    document = db.query(Document).filter(Document.id == document_id).first()
+    if not document:
+        raise HTTPException(404, "Document not found")
+    
+    file_path = Path(document.file_path)
+    if not file_path.exists():
+        raise HTTPException(404, "File not found on server")
+        
+    return FileResponse(
+        path=file_path,
+        filename=document.filename,
+        media_type="application/pdf"
+    )

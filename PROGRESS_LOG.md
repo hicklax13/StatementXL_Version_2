@@ -27,6 +27,9 @@
 | Auto-Detection | Detects IS/BS/CF from PDF text | ✅ |
 | Category Normalization | YAML→Standard constants mapping | ✅ |
 | 27 New Tests | 4 new test classes | ✅ |
+| Frontend Reasoning UI | Progress phases + Tooltips | ✅ |
+| Single-Container Deploy | Multi-stage Dockerfile | ✅ |
+| Static File Serving | Backend serves React app | ✅ |
 
 ### Bug Fixes
 
