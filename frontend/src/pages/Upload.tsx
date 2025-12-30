@@ -168,7 +168,6 @@ const Upload: React.FC = () => {
                                     {item.status === 'uploading' && (
                                         <div
                                             className="absolute bottom-0 left-0 h-1 bg-green-500 transition-all duration-300"
-                                            // eslint-disable-next-line
                                             style={{ width: `${item.progress}%` }}
                                         />
                                     )}
