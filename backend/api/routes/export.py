@@ -142,12 +142,7 @@ async def get_export_options() -> ExportOptionsResponse:
     )
 
 
-@router.post(
-    "/export/excel",
-    response_model=ExportResponse,
-    summary="Export to Excel",
-    description="Generate a formatted Excel file from extracted document data.",
-)
+
 async def prepare_export_data(
     request: ExportRequest,
     db: Session,

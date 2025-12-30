@@ -168,6 +168,7 @@ const Upload: React.FC = () => {
                                     {item.status === 'uploading' && (
                                         <div
                                             className="absolute bottom-0 left-0 h-1 bg-green-500 transition-all duration-300"
+                                            // eslint-disable-next-line
                                             style={{ width: `${item.progress}%` }}
                                         />
                                     )}
@@ -203,6 +204,7 @@ const Upload: React.FC = () => {
                                                 <button
                                                     onClick={(e) => removeQueueItem(item.id, e)}
                                                     className="p-1 hover:bg-gray-200 rounded-full text-gray-400 hover:text-red-500 transition-colors"
+                                                    title="Remove from queue"
                                                 >
                                                     <X className="w-4 h-4" />
                                                 </button>

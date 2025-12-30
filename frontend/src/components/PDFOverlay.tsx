@@ -50,6 +50,7 @@ export const PDFOverlay: React.FC<PDFOverlayProps> = ({ fileUrl, tables, onClose
                             onClick={() => setPageNumber(prev => Math.max(prev - 1, 1))}
                             disabled={pageNumber <= 1}
                             className="p-1 hover:bg-gray-200 rounded disabled:opacity-50"
+                            title="Previous Page"
                         >
                             <ChevronLeft size={20} />
                         </button>
@@ -60,6 +61,7 @@ export const PDFOverlay: React.FC<PDFOverlayProps> = ({ fileUrl, tables, onClose
                             onClick={() => setPageNumber(prev => Math.min(prev + 1, numPages))}
                             disabled={pageNumber >= numPages}
                             className="p-1 hover:bg-gray-200 rounded disabled:opacity-50"
+                            title="Next Page"
                         >
                             <ChevronRight size={20} />
                         </button>
@@ -68,16 +70,16 @@ export const PDFOverlay: React.FC<PDFOverlayProps> = ({ fileUrl, tables, onClose
 
                 <div className="flex items-center gap-4">
                     <div className="flex items-center space-x-2">
-                        <button onClick={() => setScale(s => Math.max(0.5, s - 0.2))} className="p-2 hover:bg-gray-100 rounded">
+                        <button onClick={() => setScale(s => Math.max(0.5, s - 0.2))} className="p-2 hover:bg-gray-100 rounded" title="Zoom Out">
                             <ZoomOut size={20} />
                         </button>
                         <span className="text-sm font-medium">{Math.round(scale * 100)}%</span>
-                        <button onClick={() => setScale(s => Math.min(3, s + 0.2))} className="p-2 hover:bg-gray-100 rounded">
+                        <button onClick={() => setScale(s => Math.min(3, s + 0.2))} className="p-2 hover:bg-gray-100 rounded" title="Zoom In">
                             <ZoomIn size={20} />
                         </button>
                     </div>
 
-                    <button onClick={onClose} className="p-2 hover:bg-red-100 text-red-600 rounded">
+                    <button onClick={onClose} className="p-2 hover:bg-red-100 text-red-600 rounded" title="Close Verification">
                         <X size={24} />
                     </button>
                 </div>
@@ -112,17 +114,19 @@ export const PDFOverlay: React.FC<PDFOverlayProps> = ({ fileUrl, tables, onClose
                                     const width = (x1 - x0) * scale;
                                     const height = (bottom - top) * scale;
 
+                                    const isHighConfidence = cell.confidence > 0.8;
                                     return (
                                         <div
                                             key={`${idx}-${cell.value}`}
-                                            className="absolute border pointer-events-auto group"
+                                            className={`absolute border pointer-events-auto group ${isHighConfidence
+                                                    ? 'border-green-500/60 bg-green-500/10'
+                                                    : 'border-red-500/60 bg-red-500/10'
+                                                }`}
                                             style={{
                                                 left: `${left}px`,
                                                 top: `${t}px`,
                                                 width: `${width}px`,
                                                 height: `${height}px`,
-                                                borderColor: cell.confidence > 0.8 ? 'rgba(34, 197, 94, 0.6)' : 'rgba(239, 68, 68, 0.6)',
-                                                backgroundColor: cell.confidence > 0.8 ? 'rgba(34, 197, 94, 0.1)' : 'rgba(239, 68, 68, 0.1)',
                                             }}
                                         >
                                             {/* Tooltip */}
