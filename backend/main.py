@@ -147,6 +147,7 @@ Protected endpoints require a valid JWT token in the Authorization header.
         {"name": "API Keys", "description": "API key management for programmatic access"},
         {"name": "Webhooks", "description": "Webhook configuration for event notifications"},
         {"name": "Analytics", "description": "Usage metrics, quotas, and reporting"},
+        {"name": "Template Library", "description": "Template versioning, sharing, reviews, and collections"},
         {"name": "Monitoring", "description": "Health checks and metrics"},
     ],
 )
@@ -218,6 +219,10 @@ app.include_router(webhooks.router, prefix="/api/v1/webhooks", tags=["Webhooks"]
 # Analytics routes
 from backend.api.routes import analytics
 app.include_router(analytics.router, prefix="/api/v1/analytics", tags=["Analytics"])
+
+# Enhanced Template Library routes
+from backend.api.routes import template_library
+app.include_router(template_library.router, prefix="/api/v1/library", tags=["Template Library"])
 
 # Monitoring routes (no prefix for easy access)
 from backend.api.routes import monitoring

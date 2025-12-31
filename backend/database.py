@@ -59,5 +59,6 @@ def init_db() -> None:
     from backend.models import webhook  # noqa: F401
     from backend.models import audit  # noqa: F401
     from backend.models import analytics  # noqa: F401
+    from backend.models import template_library  # noqa: F401
 
     Base.metadata.create_all(bind=engine)
