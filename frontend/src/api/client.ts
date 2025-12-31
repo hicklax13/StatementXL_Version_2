@@ -1,13 +1,157 @@
-import axios from 'axios';
+import axios, { AxiosError } from 'axios';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1';
+
+// Error code to user-friendly message mapping
+const ERROR_MESSAGES: Record<string, string> = {
+    // Document Processing (SXL-1XX)
+    'SXL-101': 'Document not found. Please try uploading again.',
+    'SXL-102': 'Invalid document format. Please upload a PDF file.',
+    'SXL-103': 'Document upload failed. Please try again.',
+    'SXL-104': 'Unable to process this document. The file may be corrupted.',
+    // Table Extraction (SXL-2XX)
+    'SXL-201': 'No tables found in the document. Please ensure it contains financial data.',
+    'SXL-202': 'Unable to extract data from the PDF. Please check the document quality.',
+    // Mapping (SXL-3XX)
+    'SXL-301': 'Mapping not found. Please try again.',
+    'SXL-302': 'Invalid mapping configuration.',
+    // Template (SXL-4XX)
+    'SXL-401': 'Template not found. Please select a different template.',
+    'SXL-402': 'Invalid template format.',
+    'SXL-403': 'Template processing failed.',
+    // Authentication (SXL-5XX)
+    'SXL-501': 'Invalid email or password. Please try again.',
+    'SXL-502': 'Session expired. Please log in again.',
+    'SXL-503': 'Account locked. Please contact support.',
+    // Authorization (SXL-6XX)
+    'SXL-601': 'You do not have permission to perform this action.',
+    'SXL-602': 'Access denied.',
+    // Validation (SXL-7XX)
+    'SXL-701': 'Please check your input and try again.',
+    'SXL-702': 'Please enter a valid email address.',
+    'SXL-703': 'Password must be at least 8 characters.',
+    // Database (SXL-8XX)
+    'SXL-801': 'A database error occurred. Please try again later.',
+    // External Services (SXL-9XX)
+    'SXL-901': 'Service temporarily unavailable. Please try again later.',
+};
+
+// API Error interface
+export interface ApiError {
+    message: string;
+    error_code?: string;
+    details?: Record<string, unknown>;
+}
+
+// Parse error response and return user-friendly message
+export const getErrorMessage = (error: unknown): string => {
+    if (axios.isAxiosError(error)) {
+        const axiosError = error as AxiosError<ApiError>;
+
+        // Check for network errors
+        if (!axiosError.response) {
+            if (axiosError.code === 'ECONNABORTED') {
+                return 'Request timed out. Please check your connection and try again.';
+            }
+            return 'Unable to connect to the server. Please check your internet connection.';
+        }
+
+        // Check for backend error code
+        const errorCode = axiosError.response.data?.error_code;
+        if (errorCode && ERROR_MESSAGES[errorCode]) {
+            return ERROR_MESSAGES[errorCode];
+        }
+
+        // Check for detail message from FastAPI
+        const detail = axiosError.response.data?.message ||
+            (axiosError.response.data as unknown as { detail?: string })?.detail;
+        if (detail && typeof detail === 'string') {
+            return detail;
+        }
+
+        // HTTP status code fallback
+        switch (axiosError.response.status) {
+            case 400:
+                return 'Invalid request. Please check your input.';
+            case 401:
+                return 'Please log in to continue.';
+            case 403:
+                return 'You do not have permission to perform this action.';
+            case 404:
+                return 'The requested resource was not found.';
+            case 413:
+                return 'File too large. Please upload a smaller file.';
+            case 422:
+                return 'Invalid data format. Please check your input.';
+            case 429:
+                return 'Too many requests. Please wait a moment and try again.';
+            case 500:
+                return 'Server error. Please try again later.';
+            case 503:
+                return 'Service temporarily unavailable. Please try again later.';
+            default:
+                return 'An unexpected error occurred. Please try again.';
+        }
+    }
+
+    // Generic error
+    if (error instanceof Error) {
+        return error.message;
+    }
+
+    return 'An unexpected error occurred. Please try again.';
+};
 
 const api = axios.create({
     baseURL: API_BASE_URL,
     headers: {
         'Content-Type': 'application/json',
     },
+    timeout: 60000, // 60 second timeout
 });
+
+// Request interceptor - add auth token if available
+api.interceptors.request.use(
+    (config) => {
+        const token = localStorage.getItem('access_token');
+        if (token) {
+            config.headers.Authorization = `Bearer ${token}`;
+        }
+        return config;
+    },
+    (error) => {
+        return Promise.reject(error);
+    }
+);
+
+// Response interceptor - handle common errors
+api.interceptors.response.use(
+    (response) => response,
+    (error: AxiosError) => {
+        // Handle 401 - redirect to login
+        if (error.response?.status === 401) {
+            // Only redirect if not already on login page
+            if (!window.location.pathname.includes('/login')) {
+                localStorage.removeItem('access_token');
+                localStorage.removeItem('refresh_token');
+                // Optionally redirect to login
+                // window.location.href = '/login';
+            }
+        }
+
+        // Log errors in development
+        if (import.meta.env.DEV) {
+            console.error('API Error:', {
+                url: error.config?.url,
+                method: error.config?.method,
+                status: error.response?.status,
+                data: error.response?.data,
+            });
+        }
+
+        return Promise.reject(error);
+    }
+);
 
 // API Response Types - Exported for use in components
 export interface UploadResponse {
@@ -385,6 +529,19 @@ export interface ExportPreviewResponse {
     statement_type: string;
 }
 
+export interface DetectedStatement {
+    statement_type: 'income_statement' | 'balance_sheet' | 'cash_flow';
+    score: number;
+    confidence: number;
+}
+
+export interface DetectStatementsResponse {
+    document_id: string;
+    detected_statements: DetectedStatement[];
+    primary_statement: string;
+    is_multi_statement: boolean;
+}
+
 // Export APIs
 export const getExportOptions = async (): Promise<ExportOptionsResponse> => {
     const response = await api.get('/export/options');
@@ -403,6 +560,11 @@ export const getExportPreview = async (request: ExportRequest): Promise<ExportPr
 
 export const downloadExport = (exportId: string): string => {
     return `${API_BASE_URL}/export/download/${exportId}`;
+};
+
+export const detectStatements = async (documentId: string): Promise<DetectStatementsResponse> => {
+    const response = await api.get(`/export/detect/${documentId}`);
+    return response.data;
 };
 
 export default api;

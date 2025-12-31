@@ -100,21 +100,96 @@ class GaapClassifier:
                 logger.warning("Failed to load YAML mappings", path=str(path), error=str(e))
         return {}
     
+    def detect_all_statement_types(self, raw_text: str) -> List[Dict[str, Any]]:
+        """
+        Detect ALL statement types present in a PDF document.
+
+        Multi-statement PDFs (like annual reports) often contain:
+        - Income Statement / Statement of Operations
+        - Balance Sheet / Statement of Financial Position
+        - Cash Flow Statement
+
+        Returns:
+            List of dicts with statement_type, score, and confidence for each detected statement
+        """
+        if not raw_text:
+            return [{"statement_type": "income_statement", "score": 0, "confidence": 0.5}]
+
+        text_lower = raw_text.lower()
+        detected = []
+
+        # Check each statement type independently
+        statement_keywords = {
+            "income_statement": {
+                "income statement": 10,
+                "profit and loss": 10,
+                "statement of operations": 10,
+                "p&l": 8,
+                "net income": 5,
+                "gross profit": 5,
+                "operating income": 4,
+            },
+            "balance_sheet": {
+                "balance sheet": 10,
+                "statement of financial position": 10,
+                "total assets": 6,
+                "total liabilities": 6,
+                "shareholders' equity": 6,
+                "stockholders' equity": 6,
+            },
+            "cash_flow": {
+                "cash flow": 10,
+                "statement of cash flows": 10,
+                "cash flows from operating": 8,
+                "operating activities": 5,
+                "investing activities": 5,
+                "financing activities": 5,
+            },
+        }
+
+        for stmt_type, keywords in statement_keywords.items():
+            score = 0
+            for keyword, weight in keywords.items():
+                if keyword in text_lower:
+                    score += weight
+
+            if score >= 5:  # Threshold for detection
+                confidence = min(score / 30.0, 1.0)  # Normalize to 0-1
+                detected.append({
+                    "statement_type": stmt_type,
+                    "score": score,
+                    "confidence": round(confidence, 2),
+                })
+
+        # Sort by score descending
+        detected.sort(key=lambda x: x["score"], reverse=True)
+
+        if not detected:
+            detected = [{"statement_type": "income_statement", "score": 0, "confidence": 0.5}]
+
+        logger.info(
+            "Multi-statement detection complete",
+            detected_count=len(detected),
+            statements=[d["statement_type"] for d in detected]
+        )
+
+        return detected
+
     def detect_statement_type(self, raw_text: str) -> str:
         """
         Auto-detect the statement type from PDF text content.
-        
+
         Analyzes keyword patterns to determine if the document is:
         - income_statement: Revenue, expenses, net income
         - balance_sheet: Assets, liabilities, equity
         - cash_flow: Operating/investing/financing activities
-        
+
         Returns:
             str: One of 'income_statement', 'balance_sheet', 'cash_flow'
         """
         if not raw_text:
             return "income_statement"  # Default fallback
-        
+
         text_lower = raw_text.lower()
         
         # Score each statement type based on keyword matches

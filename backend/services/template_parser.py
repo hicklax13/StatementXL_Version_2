@@ -86,9 +86,9 @@ class TemplateParser:
             "professional": TEMPLATE_DIR / "balance_sheet" / "Professional_Style" / "StatementXL_Balance_Sheet_Template_Professional.xlsx",
         },
         "cash_flow": {
-            "basic": TEMPLATE_DIR / "cash_flow" / "basic.xlsx",
-            "corporate": TEMPLATE_DIR / "cash_flow" / "corporate.xlsx",
-            "professional": TEMPLATE_DIR / "cash_flow" / "professional.xlsx",
+            "basic": TEMPLATE_DIR / "cash_flow" / "Basic_Style_CF" / "StatementXL_Cash_Flow_Template_Basic.xlsx",
+            "corporate": TEMPLATE_DIR / "cash_flow" / "Corporate_Style_CF" / "StatementXL_Cash_Flow_Template_Corporate.xlsx",
+            "professional": TEMPLATE_DIR / "cash_flow" / "Professional_Style_CF" / "StatementXL_Cash_Flow_Template_Professional.xlsx",
         },
     }
     

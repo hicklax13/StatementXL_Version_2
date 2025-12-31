@@ -36,9 +36,9 @@ class ExportRequest(BaseModel):
     """Request model for Excel export."""
     
     document_id: str = Field(..., description="ID of the document to export")
-    statement_type: Literal["income_statement", "balance_sheet", "cash_flow"] = Field(
-        default="income_statement",
-        description="Type of financial statement",
+    statement_type: Literal["auto", "income_statement", "balance_sheet", "cash_flow"] = Field(
+        default="auto",
+        description="Type of financial statement (auto will detect from PDF content)",
     )
     style: Literal["basic", "corporate", "professional"] = Field(
         default="basic",
@@ -92,11 +92,28 @@ class ExportResponse(BaseModel):
 
 class ExportPreviewResponse(BaseModel):
     """Response for export preview."""
-    
+
     structure: dict
     aggregated_data: dict
     periods: List[int]
     statement_type: str
+
+
+class DetectedStatement(BaseModel):
+    """A detected statement type in a document."""
+
+    statement_type: str
+    score: int
+    confidence: float
+
+
+class DetectStatementsResponse(BaseModel):
+    """Response for statement detection."""
+
+    document_id: str
+    detected_statements: List[DetectedStatement]
+    primary_statement: str
+    is_multi_statement: bool
 
 
 # =============================================================================
@@ -138,9 +155,90 @@ async def get_export_options() -> ExportOptionsResponse:
     return ExportOptionsResponse(
         styles=styles,
         colorways=colorways,
-        statement_types=["income_statement", "balance_sheet", "cash_flow"],
+        statement_types=["auto", "income_statement", "balance_sheet", "cash_flow"],
     )
 
+
+@router.get(
+    "/export/detect/{document_id}",
+    response_model=DetectStatementsResponse,
+    summary="Detect statement types in a document",
+    description="Analyze a document to detect which financial statements it contains.",
+)
+async def detect_statements(
+    document_id: str,
+    db: Session = Depends(get_db),
+) -> DetectStatementsResponse:
+    """
+    Detect all financial statement types present in a document.
+
+    Useful for multi-statement PDFs like annual reports that may contain
+    Income Statement, Balance Sheet, and Cash Flow statements.
+    """
+    import pdfplumber
+    from backend.services.gaap_classifier import get_gaap_classifier
+
+    # Validate document ID
+    try:
+        doc_uuid = uuid.UUID(document_id)
+    except ValueError:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid document ID format",
+        )
+
+    # Get document
+    document = db.query(Document).filter(Document.id == doc_uuid).first()
+    if not document:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Document {document_id} not found",
+        )
+
+    # Extract text from PDF
+    raw_pdf_text = ""
+    if document.file_path:
+        try:
+            pdf_path = Path(document.file_path)
+            if pdf_path.exists():
+                with pdfplumber.open(pdf_path) as pdf:
+                    # Extract text from all pages for comprehensive detection
+                    for page in pdf.pages:
+                        page_text = page.extract_text() or ""
+                        raw_pdf_text += page_text + "\n"
+        except Exception as e:
+            logger.warning(f"Failed to extract PDF text: {e}")
+
+    # Detect all statement types
+    classifier = get_gaap_classifier()
+    detected = classifier.detect_all_statement_types(raw_pdf_text)
+
+    # Build response
+    detected_statements = [
+        DetectedStatement(
+            statement_type=d["statement_type"],
+            score=d["score"],
+            confidence=d["confidence"],
+        )
+        for d in detected
+    ]
+
+    primary_statement = detected[0]["statement_type"] if detected else "income_statement"
+    is_multi_statement = len(detected) > 1
+
+    logger.info(
+        "Statement detection complete",
+        document_id=document_id,
+        detected_count=len(detected_statements),
+        is_multi_statement=is_multi_statement,
+    )
+
+    return DetectStatementsResponse(
+        document_id=document_id,
+        detected_statements=detected_statements,
+        primary_statement=primary_statement,
+        is_multi_statement=is_multi_statement,
+    )
 
 
 async def prepare_export_data(
