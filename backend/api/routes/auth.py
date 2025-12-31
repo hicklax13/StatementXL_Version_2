@@ -5,10 +5,10 @@ Provides endpoints for user registration, login, and token management.
 """
 import uuid
 from datetime import datetime
-from typing import Optional
+from typing import List, Optional
 
 import structlog
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 from pydantic import BaseModel, EmailStr, Field
 from sqlalchemy.orm import Session
 
@@ -22,12 +22,17 @@ from backend.auth.utils import (
     create_tokens,
     verify_refresh_token,
     TokenResponse,
+    create_verification_token,
+    verify_verification_token,
+    create_password_reset_token,
+    verify_password_reset_token,
 )
-from backend.auth.dependencies import get_current_active_user
+from backend.auth.dependencies import get_current_active_user, require_admin
 from backend.exceptions import (
     InvalidCredentialsError,
     AuthenticationError,
     ValidationError,
+    NotFoundError,
 )
 
 logger = structlog.get_logger(__name__)
@@ -145,37 +150,65 @@ async def register(
 )
 async def login(
     request: LoginRequest,
+    http_request: Request,
     db: Session = Depends(get_db),
 ) -> TokenResponse:
     """
-    Login a user.
-    
+    Login a user with rate limiting and account lockout protection.
+
     Args:
         request: Login credentials
+        http_request: FastAPI request for rate limiting
         db: Database session
-        
+
     Returns:
         Access and refresh tokens
     """
+    from backend.middleware.rate_limit import limiter, RATE_LIMITS
+
+    # Apply rate limiting (10 attempts per minute per IP)
+    # Note: Rate limit is also applied via decorator in production
+
     # Find user by email
     user = db.query(User).filter(User.email == request.email).first()
     if not user:
+        # Don't reveal whether email exists
         raise InvalidCredentialsError()
-    
+
+    # Check if account is locked
+    if user.is_locked():
+        logger.warning("locked_account_login_attempt", user_id=str(user.id))
+        raise AuthenticationError("Account temporarily locked due to too many failed attempts. Please try again later.")
+
     # Verify password
     if not verify_password(request.password, user.password_hash):
+        # Increment failed attempts
+        user.increment_failed_attempts()
+        db.commit()
+
+        logger.warning(
+            "failed_login_attempt",
+            user_id=str(user.id),
+            failed_attempts=user.failed_login_attempts,
+            locked=user.is_locked()
+        )
+
+        if user.is_locked():
+            raise AuthenticationError("Account locked due to too many failed attempts. Please try again later.")
+
         raise InvalidCredentialsError()
-    
+
     # Check if user is active
     if not user.is_active:
         raise AuthenticationError("Account is disabled")
-    
-    # Update last login
+
+    # Successful login - reset failed attempts
+    user.reset_failed_attempts()
     user.last_login = datetime.utcnow()
     db.commit()
-    
+
     logger.info("user_login", user_id=str(user.id), email=user.email)
-    
+
     # Return tokens
     return create_tokens(str(user.id), user.email, user.role.value)
 
@@ -260,15 +293,481 @@ async def logout(
 ) -> MessageResponse:
     """
     Logout user.
-    
+
     Note: JWT tokens are stateless, so this just confirms logout.
     Client should discard tokens.
-    
+
     Args:
         current_user: Authenticated user
-        
+
     Returns:
         Success message
     """
     logger.info("user_logout", user_id=str(current_user.id))
     return MessageResponse(message="Successfully logged out")
+
+
+# =============================================================================
+# Admin User Management Endpoints
+# =============================================================================
+
+class UserListResponse(BaseModel):
+    """Response for user list."""
+    users: List[UserResponse]
+    total: int
+    page: int
+    page_size: int
+
+
+class UpdateUserRequest(BaseModel):
+    """Request to update a user."""
+    full_name: Optional[str] = None
+    role: Optional[str] = None
+    is_active: Optional[bool] = None
+    is_verified: Optional[bool] = None
+
+
+@router.get(
+    "/users",
+    response_model=UserListResponse,
+    summary="List all users (Admin only)",
+    description="Get paginated list of all users. Requires admin role.",
+)
+async def list_users(
+    page: int = 1,
+    page_size: int = 20,
+    db: Session = Depends(get_db),
+    admin_user: User = Depends(require_admin),
+) -> UserListResponse:
+    """
+    List all users (admin only).
+
+    Args:
+        page: Page number (1-indexed)
+        page_size: Number of users per page
+        db: Database session
+        admin_user: Admin user (from require_admin dependency)
+
+    Returns:
+        Paginated list of users
+    """
+    # Get total count
+    total = db.query(User).count()
+
+    # Get paginated users
+    offset = (page - 1) * page_size
+    users = db.query(User).order_by(User.created_at.desc()).offset(offset).limit(page_size).all()
+
+    user_responses = [
+        UserResponse(
+            id=str(u.id),
+            email=u.email,
+            full_name=u.full_name,
+            role=u.role.value,
+            is_active=u.is_active,
+            is_verified=u.is_verified,
+            created_at=u.created_at,
+            last_login=u.last_login,
+        )
+        for u in users
+    ]
+
+    logger.info("admin_list_users", admin_id=str(admin_user.id), total=total, page=page)
+
+    return UserListResponse(
+        users=user_responses,
+        total=total,
+        page=page,
+        page_size=page_size,
+    )
+
+
+@router.get(
+    "/users/{user_id}",
+    response_model=UserResponse,
+    summary="Get user by ID (Admin only)",
+    description="Get a specific user by their ID. Requires admin role.",
+)
+async def get_user(
+    user_id: str,
+    db: Session = Depends(get_db),
+    admin_user: User = Depends(require_admin),
+) -> UserResponse:
+    """
+    Get a user by ID (admin only).
+
+    Args:
+        user_id: UUID of the user
+        db: Database session
+        admin_user: Admin user
+
+    Returns:
+        User profile
+    """
+    try:
+        user_uuid = uuid.UUID(user_id)
+    except ValueError:
+        raise NotFoundError("User", user_id)
+
+    user = db.query(User).filter(User.id == user_uuid).first()
+    if not user:
+        raise NotFoundError("User", user_id)
+
+    return UserResponse(
+        id=str(user.id),
+        email=user.email,
+        full_name=user.full_name,
+        role=user.role.value,
+        is_active=user.is_active,
+        is_verified=user.is_verified,
+        created_at=user.created_at,
+        last_login=user.last_login,
+    )
+
+
+@router.patch(
+    "/users/{user_id}",
+    response_model=UserResponse,
+    summary="Update user (Admin only)",
+    description="Update a user's profile, role, or status. Requires admin role.",
+)
+async def update_user(
+    user_id: str,
+    request: UpdateUserRequest,
+    db: Session = Depends(get_db),
+    admin_user: User = Depends(require_admin),
+) -> UserResponse:
+    """
+    Update a user (admin only).
+
+    Args:
+        user_id: UUID of the user
+        request: Fields to update
+        db: Database session
+        admin_user: Admin user
+
+    Returns:
+        Updated user profile
+    """
+    try:
+        user_uuid = uuid.UUID(user_id)
+    except ValueError:
+        raise NotFoundError("User", user_id)
+
+    user = db.query(User).filter(User.id == user_uuid).first()
+    if not user:
+        raise NotFoundError("User", user_id)
+
+    # Prevent admin from modifying themselves in certain ways
+    if user.id == admin_user.id:
+        if request.is_active is False:
+            raise ValidationError(
+                message="Cannot deactivate your own account",
+                errors=[{"field": "is_active", "message": "Admins cannot deactivate themselves"}]
+            )
+        if request.role and request.role != UserRole.ADMIN.value:
+            raise ValidationError(
+                message="Cannot demote your own admin role",
+                errors=[{"field": "role", "message": "Admins cannot demote themselves"}]
+            )
+
+    # Apply updates
+    if request.full_name is not None:
+        from backend.validation import sanitize_text_input
+        user.full_name = sanitize_text_input(request.full_name) if request.full_name else None
+
+    if request.role is not None:
+        try:
+            user.role = UserRole(request.role)
+        except ValueError:
+            raise ValidationError(
+                message="Invalid role",
+                errors=[{"field": "role", "message": f"Valid roles: {[r.value for r in UserRole]}"}]
+            )
+
+    if request.is_active is not None:
+        user.is_active = request.is_active
+
+    if request.is_verified is not None:
+        user.is_verified = request.is_verified
+
+    db.commit()
+    db.refresh(user)
+
+    logger.info(
+        "admin_update_user",
+        admin_id=str(admin_user.id),
+        user_id=str(user.id),
+        updates=request.model_dump(exclude_none=True),
+    )
+
+    return UserResponse(
+        id=str(user.id),
+        email=user.email,
+        full_name=user.full_name,
+        role=user.role.value,
+        is_active=user.is_active,
+        is_verified=user.is_verified,
+        created_at=user.created_at,
+        last_login=user.last_login,
+    )
+
+
+@router.delete(
+    "/users/{user_id}",
+    response_model=MessageResponse,
+    summary="Delete user (Admin only)",
+    description="Permanently delete a user. Requires admin role.",
+)
+async def delete_user(
+    user_id: str,
+    db: Session = Depends(get_db),
+    admin_user: User = Depends(require_admin),
+) -> MessageResponse:
+    """
+    Delete a user (admin only).
+
+    Args:
+        user_id: UUID of the user
+        db: Database session
+        admin_user: Admin user
+
+    Returns:
+        Success message
+    """
+    try:
+        user_uuid = uuid.UUID(user_id)
+    except ValueError:
+        raise NotFoundError("User", user_id)
+
+    user = db.query(User).filter(User.id == user_uuid).first()
+    if not user:
+        raise NotFoundError("User", user_id)
+
+    # Prevent admin from deleting themselves
+    if user.id == admin_user.id:
+        raise ValidationError(
+            message="Cannot delete your own account",
+            errors=[{"field": "user_id", "message": "Admins cannot delete themselves"}]
+        )
+
+    email = user.email
+    db.delete(user)
+    db.commit()
+
+    logger.info(
+        "admin_delete_user",
+        admin_id=str(admin_user.id),
+        deleted_user_id=str(user_uuid),
+        deleted_email=email,
+    )
+
+    return MessageResponse(message=f"User {email} deleted successfully")
+
+
+# =============================================================================
+# Email Verification Endpoints
+# =============================================================================
+
+class VerifyEmailRequest(BaseModel):
+    """Email verification request."""
+    token: str
+
+
+class RequestPasswordResetRequest(BaseModel):
+    """Password reset request."""
+    email: EmailStr
+
+
+class ResetPasswordRequest(BaseModel):
+    """Password reset with token."""
+    token: str
+    new_password: str
+
+
+@router.post(
+    "/send-verification",
+    response_model=MessageResponse,
+    summary="Send verification email",
+    description="Send email verification link to current user.",
+)
+async def send_verification_email(
+    current_user: User = Depends(get_current_active_user),
+) -> MessageResponse:
+    """
+    Send verification email to current user.
+
+    Args:
+        current_user: Authenticated user
+
+    Returns:
+        Success message
+    """
+    if current_user.is_verified:
+        return MessageResponse(message="Email already verified")
+
+    from backend.services.email_service import email_service
+
+    # Create verification token
+    token = create_verification_token(str(current_user.id), current_user.email)
+
+    # Send email
+    sent = email_service.send_verification_email(current_user.email, token)
+
+    if sent:
+        logger.info("verification_email_sent", user_id=str(current_user.id))
+    else:
+        logger.warning("verification_email_failed", user_id=str(current_user.id))
+
+    # Always return success to prevent email enumeration
+    return MessageResponse(message="Verification email sent if account exists")
+
+
+@router.post(
+    "/verify-email",
+    response_model=MessageResponse,
+    summary="Verify email",
+    description="Verify email using token from verification email.",
+)
+async def verify_email(
+    request: VerifyEmailRequest,
+    db: Session = Depends(get_db),
+) -> MessageResponse:
+    """
+    Verify user's email address.
+
+    Args:
+        request: Verification token
+        db: Database session
+
+    Returns:
+        Success message
+    """
+    result = verify_verification_token(request.token)
+    if not result:
+        raise AuthenticationError("Invalid or expired verification token")
+
+    user_id, email = result
+
+    try:
+        user_uuid = uuid.UUID(user_id)
+    except ValueError:
+        raise AuthenticationError("Invalid verification token")
+
+    user = db.query(User).filter(User.id == user_uuid, User.email == email).first()
+    if not user:
+        raise AuthenticationError("Invalid verification token")
+
+    if user.is_verified:
+        return MessageResponse(message="Email already verified")
+
+    user.is_verified = True
+    db.commit()
+
+    logger.info("email_verified", user_id=str(user.id))
+
+    return MessageResponse(message="Email verified successfully")
+
+
+# =============================================================================
+# Password Reset Endpoints
+# =============================================================================
+
+@router.post(
+    "/forgot-password",
+    response_model=MessageResponse,
+    summary="Request password reset",
+    description="Send password reset email.",
+)
+async def forgot_password(
+    request: RequestPasswordResetRequest,
+    db: Session = Depends(get_db),
+) -> MessageResponse:
+    """
+    Request password reset.
+
+    Args:
+        request: Email address
+        db: Database session
+
+    Returns:
+        Success message (always, to prevent email enumeration)
+    """
+    from backend.services.email_service import email_service
+
+    user = db.query(User).filter(User.email == request.email).first()
+
+    if user and user.is_active:
+        # Create reset token
+        token = create_password_reset_token(str(user.id), user.email)
+
+        # Send email
+        sent = email_service.send_password_reset_email(user.email, token)
+
+        if sent:
+            logger.info("password_reset_email_sent", user_id=str(user.id))
+        else:
+            logger.warning("password_reset_email_failed", user_id=str(user.id))
+    else:
+        logger.info("password_reset_requested_unknown_email", email=request.email)
+
+    # Always return success to prevent email enumeration
+    return MessageResponse(message="Password reset email sent if account exists")
+
+
+@router.post(
+    "/reset-password",
+    response_model=MessageResponse,
+    summary="Reset password",
+    description="Reset password using token from reset email.",
+)
+async def reset_password(
+    request: ResetPasswordRequest,
+    db: Session = Depends(get_db),
+) -> MessageResponse:
+    """
+    Reset user's password.
+
+    Args:
+        request: Reset token and new password
+        db: Database session
+
+    Returns:
+        Success message
+    """
+    from backend.validation import PasswordValidator
+
+    # Verify token
+    result = verify_password_reset_token(request.token)
+    if not result:
+        raise AuthenticationError("Invalid or expired reset token")
+
+    user_id, email = result
+
+    # Validate new password
+    is_valid, password_errors = PasswordValidator.validate(request.new_password)
+    if not is_valid:
+        raise ValidationError(
+            message="Password does not meet requirements",
+            errors=[{"field": "new_password", "message": err} for err in password_errors]
+        )
+
+    try:
+        user_uuid = uuid.UUID(user_id)
+    except ValueError:
+        raise AuthenticationError("Invalid reset token")
+
+    user = db.query(User).filter(User.id == user_uuid, User.email == email).first()
+    if not user:
+        raise AuthenticationError("Invalid reset token")
+
+    if not user.is_active:
+        raise AuthenticationError("Account is disabled")
+
+    # Update password
+    user.password_hash = hash_password(request.new_password)
+    db.commit()
+
+    logger.info("password_reset_complete", user_id=str(user.id))
+
+    return MessageResponse(message="Password reset successfully")

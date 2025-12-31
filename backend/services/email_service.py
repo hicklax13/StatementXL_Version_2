@@ -96,6 +96,23 @@ class EmailService:
         """
         return self.send_email(to_email, subject, body_html)
     
+    def send_verification_email(self, to_email: str, verification_token: str) -> bool:
+        """Send email verification link."""
+        verify_url = f"https://app.statementxl.com/verify-email?token={verification_token}"
+        subject = "Verify Your StatementXL Email"
+        body_html = f"""
+        <html>
+        <body style="font-family: Arial, sans-serif; padding: 20px;">
+            <h1 style="color: #16a34a;">Verify Your Email</h1>
+            <p>Welcome to StatementXL! Please verify your email by clicking the button below:</p>
+            <p><a href="{verify_url}" style="background: #16a34a; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Verify Email</a></p>
+            <p>This link expires in 24 hours.</p>
+            <p>If you didn't create an account, you can ignore this email.</p>
+        </body>
+        </html>
+        """
+        return self.send_email(to_email, subject, body_html)
+
     def send_password_reset_email(self, to_email: str, reset_token: str) -> bool:
         """Send password reset email."""
         reset_url = f"https://app.statementxl.com/reset-password?token={reset_token}"

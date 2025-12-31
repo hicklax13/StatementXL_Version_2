@@ -176,18 +176,118 @@ def verify_access_token(token: str) -> Optional[TokenData]:
 def verify_refresh_token(token: str) -> Optional[str]:
     """
     Verify a refresh token and return the user ID.
-    
+
     Args:
         token: JWT refresh token
-        
+
     Returns:
         User ID if valid, None otherwise
     """
     payload = decode_token(token)
     if not payload:
         return None
-    
+
     if payload.get("type") != "refresh":
         return None
-    
+
     return payload.get("sub")
+
+
+def create_verification_token(user_id: str, email: str) -> str:
+    """
+    Create an email verification token.
+
+    Args:
+        user_id: User's UUID as string
+        email: User's email address
+
+    Returns:
+        Encoded JWT token (expires in 24 hours)
+    """
+    expire = datetime.utcnow() + timedelta(hours=24)
+
+    payload = {
+        "sub": user_id,
+        "email": email,
+        "type": "email_verification",
+        "exp": expire,
+        "iat": datetime.utcnow(),
+    }
+
+    return jwt.encode(payload, JWT_SECRET_KEY, algorithm=JWT_ALGORITHM)
+
+
+def verify_verification_token(token: str) -> Optional[Tuple[str, str]]:
+    """
+    Verify an email verification token.
+
+    Args:
+        token: JWT verification token
+
+    Returns:
+        Tuple of (user_id, email) if valid, None otherwise
+    """
+    payload = decode_token(token)
+    if not payload:
+        return None
+
+    if payload.get("type") != "email_verification":
+        return None
+
+    user_id = payload.get("sub")
+    email = payload.get("email")
+
+    if not user_id or not email:
+        return None
+
+    return (user_id, email)
+
+
+def create_password_reset_token(user_id: str, email: str) -> str:
+    """
+    Create a password reset token.
+
+    Args:
+        user_id: User's UUID as string
+        email: User's email address
+
+    Returns:
+        Encoded JWT token (expires in 1 hour)
+    """
+    expire = datetime.utcnow() + timedelta(hours=1)
+
+    payload = {
+        "sub": user_id,
+        "email": email,
+        "type": "password_reset",
+        "exp": expire,
+        "iat": datetime.utcnow(),
+    }
+
+    return jwt.encode(payload, JWT_SECRET_KEY, algorithm=JWT_ALGORITHM)
+
+
+def verify_password_reset_token(token: str) -> Optional[Tuple[str, str]]:
+    """
+    Verify a password reset token.
+
+    Args:
+        token: JWT reset token
+
+    Returns:
+        Tuple of (user_id, email) if valid, None otherwise
+    """
+    payload = decode_token(token)
+    if not payload:
+        return None
+
+    if payload.get("type") != "password_reset":
+        return None
+
+    user_id = payload.get("sub")
+    email = payload.get("email")
+
+    if not user_id or not email:
+        return None
+
+    return (user_id, email)
