@@ -7,8 +7,9 @@ import uuid
 from datetime import datetime
 from enum import Enum
 
-from sqlalchemy import Boolean, Column, DateTime, Enum as SQLEnum, Integer, String
+from sqlalchemy import Boolean, Column, DateTime, Enum as SQLEnum, ForeignKey, Integer, String
 from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 
 from backend.database import Base
@@ -24,9 +25,9 @@ class UserRole(str, Enum):
 
 class User(Base):
     """User model for authentication and authorization."""
-    
+
     __tablename__ = "users"
-    
+
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     email = Column(String(255), unique=True, nullable=False, index=True)
     password_hash = Column(String(255), nullable=False)
@@ -34,7 +35,14 @@ class User(Base):
     role = Column(SQLEnum(UserRole), default=UserRole.ANALYST, nullable=False)
     is_active = Column(Boolean, default=True, nullable=False)
     is_verified = Column(Boolean, default=False, nullable=False)
-    
+
+    # Organization context - user's default/current organization
+    default_organization_id = Column(
+        UUID(as_uuid=True),
+        ForeignKey("organizations.id", ondelete="SET NULL"),
+        nullable=True
+    )
+
     # Timestamps
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
@@ -43,6 +51,9 @@ class User(Base):
     # Account lockout tracking
     failed_login_attempts = Column(Integer, default=0, nullable=False)
     locked_until = Column(DateTime(timezone=True), nullable=True)
+
+    # Relationships
+    default_organization = relationship("Organization", foreign_keys=[default_organization_id])
 
     def __repr__(self) -> str:
         return f"<User {self.email}>"
