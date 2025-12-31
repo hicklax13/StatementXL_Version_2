@@ -245,8 +245,8 @@ class NotificationDelivery(Base):
     # External IDs (for tracking)
     external_id = Column(String(255))  # Email message ID, push notification ID
 
-    # Metadata
-    metadata = Column(JSON, default=dict)
+    # Extra metadata
+    extra_data = Column(JSON, default=dict)
 
     created_at = Column(DateTime, default=datetime.utcnow)
 

@@ -149,6 +149,9 @@ Protected endpoints require a valid JWT token in the Authorization header.
         {"name": "Analytics", "description": "Usage metrics, quotas, and reporting"},
         {"name": "Template Library", "description": "Template versioning, sharing, reviews, and collections"},
         {"name": "Notifications", "description": "In-app, email, and push notifications"},
+        {"name": "Search", "description": "Advanced search and filtering"},
+        {"name": "Data Transfer", "description": "Data import and export"},
+        {"name": "Onboarding", "description": "User onboarding and feature tours"},
         {"name": "Monitoring", "description": "Health checks and metrics"},
     ],
 )
@@ -228,6 +231,18 @@ app.include_router(template_library.router, prefix="/api/v1/library", tags=["Tem
 # Notification routes
 from backend.api.routes import notifications
 app.include_router(notifications.router, prefix="/api/v1/notifications", tags=["Notifications"])
+
+# Search routes
+from backend.api.routes import search
+app.include_router(search.router, prefix="/api/v1/search", tags=["Search"])
+
+# Data Transfer routes (import/export)
+from backend.api.routes import data_transfer
+app.include_router(data_transfer.router, prefix="/api/v1/data", tags=["Data Transfer"])
+
+# Onboarding routes
+from backend.api.routes import onboarding
+app.include_router(onboarding.router, prefix="/api/v1/onboarding", tags=["Onboarding"])
 
 # Monitoring routes (no prefix for easy access)
 from backend.api.routes import monitoring
