@@ -32,6 +32,8 @@ class Settings(BaseSettings):
     # Application
     debug: bool = False
     log_level: str = "INFO"
+    backend_url: str = "http://localhost:8000"  # Base URL for OAuth callbacks
+    frontend_url: str = "http://localhost:5173"  # Frontend URL for redirects
 
     # OCR Settings
     tesseract_cmd: Optional[str] = None

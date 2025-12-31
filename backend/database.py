@@ -54,5 +54,8 @@ def init_db() -> None:
     from backend.models import user  # noqa: F401
     from backend.models import organization  # noqa: F401
     from backend.models import job  # noqa: F401
+    from backend.models import integration  # noqa: F401
+    from backend.models import api_key  # noqa: F401
+    from backend.models import webhook  # noqa: F401
 
     Base.metadata.create_all(bind=engine)

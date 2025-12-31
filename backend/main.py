@@ -141,6 +141,11 @@ Protected endpoints require a valid JWT token in the Authorization header.
         {"name": "Library", "description": "Mapping library and presets"},
         {"name": "Batch", "description": "Batch processing operations"},
         {"name": "Audit", "description": "Audit logging and history"},
+        {"name": "Integrations", "description": "Third-party accounting software integrations (QuickBooks, Xero)"},
+        {"name": "Jobs", "description": "Background job processing and status"},
+        {"name": "Organizations", "description": "Organization and team management"},
+        {"name": "API Keys", "description": "API key management for programmatic access"},
+        {"name": "Webhooks", "description": "Webhook configuration for event notifications"},
         {"name": "Monitoring", "description": "Health checks and metrics"},
     ],
 )
@@ -196,6 +201,18 @@ app.include_router(organization.router, prefix="/api/v1/organizations", tags=["O
 # Jobs routes (background processing)
 from backend.api.routes import jobs
 app.include_router(jobs.router, prefix="/api/v1/jobs", tags=["Jobs"])
+
+# Integration routes (QuickBooks, Xero)
+from backend.api.routes import integrations
+app.include_router(integrations.router, prefix="/api/v1/integrations", tags=["Integrations"])
+
+# API Keys routes (public API access)
+from backend.api.routes import api_keys
+app.include_router(api_keys.router, prefix="/api/v1/api-keys", tags=["API Keys"])
+
+# Webhook routes
+from backend.api.routes import webhooks
+app.include_router(webhooks.router, prefix="/api/v1/webhooks", tags=["Webhooks"])
 
 # Monitoring routes (no prefix for easy access)
 from backend.api.routes import monitoring
