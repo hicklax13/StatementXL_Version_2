@@ -193,6 +193,10 @@ app.include_router(payments.router, prefix="/api/v1", tags=["Payments"])
 from backend.api.routes import organization
 app.include_router(organization.router, prefix="/api/v1/organizations", tags=["Organizations"])
 
+# Jobs routes (background processing)
+from backend.api.routes import jobs
+app.include_router(jobs.router, prefix="/api/v1/jobs", tags=["Jobs"])
+
 # Monitoring routes (no prefix for easy access)
 from backend.api.routes import monitoring
 app.include_router(monitoring.router, tags=["Monitoring"])

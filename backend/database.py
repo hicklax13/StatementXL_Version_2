@@ -53,5 +53,6 @@ def init_db() -> None:
     # Import models to ensure they're registered with Base
     from backend.models import user  # noqa: F401
     from backend.models import organization  # noqa: F401
+    from backend.models import job  # noqa: F401
 
     Base.metadata.create_all(bind=engine)
