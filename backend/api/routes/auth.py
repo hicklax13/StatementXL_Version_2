@@ -3,6 +3,7 @@ Authentication API routes.
 
 Provides endpoints for user registration, login, and token management.
 """
+import os
 import uuid
 from datetime import datetime
 from typing import List, Optional
@@ -777,9 +778,7 @@ async def reset_password(
 # OAuth/SSO Endpoints (Google)
 # =============================================================================
 
-import os
 from authlib.integrations.starlette_client import OAuth
-from starlette.config import Config
 
 # OAuth configuration
 oauth = OAuth()

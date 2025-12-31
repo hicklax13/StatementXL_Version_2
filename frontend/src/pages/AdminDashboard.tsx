@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
     Users,
     Shield,
@@ -41,7 +41,7 @@ const AdminDashboard: React.FC = () => {
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [includeInactive, setIncludeInactive] = useState(false);
 
-    const fetchUsers = async () => {
+    const fetchUsers = useCallback(async () => {
         try {
             setLoading(true);
             const response = await getAdminUsers(1, 50, includeInactive);
@@ -52,9 +52,9 @@ const AdminDashboard: React.FC = () => {
         } finally {
             setLoading(false);
         }
-    };
+    }, [includeInactive]);
 
-    const fetchMetrics = async () => {
+    const fetchMetrics = useCallback(async () => {
         try {
             setLoading(true);
             const [metricsData, version] = await Promise.all([
@@ -69,7 +69,7 @@ const AdminDashboard: React.FC = () => {
         } finally {
             setLoading(false);
         }
-    };
+    }, []);
 
     useEffect(() => {
         if (activeTab === 'users') {
@@ -77,7 +77,7 @@ const AdminDashboard: React.FC = () => {
         } else {
             fetchMetrics();
         }
-    }, [activeTab, includeInactive]);
+    }, [activeTab, fetchUsers, fetchMetrics]);
 
     const handleRoleChange = async (userId: string, newRole: AdminUserResponse['role']) => {
         try {
