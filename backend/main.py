@@ -3,10 +3,59 @@ FastAPI application entry point.
 
 Configures the application with routes, middleware, and settings.
 """
+import os
 import structlog
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
+
+# Initialize Sentry for error tracking (must be done early)
+import sentry_sdk
+from sentry_sdk.integrations.fastapi import FastApiIntegration
+from sentry_sdk.integrations.sqlalchemy import SqlalchemyIntegration
+from sentry_sdk.integrations.logging import LoggingIntegration
+
+sentry_dsn = os.getenv("SENTRY_DSN")
+if sentry_dsn:
+    sentry_sdk.init(
+        dsn=sentry_dsn,
+        environment=os.getenv("ENVIRONMENT", "development"),
+        release=os.getenv("APP_VERSION", "2.0.0"),
+        traces_sample_rate=float(os.getenv("SENTRY_TRACES_SAMPLE_RATE", "0.1")),
+        profiles_sample_rate=float(os.getenv("SENTRY_PROFILES_SAMPLE_RATE", "0.1")),
+        integrations=[
+            FastApiIntegration(transaction_style="endpoint"),
+            SqlalchemyIntegration(),
+            LoggingIntegration(level=None, event_level="ERROR"),
+        ],
+        # Don't send PII by default
+        send_default_pii=False,
+        # Filter sensitive data
+        before_send=lambda event, hint: _filter_sensitive_data(event),
+    )
+
+
+def _filter_sensitive_data(event: dict) -> dict:
+    """Filter sensitive data from Sentry events before sending."""
+    sensitive_keys = {"password", "token", "secret", "authorization", "api_key", "credit_card"}
+
+    def _redact(obj):
+        if isinstance(obj, dict):
+            return {
+                k: "[REDACTED]" if any(s in k.lower() for s in sensitive_keys) else _redact(v)
+                for k, v in obj.items()
+            }
+        elif isinstance(obj, list):
+            return [_redact(item) for item in obj]
+        return obj
+
+    if "request" in event and "data" in event["request"]:
+        event["request"]["data"] = _redact(event["request"]["data"])
+    if "extra" in event:
+        event["extra"] = _redact(event["extra"])
+
+    return event
+
 
 from backend.api.routes import upload
 from backend.api.routes import classify
@@ -147,7 +196,6 @@ app.include_router(monitoring.router, tags=["Monitoring"])
 # Mount static files (Frontend)
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
-import os
 
 # Serve static files if they exist (Production)
 static_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "frontend", "dist")
@@ -185,7 +233,10 @@ async def statementxl_exception_handler(request: Request, exc: StatementXLError)
 async def generic_exception_handler(request: Request, exc: Exception):
     """Handle unexpected exceptions with consistent format."""
     import traceback
-    
+
+    # Capture exception in Sentry
+    sentry_sdk.capture_exception(exc)
+
     logger.error(
         "unhandled_error",
         error_type=type(exc).__name__,
@@ -208,13 +259,19 @@ async def generic_exception_handler(request: Request, exc: Exception):
 async def startup_event() -> None:
     """Initialize application on startup."""
     logger.info("Starting StatementXL API", debug=settings.debug)
-    
+
+    # Log Sentry status
+    if sentry_dsn:
+        logger.info("Sentry error tracking enabled", environment=os.getenv("ENVIRONMENT", "development"))
+    else:
+        logger.warning("Sentry error tracking not configured (SENTRY_DSN not set)")
+
     # Ensure upload directory exists
     settings.upload_dir.mkdir(parents=True, exist_ok=True)
-    
+
     # Initialize database tables
     init_db()
-    
+
     logger.info("StatementXL API started successfully")
 
 

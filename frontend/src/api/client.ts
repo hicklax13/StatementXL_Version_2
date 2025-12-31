@@ -317,6 +317,59 @@ export interface LogoutResponse {
     message: string;
 }
 
+// Admin User Management Types
+export interface AdminUserResponse {
+    id: string;
+    email: string;
+    full_name?: string;
+    role: 'admin' | 'analyst' | 'viewer' | 'api_user';
+    is_active: boolean;
+    is_verified: boolean;
+    created_at: string;
+    last_login?: string;
+    failed_login_attempts: number;
+    locked_until?: string;
+}
+
+export interface AdminUsersListResponse {
+    users: AdminUserResponse[];
+    total: number;
+    page: number;
+    page_size: number;
+}
+
+export interface UpdateUserRequest {
+    role?: 'admin' | 'analyst' | 'viewer' | 'api_user';
+    is_active?: boolean;
+    is_verified?: boolean;
+}
+
+export interface SystemMetrics {
+    cpu_percent: number;
+    memory_percent: number;
+    memory_used_mb: number;
+    memory_total_mb: number;
+    disk_percent: number;
+    disk_used_gb: number;
+    disk_total_gb: number;
+    process_memory_mb: number;
+    uptime_seconds: number;
+}
+
+export interface DetailedMetricsResponse {
+    system: SystemMetrics;
+    application: {
+        version: string;
+        environment: string;
+        debug: boolean;
+    };
+    database: {
+        pool_size: number;
+        active_connections: number;
+    };
+    timestamp: string;
+}
+
 
 // Document APIs
 export const uploadDocument = async (file: File): Promise<UploadResponse> => {
