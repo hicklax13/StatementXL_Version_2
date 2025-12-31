@@ -11,6 +11,7 @@ import Export from './pages/Export';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import AdminDashboard from './pages/AdminDashboard';
+import GoogleCallback from './pages/GoogleCallback';
 import './index.css';
 
 function App() {
@@ -20,6 +21,7 @@ function App() {
         {/* Auth routes (outside layout) */}
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/auth/google/callback" element={<GoogleCallback />} />
 
         {/* App routes (with layout) */}
         <Route path="/" element={<Layout />}>

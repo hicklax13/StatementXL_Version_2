@@ -671,5 +671,20 @@ export const getVersionInfo = async (): Promise<{
     return response.data;
 };
 
+// OAuth APIs
+export interface OAuthLoginResponse {
+    auth_url: string;
+}
+
+export const getGoogleAuthUrl = async (): Promise<OAuthLoginResponse> => {
+    const response = await api.get('/auth/oauth/google');
+    return response.data;
+};
+
+export const googleOAuthCallback = async (code: string, state?: string): Promise<AuthTokenResponse> => {
+    const response = await api.post('/auth/oauth/google/callback', { code, state });
+    return response.data;
+};
+
 export default api;
 

@@ -771,3 +771,176 @@ async def reset_password(
     logger.info("password_reset_complete", user_id=str(user.id))
 
     return MessageResponse(message="Password reset successfully")
+
+
+# =============================================================================
+# OAuth/SSO Endpoints (Google)
+# =============================================================================
+
+import os
+from authlib.integrations.starlette_client import OAuth
+from starlette.config import Config
+
+# OAuth configuration
+oauth = OAuth()
+
+# Register Google OAuth provider
+GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
+GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET")
+
+if GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET:
+    oauth.register(
+        name="google",
+        client_id=GOOGLE_CLIENT_ID,
+        client_secret=GOOGLE_CLIENT_SECRET,
+        server_metadata_url="https://accounts.google.com/.well-known/openid-configuration",
+        client_kwargs={"scope": "openid email profile"},
+    )
+
+
+class OAuthLoginResponse(BaseModel):
+    """OAuth login redirect URL response."""
+    auth_url: str
+
+
+@router.get(
+    "/oauth/google",
+    response_model=OAuthLoginResponse,
+    summary="Initiate Google OAuth login",
+    description="Get Google OAuth authorization URL for redirect.",
+)
+async def google_oauth_login(
+    request: Request,
+) -> OAuthLoginResponse:
+    """
+    Initiate Google OAuth login.
+
+    Returns authorization URL for client-side redirect.
+    """
+    if not GOOGLE_CLIENT_ID or not GOOGLE_CLIENT_SECRET:
+        raise AuthenticationError("Google OAuth is not configured")
+
+    # Get the redirect URI from environment or construct from request
+    frontend_url = os.getenv("FRONTEND_URL", "http://localhost:5173")
+    redirect_uri = f"{frontend_url}/auth/google/callback"
+
+    # Generate authorization URL
+    google = oauth.create_client("google")
+    auth_url = await google.create_authorization_url(redirect_uri)
+
+    # Store state in session for CSRF protection (simplified for stateless)
+    # In production, use secure session storage
+
+    logger.info("google_oauth_initiated", redirect_uri=redirect_uri)
+
+    return OAuthLoginResponse(auth_url=auth_url["url"])
+
+
+class OAuthCallbackRequest(BaseModel):
+    """OAuth callback request with authorization code."""
+    code: str
+    state: Optional[str] = None
+
+
+@router.post(
+    "/oauth/google/callback",
+    response_model=TokenResponse,
+    summary="Complete Google OAuth login",
+    description="Exchange authorization code for tokens and create/login user.",
+)
+async def google_oauth_callback(
+    request: OAuthCallbackRequest,
+    http_request: Request,
+    db: Session = Depends(get_db),
+) -> TokenResponse:
+    """
+    Complete Google OAuth login.
+
+    Exchanges authorization code for Google tokens, retrieves user info,
+    and creates or logs in the user.
+    """
+    if not GOOGLE_CLIENT_ID or not GOOGLE_CLIENT_SECRET:
+        raise AuthenticationError("Google OAuth is not configured")
+
+    import httpx
+
+    try:
+        frontend_url = os.getenv("FRONTEND_URL", "http://localhost:5173")
+        redirect_uri = f"{frontend_url}/auth/google/callback"
+
+        # Exchange code for tokens
+        async with httpx.AsyncClient() as client:
+            token_response = await client.post(
+                "https://oauth2.googleapis.com/token",
+                data={
+                    "code": request.code,
+                    "client_id": GOOGLE_CLIENT_ID,
+                    "client_secret": GOOGLE_CLIENT_SECRET,
+                    "redirect_uri": redirect_uri,
+                    "grant_type": "authorization_code",
+                },
+            )
+
+            if token_response.status_code != 200:
+                logger.error("google_token_exchange_failed", status=token_response.status_code)
+                raise AuthenticationError("Failed to authenticate with Google")
+
+            token_data = token_response.json()
+
+            # Get user info from Google
+            userinfo_response = await client.get(
+                "https://www.googleapis.com/oauth2/v2/userinfo",
+                headers={"Authorization": f"Bearer {token_data['access_token']}"},
+            )
+
+            if userinfo_response.status_code != 200:
+                logger.error("google_userinfo_failed", status=userinfo_response.status_code)
+                raise AuthenticationError("Failed to get user info from Google")
+
+            userinfo = userinfo_response.json()
+
+    except httpx.RequestError as e:
+        logger.error("google_oauth_request_error", error=str(e))
+        raise AuthenticationError("Failed to connect to Google")
+
+    email = userinfo.get("email")
+    if not email:
+        raise AuthenticationError("Email not provided by Google")
+
+    # Check if email is verified by Google
+    if not userinfo.get("verified_email", False):
+        raise AuthenticationError("Email not verified with Google")
+
+    # Find or create user
+    user = db.query(User).filter(User.email == email).first()
+
+    if user:
+        # Existing user - check if active
+        if not user.is_active:
+            raise AuthenticationError("Account is disabled")
+
+        # Update last login
+        user.last_login = datetime.utcnow()
+        db.commit()
+
+        logger.info("google_oauth_login", user_id=str(user.id), email=email)
+    else:
+        # New user - create account
+        user = User(
+            id=uuid.uuid4(),
+            email=email,
+            password_hash="",  # No password for OAuth users
+            full_name=userinfo.get("name"),
+            role=UserRole.ANALYST,
+            is_active=True,
+            is_verified=True,  # Google verified the email
+        )
+
+        db.add(user)
+        db.commit()
+        db.refresh(user)
+
+        logger.info("google_oauth_register", user_id=str(user.id), email=email)
+
+    # Return tokens
+    return create_tokens(str(user.id), user.email, user.role.value)
