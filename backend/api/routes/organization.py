@@ -551,7 +551,22 @@ async def invite_member(
     db.commit()
     db.refresh(invite)
 
-    # TODO: Send invitation email
+    # Send invitation email
+    try:
+        from backend.services.email_service import EmailService
+        email_service = EmailService()
+        invite_url = f"https://statementxl.com/invites/accept?token={invite.token}"
+        email_service.send_organization_invite(
+            to_email=request.email,
+            organization_name=org.name,
+            inviter_name=current_user.full_name or current_user.email,
+            invite_url=invite_url,
+            role=request.role
+        )
+        logger.info("invitation_email_sent", email=request.email, org_id=str(org_uuid))
+    except Exception as e:
+        logger.error("failed_to_send_invitation_email", error=str(e), email=request.email)
+        # Don't fail the whole request if email fails
 
     logger.info(
         "member_invited",

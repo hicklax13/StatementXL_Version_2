@@ -1,0 +1,1 @@
+Read .agent/AI_CONTEXT.md first, then check .agent/PROGRESS.md and continue the work on StatementXL

@@ -193,7 +193,7 @@ class HybridClassifier:
         embedding_result: Optional[ClassificationResult],
     ) -> ClassificationResult:
         """
-        Classify using LLM API (placeholder for future implementation).
+        Classify using LLM API (Gemini integration).
 
         Args:
             text: Line item text.
@@ -203,15 +203,49 @@ class HybridClassifier:
         Returns:
             ClassificationResult from LLM.
         """
-        # TODO: Implement in Phase 2 when LLM integration is added
-        # Will use GPT-4o-mini or Claude Haiku with zero-shot prompt
-        logger.info("LLM classification requested but not implemented", text=text)
-
-        # Return empty result for now
+        try:
+            # Use existing Gemini integration from gaap_classifier
+            from backend.services.gaap_classifier import GaapClassifier
+            
+            gaap_classifier = GaapClassifier()
+            
+            # Get top candidates from previous methods
+            candidates = []
+            if embedding_result and embedding_result.candidates:
+                candidates.extend([c.id for c in embedding_result.candidates[:5]])
+            elif rule_result and rule_result.candidates:
+                candidates.extend([c.id for c in rule_result.candidates[:5]])
+            
+            # Use Gemini to classify with context
+            result = gaap_classifier._classify_single_item(
+                line_item=text,
+                statement_type="general",  # Will be determined by context
+                candidates=candidates if candidates else None
+            )
+            
+            if result and result.get("classification"):
+                classification = result["classification"]
+                confidence = result.get("confidence", 0.7)
+                
+                # Find the ontology item
+                ontology_item = self._ontology.get_item_by_id(classification)
+                
+                logger.info("llm_classification_success", text=text, classification=classification, confidence=confidence)
+                
+                return ClassificationResult(
+                    item=ontology_item,
+                    confidence=confidence,
+                    match_type="hybrid_llm",
+                    reasoning=result.get("reasoning", "LLM classification")
+                )
+        except Exception as e:
+            logger.error("llm_classification_failed", error=str(e), text=text)
+        
+        # Return empty result on failure
         return ClassificationResult(
             item=None,
             confidence=0.0,
-            match_type="llm_not_implemented",
+            match_type="llm_failed",
         )
 
     def classify_batch(self, texts: List[str]) -> List[ClassificationResult]:

@@ -225,12 +225,28 @@ async def handle_checkout_completed(session: dict):
         customer_id=customer_id
     )
     
-    # TODO: Update subscription in database
-    # This would update the user's subscription model with:
-    # - stripe_customer_id
-    # - stripe_subscription_id
-    # - plan
-    # - status = active
+    # Update subscription in database
+    from backend.database import get_db
+    from backend.models.subscription import Subscription, SubscriptionPlan, SubscriptionStatus
+    from sqlalchemy.orm import Session
+    
+    db: Session = next(get_db())
+    try:
+        subscription = db.query(Subscription).filter(Subscription.user_id == user_id).first()
+        if subscription:
+            subscription.stripe_customer_id = customer_id
+            subscription.stripe_subscription_id = subscription_data.get("id")
+            subscription.plan = SubscriptionPlan(plan)
+            subscription.status = SubscriptionStatus.ACTIVE
+            subscription.current_period_start = datetime.fromtimestamp(subscription_data.get("current_period_start"))
+            subscription.current_period_end = datetime.fromtimestamp(subscription_data.get("current_period_end"))
+            db.commit()
+            logger.info("subscription_updated_in_db", user_id=user_id, subscription_id=subscription.id)
+    except Exception as e:
+        logger.error("failed_to_update_subscription", error=str(e), user_id=user_id)
+        db.rollback()
+    finally:
+        db.close()
 
 
 async def handle_subscription_updated(subscription: dict):
@@ -244,7 +260,25 @@ async def handle_subscription_updated(subscription: dict):
         status=status
     )
     
-    # TODO: Update subscription status in database
+    # Update subscription status in database
+    from backend.database import get_db
+    from backend.models.subscription import Subscription, SubscriptionStatus
+    from sqlalchemy.orm import Session
+    
+    db: Session = next(get_db())
+    try:
+        sub = db.query(Subscription).filter(Subscription.stripe_subscription_id == subscription_id).first()
+        if sub:
+            sub.status = SubscriptionStatus(status)
+            sub.current_period_start = datetime.fromtimestamp(subscription.get("current_period_start"))
+            sub.current_period_end = datetime.fromtimestamp(subscription.get("current_period_end"))
+            db.commit()
+            logger.info("subscription_status_updated", subscription_id=subscription_id, new_status=status)
+    except Exception as e:
+        logger.error("failed_to_update_subscription_status", error=str(e))
+        db.rollback()
+    finally:
+        db.close()
 
 
 async def handle_subscription_deleted(subscription: dict):
@@ -253,7 +287,24 @@ async def handle_subscription_deleted(subscription: dict):
     
     logger.info("subscription_deleted", subscription_id=subscription_id)
     
-    # TODO: Mark subscription as canceled in database
+    # Mark subscription as canceled in database
+    from backend.database import get_db
+    from backend.models.subscription import Subscription, SubscriptionStatus
+    from sqlalchemy.orm import Session
+    
+    db: Session = next(get_db())
+    try:
+        sub = db.query(Subscription).filter(Subscription.stripe_subscription_id == subscription_id).first()
+        if sub:
+            sub.status = SubscriptionStatus.CANCELED
+            sub.canceled_at = datetime.utcnow()
+            db.commit()
+            logger.info("subscription_marked_canceled", subscription_id=subscription_id)
+    except Exception as e:
+        logger.error("failed_to_cancel_subscription", error=str(e))
+        db.rollback()
+    finally:
+        db.close()
 
 
 async def handle_payment_failed(invoice: dict):
@@ -262,5 +313,33 @@ async def handle_payment_failed(invoice: dict):
     
     logger.warning("payment_failed", customer_id=customer_id)
     
-    # TODO: Update subscription status to past_due
-    # TODO: Send notification email to user
+    # Update subscription status to past_due
+    from backend.database import get_db
+    from backend.models.subscription import Subscription, SubscriptionStatus
+    from backend.services.email_service import EmailService
+    from sqlalchemy.orm import Session
+    
+    db: Session = next(get_db())
+    try:
+        sub = db.query(Subscription).filter(Subscription.stripe_customer_id == customer_id).first()
+        if sub:
+            sub.status = SubscriptionStatus.PAST_DUE
+            db.commit()
+            logger.info("subscription_marked_past_due", customer_id=customer_id)
+            
+            # Send notification email to user
+            try:
+                email_service = EmailService()
+                user = sub.user
+                email_service.send_payment_failed_notification(
+                    to_email=user.email,
+                    user_name=user.full_name or user.email
+                )
+                logger.info("payment_failed_email_sent", user_id=sub.user_id)
+            except Exception as email_error:
+                logger.error("failed_to_send_payment_failed_email", error=str(email_error))
+    except Exception as e:
+        logger.error("failed_to_handle_payment_failure", error=str(e))
+        db.rollback()
+    finally:
+        db.close()
