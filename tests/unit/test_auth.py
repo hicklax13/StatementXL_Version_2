@@ -17,6 +17,10 @@ from backend.auth.utils import (
     verify_access_token,
     verify_refresh_token,
     decode_token,
+    create_verification_token,
+    verify_verification_token,
+    create_password_reset_token,
+    verify_password_reset_token,
 )
 
 
@@ -185,3 +189,98 @@ class TestDecodeToken:
         """Test decoding an invalid token returns None."""
         payload = decode_token("not.a.valid.token")
         assert payload is None
+
+
+class TestVerificationToken:
+    """Tests for email verification tokens."""
+
+    def test_create_verification_token(self):
+        """Test verification token creation."""
+        token = create_verification_token(
+            user_id="user-123",
+            email="test@example.com",
+        )
+
+        assert token is not None
+        assert len(token) > 50
+
+    def test_verify_valid_verification_token(self):
+        """Test verification of valid verification token."""
+        token = create_verification_token(
+            user_id="user-123",
+            email="test@example.com",
+        )
+
+        result = verify_verification_token(token)
+
+        assert result is not None
+        assert result[0] == "user-123"
+        assert result[1] == "test@example.com"
+
+    def test_verify_invalid_verification_token(self):
+        """Test rejection of invalid verification token."""
+        result = verify_verification_token("invalid-token")
+        assert result is None
+
+    def test_access_token_not_valid_as_verification(self):
+        """Test that access token cannot be used as verification token."""
+        access_token = create_access_token(
+            user_id="user-123",
+            email="test@example.com",
+            role="analyst",
+        )
+
+        result = verify_verification_token(access_token)
+        assert result is None
+
+
+class TestPasswordResetToken:
+    """Tests for password reset tokens."""
+
+    def test_create_password_reset_token(self):
+        """Test password reset token creation."""
+        token = create_password_reset_token(
+            user_id="user-123",
+            email="test@example.com",
+        )
+
+        assert token is not None
+        assert len(token) > 50
+
+    def test_verify_valid_password_reset_token(self):
+        """Test verification of valid password reset token."""
+        token = create_password_reset_token(
+            user_id="user-123",
+            email="test@example.com",
+        )
+
+        result = verify_password_reset_token(token)
+
+        assert result is not None
+        assert result[0] == "user-123"
+        assert result[1] == "test@example.com"
+
+    def test_verify_invalid_password_reset_token(self):
+        """Test rejection of invalid password reset token."""
+        result = verify_password_reset_token("invalid-token")
+        assert result is None
+
+    def test_verification_token_not_valid_as_password_reset(self):
+        """Test that verification token cannot be used as password reset token."""
+        verification_token = create_verification_token(
+            user_id="user-123",
+            email="test@example.com",
+        )
+
+        result = verify_password_reset_token(verification_token)
+        assert result is None
+
+    def test_password_reset_token_not_valid_as_verification(self):
+        """Test that password reset token cannot be used as verification token."""
+        reset_token = create_password_reset_token(
+            user_id="user-123",
+            email="test@example.com",
+        )
+
+        result = verify_verification_token(reset_token)
+        assert result is None

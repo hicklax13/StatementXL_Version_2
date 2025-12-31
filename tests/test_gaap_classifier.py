@@ -758,10 +758,114 @@ class TestYamlMappingIntegration:
             default_category="operating_expenses",
             default_template_row="SG&A"
         )
-        
+
         if result:
             # Should be normalized to standard category constant
             assert result.category in [
-                "operating_expenses", "revenue", "cogs", 
+                "operating_expenses", "revenue", "cogs",
                 "other_income_expenses", "calculated"
             ]
+
+
+class TestMultiStatementDetection:
+    """Test multi-statement detection from PDF text."""
+
+    def setup_method(self):
+        """Create classifier instance for each test."""
+        self.classifier = GaapClassifier()
+
+    def test_detect_all_statements_income_only(self):
+        """Test detection when only income statement is present."""
+        text = """Income Statement
+        For the Year Ended December 31, 2024
+        Revenue: 1,000,000
+        Net Income: 300,000"""
+
+        result = self.classifier.detect_all_statement_types(text)
+
+        assert len(result) >= 1
+        assert result[0]["statement_type"] == "income_statement"
+        assert result[0]["confidence"] > 0
+
+    def test_detect_all_statements_balance_sheet_only(self):
+        """Test detection when only balance sheet is present."""
+        text = """Balance Sheet
+        As of December 31, 2024
+        Total Assets: 5,000,000
+        Total Liabilities: 2,000,000
+        Shareholders' Equity: 3,000,000"""
+
+        result = self.classifier.detect_all_statement_types(text)
+
+        assert len(result) >= 1
+        statement_types = [r["statement_type"] for r in result]
+        assert "balance_sheet" in statement_types
+
+    def test_detect_all_statements_multi_statement_pdf(self):
+        """Test detection when multiple statements are present (annual report)."""
+        text = """Annual Report 2024
+
+        Income Statement
+        Revenue: 1,000,000
+        Cost of Goods Sold: 400,000
+        Gross Profit: 600,000
+        Net Income: 200,000
+
+        Balance Sheet
+        Total Assets: 5,000,000
+        Total Liabilities: 2,000,000
+        Shareholders' Equity: 3,000,000
+        Retained Earnings: 1,000,000
+
+        Statement of Cash Flows
+        Cash Flows from Operating Activities
+        Net Income: 200,000
+        Depreciation: 50,000
+        Cash Flows from Investing Activities
+        Capital Expenditures: (100,000)
+        Cash Flows from Financing Activities
+        Dividends Paid: (50,000)"""
+
+        result = self.classifier.detect_all_statement_types(text)
+
+        # Should detect all three statement types
+        assert len(result) >= 3
+        statement_types = [r["statement_type"] for r in result]
+        assert "income_statement" in statement_types
+        assert "balance_sheet" in statement_types
+        assert "cash_flow" in statement_types
+
+    def test_detect_all_statements_empty_text(self):
+        """Test that empty text returns default income statement."""
+        result = self.classifier.detect_all_statement_types("")
+
+        assert len(result) == 1
+        assert result[0]["statement_type"] == "income_statement"
+        assert result[0]["confidence"] == 0.5
+
+    def test_detect_all_statements_sorted_by_score(self):
+        """Test that results are sorted by score descending."""
+        text = """Balance Sheet
+        Total Assets: 5,000,000
+        Statement of Cash Flows
+        Operating Activities"""
+
+        result = self.classifier.detect_all_statement_types(text)
+
+        if len(result) > 1:
+            # Scores should be in descending order
+            for i in range(len(result) - 1):
+                assert result[i]["score"] >= result[i + 1]["score"]
+
+    def test_detect_all_statements_confidence_normalized(self):
+        """Test that confidence values are normalized between 0 and 1."""
+        text = """Income Statement
+        Revenue: 1,000,000
+        Net Income: 300,000
+        Gross Profit: 600,000
+        Operating Income: 400,000"""
+
+        result = self.classifier.detect_all_statement_types(text)
+
+        for item in result:
+            assert 0 <= item["confidence"] <= 1
