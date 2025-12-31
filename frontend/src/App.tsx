@@ -10,6 +10,7 @@ import BatchUpload from './pages/BatchUpload';
 import Export from './pages/Export';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import AdminDashboard from './pages/AdminDashboard';
 import './index.css';
 
 function App() {
@@ -30,6 +31,7 @@ function App() {
           <Route path="audit" element={<AuditTrail />} />
           <Route path="library" element={<TemplateLibrary />} />
           <Route path="batch" element={<BatchUpload />} />
+          <Route path="admin" element={<AdminDashboard />} />
         </Route>
       </Routes>
     </BrowserRouter>

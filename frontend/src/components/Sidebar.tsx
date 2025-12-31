@@ -10,6 +10,7 @@ import {
     ChevronRight,
     Library,
     Download,
+    Shield,
 } from 'lucide-react';
 import { useUIStore } from '../stores';
 import logo from '../assets/logo.png';
@@ -22,6 +23,7 @@ const navItems = [
     { path: '/export', icon: Download, label: 'Export to Excel' },
     { path: '/audit', icon: History, label: 'Audit Trail' },
     { path: '/library', icon: Library, label: 'Template Library' },
+    { path: '/admin', icon: Shield, label: 'Admin Dashboard', adminOnly: true },
 ];
 
 const Sidebar: React.FC = () => {

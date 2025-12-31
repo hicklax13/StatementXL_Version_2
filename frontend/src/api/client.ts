@@ -620,5 +620,56 @@ export const detectStatements = async (documentId: string): Promise<DetectStatem
     return response.data;
 };
 
+// Admin APIs
+export const getAdminUsers = async (
+    page: number = 1,
+    pageSize: number = 20,
+    includeInactive: boolean = false
+): Promise<AdminUsersListResponse> => {
+    const params = new URLSearchParams();
+    params.append('page', page.toString());
+    params.append('page_size', pageSize.toString());
+    params.append('include_inactive', includeInactive.toString());
+    const response = await api.get(`/auth/users?${params.toString()}`);
+    return response.data;
+};
+
+export const getAdminUser = async (userId: string): Promise<AdminUserResponse> => {
+    const response = await api.get(`/auth/users/${userId}`);
+    return response.data;
+};
+
+export const updateAdminUser = async (userId: string, data: UpdateUserRequest): Promise<AdminUserResponse> => {
+    const response = await api.patch(`/auth/users/${userId}`, data);
+    return response.data;
+};
+
+export const deleteAdminUser = async (userId: string): Promise<{ message: string }> => {
+    const response = await api.delete(`/auth/users/${userId}`);
+    return response.data;
+};
+
+export const unlockUser = async (userId: string): Promise<AdminUserResponse> => {
+    const response = await api.patch(`/auth/users/${userId}`, {
+        unlock: true
+    });
+    return response.data;
+};
+
+export const getDetailedMetrics = async (): Promise<DetailedMetricsResponse> => {
+    const response = await api.get('/metrics/detailed');
+    return response.data;
+};
+
+export const getVersionInfo = async (): Promise<{
+    version: string;
+    build_number: string | null;
+    git_commit: string | null;
+    environment: string;
+}> => {
+    const response = await api.get('/version');
+    return response.data;
+};
+
 export default api;
 
