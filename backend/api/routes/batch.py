@@ -15,6 +15,7 @@ from sqlalchemy.orm import Session
 
 from backend.database import get_db
 from backend.services.batch_processor import get_batch_processor, BatchResult
+from backend.auth.quota import check_batch_processing_allowed, check_document_quota
 
 logger = structlog.get_logger(__name__)
 
@@ -71,6 +72,8 @@ async def upload_batch_files(
     company_name: Optional[str] = None,
     background_tasks: BackgroundTasks = None,
     db: Session = Depends(get_db),
+    _batch_allowed: bool = Depends(check_batch_processing_allowed),
+    _quota_check: bool = Depends(check_document_quota),
 ) -> BatchJobResponse:
     """
     Upload multiple PDF files for batch processing.
