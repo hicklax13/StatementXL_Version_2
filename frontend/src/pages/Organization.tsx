@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import {
     Building2,
     Users,
-    Mail,
     UserPlus,
     Settings,
     Crown,
@@ -211,6 +210,7 @@ const Organization: React.FC = () => {
                         <button
                             onClick={fetchMembers}
                             className="p-2 hover:bg-gray-100 rounded-lg"
+                            aria-label="Refresh members list"
                         >
                             <RefreshCw className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`} />
                         </button>
@@ -312,6 +312,7 @@ const Organization: React.FC = () => {
                                         value={inviteRole}
                                         onChange={(e) => setInviteRole(e.target.value as 'member' | 'viewer')}
                                         className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                                        aria-label="Select role for new member"
                                     >
                                         <option value="member">Member</option>
                                         <option value="viewer">Viewer</option>

@@ -156,6 +156,7 @@ const Search: React.FC = () => {
                             value={filters.type}
                             onChange={(e) => setFilters({ ...filters, type: e.target.value })}
                             className="px-3 py-1.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                            aria-label="Filter by type"
                         >
                             <option value="all">All Types</option>
                             <option value="document">Documents</option>
@@ -166,6 +167,7 @@ const Search: React.FC = () => {
                             value={filters.dateRange}
                             onChange={(e) => setFilters({ ...filters, dateRange: e.target.value })}
                             className="px-3 py-1.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                            aria-label="Filter by date range"
                         >
                             <option value="7d">Last 7 days</option>
                             <option value="30d">Last 30 days</option>
@@ -226,7 +228,7 @@ const Search: React.FC = () => {
                                             </div>
                                         </div>
                                     </div>
-                                    <button className="p-2 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded-lg">
+                                    <button className="p-2 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded-lg" aria-label="View details">
                                         <Eye className="w-5 h-5" />
                                     </button>
                                 </div>

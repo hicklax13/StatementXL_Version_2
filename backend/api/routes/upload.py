@@ -31,6 +31,7 @@ from backend.services.table_detector import ExtractedTable, get_table_detector
 from backend.auth.quota import check_document_quota
 from backend.services.analytics_service import AnalyticsService
 from backend.models.analytics import MetricType
+from backend.middleware.rate_limit import upload_rate_limit
 
 logger = structlog.get_logger(__name__)
 settings = get_settings()
@@ -130,11 +131,13 @@ def convert_table_to_response(table: ExtractedTable) -> TableResponse:
     responses={
         400: {"model": ErrorResponse, "description": "Invalid file"},
         413: {"model": ErrorResponse, "description": "File too large"},
+        429: {"model": ErrorResponse, "description": "Rate limit exceeded"},
         500: {"model": ErrorResponse, "description": "Processing error"},
     },
     summary="Upload PDF for extraction",
-    description="Upload a PDF document to extract financial tables and data.",
+    description="Upload a PDF document to extract financial tables and data. Limited to 20 uploads per hour.",
 )
+@upload_rate_limit()
 async def upload_pdf(
     file: UploadFile = File(..., description="PDF file to process"),
     db: Session = Depends(get_db),
