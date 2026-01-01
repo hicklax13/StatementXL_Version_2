@@ -29,23 +29,19 @@ interface AnalyticsData {
     }>;
 }
 
-const Analytics: React.FC = () =& gt; {
-    const [data, setData] = useState & lt; AnalyticsData | null & gt; (null);
+const Analytics: React.FC = () => {
+    const [data, setData] = useState<AnalyticsData | null>(null);
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState & lt; string | null & gt; (null);
-    const [timeRange, setTimeRange] = useState & lt; '7d' | '30d' | '90d' & gt; ('30d');
+    const [error, setError] = useState<string | null>(null);
+    const [timeRange, setTimeRange] = useState<'7d' | '30d' | '90d'>('30d');
 
-    useEffect(() =& gt; {
+    useEffect(() => {
         fetchAnalytics();
     }, [timeRange]);
 
-    const fetchAnalytics = async() =& gt; {
+    const fetchAnalytics = async () => {
         try {
             setLoading(true);
-            // TODO: Replace with actual API call when backend endpoint is ready
-            // const response = await fetch(`/api/v1/analytics?range=${timeRange}`);
-            // const data = await response.json();
-
             // Mock data for now
             setData({
                 total_documents: 1247,
@@ -59,178 +55,171 @@ const Analytics: React.FC = () =& gt; {
                     { name: 'Balance Sheet - Corporate', count: 289 },
                     { name: 'Cash Flow - Professional', count: 261 },
                 ],
-                usage_by_day: Array.from({ length: 30 }, (_, i) =& gt; ({
+                usage_by_day: Array.from({ length: 30 }, (_, i) => ({
                     date: new Date(Date.now() - (29 - i) * 24 * 60 * 60 * 1000).toLocaleDateString(),
                     documents: Math.floor(Math.random() * 20) + 5,
                     exports: Math.floor(Math.random() * 15) + 3,
                 })),
             });
-        setError(null);
-    } catch (err) {
-        setError(getErrorMessage(err));
-    } finally {
-        setLoading(false);
-    }
-};
+            setError(null);
+        } catch (err) {
+            setError(getErrorMessage(err));
+        } finally {
+            setLoading(false);
+        }
+    };
 
-const StatCard: React.FC<{
-    icon: React.ReactNode;
-    title: string;
-    value: string | number;
-    subtitle?: string;
-    trend?: string;
-}> = ({ icon, title, value, subtitle, trend }) =& gt; (
-        & lt;div className = "bg-white rounded-xl shadow-sm border border-gray-200 p-6" & gt;
-            & lt;div className = "flex items-center justify-between mb-4" & gt;
-                & lt;div className = "p-2 bg-green-50 rounded-lg" & gt; { icon }& lt;/div&gt;
-{
-    trend & amp;& amp; (
-                    & lt;span className = "text-sm text-green-600 flex items-center space-x-1" & gt;
-                        & lt;TrendingUp className = "w-4 h-4" /& gt;
-                        & lt; span & gt; { trend }& lt;/span&gt;
-                    & lt;/span&gt;
-                )
-}
-            & lt;/div&gt;
-            & lt;h3 className = "text-sm font-medium text-gray-600 mb-1" & gt; { title }& lt;/h3&gt;
-            & lt;p className = "text-3xl font-bold text-gray-900" & gt; { value }& lt;/p&gt;
-{ subtitle & amp;& amp; & lt;p className = "text-sm text-gray-500 mt-1" & gt; { subtitle }& lt;/p&gt; }
-        & lt;/div&gt;
+    const StatCard: React.FC<{
+        icon: React.ReactNode;
+        title: string;
+        value: string | number;
+        subtitle?: string;
+        trend?: string;
+    }> = ({ icon, title, value, subtitle, trend }) => (
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <div className="flex items-center justify-between mb-4">
+                <div className="p-2 bg-green-50 rounded-lg">{icon}</div>
+                {trend && (
+                    <span className="text-sm text-green-600 flex items-center space-x-1">
+                        <TrendingUp className="w-4 h-4" />
+                        <span>{trend}</span>
+                    </span>
+                )}
+            </div>
+            <h3 className="text-sm font-medium text-gray-600 mb-1">{title}</h3>
+            <p className="text-3xl font-bold text-gray-900">{value}</p>
+            {subtitle && <p className="text-sm text-gray-500 mt-1">{subtitle}</p>}
+        </div>
     );
 
-return (
-        & lt;div className = "min-h-screen bg-gray-50 p-6" & gt;
-            & lt;div className = "max-w-7xl mx-auto" & gt;
-{/* Header */ }
-                & lt;div className = "mb-8" & gt;
-                    & lt;div className = "flex items-center justify-between" & gt;
-                        & lt;div className = "flex items-center space-x-3" & gt;
-                            & lt;BarChart3 className = "w-8 h-8 text-green-600" /& gt;
-                            & lt;h1 className = "text-3xl font-bold text-gray-900" & gt;Analytics Dashboard & lt;/h1&gt;
-                        & lt;/div&gt;
-                        & lt;div className = "flex items-center space-x-3" & gt;
-{/* Time Range Selector */ }
-                            & lt; select
-value = { timeRange }
-onChange = {(e) =& gt; setTimeRange(e.target.value as '7d' | '30d' | '90d')}
-className = "px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-    & gt;
-                                & lt;option value = "7d" & gt;Last 7 days & lt;/option&gt;
-                                & lt;option value = "30d" & gt;Last 30 days & lt;/option&gt;
-                                & lt;option value = "90d" & gt;Last 90 days & lt;/option&gt;
-                            & lt;/select&gt;
-                            & lt; button
-onClick = { fetchAnalytics }
-className = "flex items-center space-x-2 px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50"
-    & gt;
-                                & lt;RefreshCw className = {`w-4 h-4 ${loading ? 'animate-spin' : ''}`} /&gt;
-                                & lt; span & gt; Refresh & lt;/span&gt;
-                            & lt;/button&gt;
-                        & lt;/div&gt;
-                    & lt;/div&gt;
-                    & lt;p className = "text-gray-600 mt-2" & gt;
+    return (
+        <div className="min-h-screen bg-gray-50 p-6">
+            <div className="max-w-7xl mx-auto">
+                {/* Header */}
+                <div className="mb-8">
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-3">
+                            <BarChart3 className="w-8 h-8 text-green-600" />
+                            <h1 className="text-3xl font-bold text-gray-900">Analytics Dashboard</h1>
+                        </div>
+                        <div className="flex items-center space-x-3">
+                            <select
+                                value={timeRange}
+                                onChange={(e) => setTimeRange(e.target.value as '7d' | '30d' | '90d')}
+                                className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                                aria-label="Select time range"
+                            >
+                                <option value="7d">Last 7 days</option>
+                                <option value="30d">Last 30 days</option>
+                                <option value="90d">Last 90 days</option>
+                            </select>
+                            <button
+                                onClick={fetchAnalytics}
+                                className="flex items-center space-x-2 px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50"
+                                aria-label="Refresh analytics"
+                            >
+                                <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+                                <span>Refresh</span>
+                            </button>
+                        </div>
+                    </div>
+                    <p className="text-gray-600 mt-2">
                         Track usage, performance, and trends across your organization.
-                    & lt;/p&gt;
-                & lt;/div&gt;
+                    </p>
+                </div>
 
-{/* Error Alert */ }
-{
-    error & amp;& amp; (
-                    & lt;div className = "mb-6 p-4 bg-red-50 border border-red-200 rounded-lg flex items-center space-x-3" & gt;
-                        & lt;AlertCircle className = "w-5 h-5 text-red-500" /& gt;
-                        & lt;span className = "text-red-700" & gt; { error }& lt;/span&gt;
-                    & lt;/div&gt;
-                )
-}
+                {/* Error Alert */}
+                {error && (
+                    <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg flex items-center space-x-3">
+                        <AlertCircle className="w-5 h-5 text-red-500" />
+                        <span className="text-red-700">{error}</span>
+                    </div>
+                )}
 
-{
-    loading ? (
-                    & lt;div className = "flex items-center justify-center py-12" & gt;
-                        & lt;RefreshCw className = "w-8 h-8 animate-spin text-green-600" /& gt;
-                    & lt;/div&gt;
+                {loading ? (
+                    <div className="flex items-center justify-center py-12">
+                        <RefreshCw className="w-8 h-8 animate-spin text-green-600" />
+                    </div>
                 ) : data ? (
-                    & lt;& gt;
-    {/* Stats Grid */ }
-                        & lt;div className = "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8" & gt;
-                            & lt; StatCard
-    icon = {& lt;FileText className = "w-6 h-6 text-green-600" /& gt;
-}
-title = "Total Documents"
-value = { data.total_documents.toLocaleString() }
-subtitle = {`${data.documents_this_month} this month`}
-trend = "+12%"
-    /& gt;
-                            & lt; StatCard
-icon = {& lt;Download className = "w-6 h-6 text-green-600" /& gt;}
-title = "Total Exports"
-value = { data.total_exports.toLocaleString() }
-subtitle = {`${data.exports_this_month} this month`}
-trend = "+8%"
-    /& gt;
-                            & lt; StatCard
-icon = {& lt;Users className = "w-6 h-6 text-green-600" /& gt;}
-title = "Active Users"
-value = { data.total_users }
-subtitle = "Across all teams"
-    /& gt;
-                            & lt; StatCard
-icon = {& lt;Calendar className = "w-6 h-6 text-green-600" /& gt;}
-title = "Avg Processing Time"
-value = {`${data.avg_processing_time}s`}
-subtitle = "Per document"
-trend = "-15%"
-    /& gt;
-                        & lt;/div&gt;
+                    <>
+                        {/* Stats Grid */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                            <StatCard
+                                icon={<FileText className="w-6 h-6 text-green-600" />}
+                                title="Total Documents"
+                                value={data.total_documents.toLocaleString()}
+                                subtitle={`${data.documents_this_month} this month`}
+                                trend="+12%"
+                            />
+                            <StatCard
+                                icon={<Download className="w-6 h-6 text-green-600" />}
+                                title="Total Exports"
+                                value={data.total_exports.toLocaleString()}
+                                subtitle={`${data.exports_this_month} this month`}
+                                trend="+8%"
+                            />
+                            <StatCard
+                                icon={<Users className="w-6 h-6 text-green-600" />}
+                                title="Active Users"
+                                value={data.total_users}
+                                subtitle="Across all teams"
+                            />
+                            <StatCard
+                                icon={<Calendar className="w-6 h-6 text-green-600" />}
+                                title="Avg Processing Time"
+                                value={`${data.avg_processing_time}s`}
+                                subtitle="Per document"
+                                trend="-15%"
+                            />
+                        </div>
 
-{/* Popular Templates */ }
-                        & lt;div className = "bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-8" & gt;
-                            & lt;h2 className = "text-lg font-semibold text-gray-900 mb-4" & gt;
+                        {/* Popular Templates */}
+                        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-8">
+                            <h2 className="text-lg font-semibold text-gray-900 mb-4">
                                 Most Used Templates
-    & lt;/h2&gt;
-                            & lt;div className = "space-y-4" & gt;
-{
-    data.popular_templates.map((template, index) =& gt; (
-                                    & lt;div key = { index } className = "flex items-center justify-between" & gt;
-                                        & lt;div className = "flex items-center space-x-3" & gt;
-                                            & lt;div className = "w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center text-green-600 font-semibold" & gt;
-    { index + 1 }
-                                            & lt;/div&gt;
-                                            & lt;span className = "text-gray-900" & gt; { template.name }& lt;/span&gt;
-                                        & lt;/div&gt;
-                                        & lt;div className = "flex items-center space-x-4" & gt;
-                                            & lt;span className = "text-gray-600" & gt; { template.count } uses & lt;/span&gt;
-                                            & lt;div className = "w-32 bg-gray-200 rounded-full h-2" & gt;
-                                                & lt; div
-    className = "bg-green-500 h-2 rounded-full"
-    style = {{
-        width: `${(template.count / data.popular_templates[0].count) * 100}%`,
-                                                    }
-}
-                                                & gt;& lt;/div&gt;
-                                            & lt;/div&gt;
-                                        & lt;/div&gt;
-                                    & lt;/div&gt;
+                            </h2>
+                            <div className="space-y-4">
+                                {data.popular_templates.map((template, index) => (
+                                    <div key={index} className="flex items-center justify-between">
+                                        <div className="flex items-center space-x-3">
+                                            <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center text-green-600 font-semibold">
+                                                {index + 1}
+                                            </div>
+                                            <span className="text-gray-900">{template.name}</span>
+                                        </div>
+                                        <div className="flex items-center space-x-4">
+                                            <span className="text-gray-600">{template.count} uses</span>
+                                            <div className="w-32 bg-gray-200 rounded-full h-2">
+                                                <div
+                                                    className="bg-green-500 h-2 rounded-full"
+                                                    style={{
+                                                        width: `${(template.count / data.popular_templates[0].count) * 100}%`,
+                                                    }}
+                                                ></div>
+                                            </div>
+                                        </div>
+                                    </div>
                                 ))}
-                            & lt;/div&gt;
-                        & lt;/div&gt;
+                            </div>
+                        </div>
 
-{/* Usage Chart Placeholder */ }
-                        & lt;div className = "bg-white rounded-xl shadow-sm border border-gray-200 p-6" & gt;
-                            & lt;h2 className = "text-lg font-semibold text-gray-900 mb-4" & gt;Usage Trends & lt;/h2&gt;
-                            & lt;div className = "h-64 flex items-center justify-center border-2 border-dashed border-gray-300 rounded-lg" & gt;
-                                & lt;div className = "text-center text-gray-500" & gt;
-                                    & lt;BarChart3 className = "w-12 h-12 mx-auto mb-2 opacity-50" /& gt;
-                                    & lt; p & gt;Chart visualization coming soon & lt;/p&gt;
-                                    & lt;p className = "text-sm mt-1" & gt;
+                        {/* Usage Chart Placeholder */}
+                        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                            <h2 className="text-lg font-semibold text-gray-900 mb-4">Usage Trends</h2>
+                            <div className="h-64 flex items-center justify-center border-2 border-dashed border-gray-300 rounded-lg">
+                                <div className="text-center text-gray-500">
+                                    <BarChart3 className="w-12 h-12 mx-auto mb-2 opacity-50" />
+                                    <p>Chart visualization coming soon</p>
+                                    <p className="text-sm mt-1">
                                         Integrate with Chart.js or Recharts for interactive charts
-    & lt;/p&gt;
-                                & lt;/div&gt;
-                            & lt;/div&gt;
-                        & lt;/div&gt;
-                    & lt;/&gt;
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </>
                 ) : null}
-            & lt;/div&gt;
-        & lt;/div&gt;
+            </div>
+        </div>
     );
 };
 

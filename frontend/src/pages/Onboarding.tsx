@@ -1,14 +1,14 @@
 import React, { useState } from 'react';
 import {
     CheckCircle,
-    Circle,
-    Upload,
     FileText,
-    Download,
+    Upload,
+    Settings,
     ArrowRight,
     ArrowLeft,
     Sparkles,
 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 interface OnboardingStep {
     id: number;
@@ -18,281 +18,167 @@ interface OnboardingStep {
     completed: boolean;
 }
 
-const Onboarding: React.FC = () =& gt; {
+const Onboarding: React.FC = () => {
+    const navigate = useNavigate();
     const [currentStep, setCurrentStep] = useState(0);
-    const [steps, setSteps] = useState & lt; OnboardingStep[] & gt; ([
+    const [steps, setSteps] = useState<OnboardingStep[]>([
         {
             id: 1,
             title: 'Welcome to StatementXL',
             description: 'Transform your financial PDFs into structured Excel templates with AI-powered extraction.',
-            icon: & lt; Sparkles className="w-12 h-12 text-green-600" /& gt;,
-        completed: false,
+            icon: <Sparkles className="w-12 h-12 text-green-600" />,
+            completed: false,
         },
-{
-    id: 2,
-        title: 'Upload Your First Document',
-            description: 'Upload a PDF financial statement (Income Statement, Balance Sheet, or Cash Flow).',
-                icon: & lt;Upload className = "w-12 h-12 text-green-600" /& gt;,
-    completed: false,
+        {
+            id: 2,
+            title: 'Upload Documents',
+            description: 'Upload PDF financial statements. We support Income Statements, Balance Sheets, and Cash Flow statements.',
+            icon: <Upload className="w-12 h-12 text-green-600" />,
+            completed: false,
         },
-{
-    id: 3,
-        title: 'Review Extracted Data',
-            description: 'Our AI extracts tables and classifies line items using GAAP standards.',
-                icon: & lt;FileText className = "w-12 h-12 text-green-600" /& gt;,
-    completed: false,
+        {
+            id: 3,
+            title: 'Review & Map',
+            description: 'Review extracted data, verify classifications, and map line items to your preferred template.',
+            icon: <FileText className="w-12 h-12 text-green-600" />,
+            completed: false,
         },
-{
-    id: 4,
-        title: 'Export to Excel',
-            description: 'Download your professionally formatted Excel file with formulas intact.',
-                icon: & lt;Download className = "w-12 h-12 text-green-600" /& gt;,
-    completed: false,
+        {
+            id: 4,
+            title: 'Export to Excel',
+            description: 'Download professionally formatted Excel files with working formulas and clean styling.',
+            icon: <Settings className="w-12 h-12 text-green-600" />,
+            completed: false,
         },
     ]);
 
-const handleNext = () =& gt; {
-    if (currentStep & lt; steps.length - 1) {
-        const updatedSteps = [...steps];
-        updatedSteps[currentStep].completed = true;
-        setSteps(updatedSteps);
-        setCurrentStep(currentStep + 1);
-    } else {
-        // Mark last step as complete and redirect to upload
-        const updatedSteps = [...steps];
-        updatedSteps[currentStep].completed = true;
-        setSteps(updatedSteps);
+    const handleNext = () => {
+        if (currentStep < steps.length - 1) {
+            setSteps(prev => prev.map((step, index) =>
+                index === currentStep ? { ...step, completed: true } : step
+            ));
+            setCurrentStep(prev => prev + 1);
+        } else {
+            // Complete onboarding
+            navigate('/upload');
+        }
+    };
 
-        // Save onboarding completion to localStorage
-        localStorage.setItem('onboarding_completed', 'true');
+    const handlePrevious = () => {
+        if (currentStep > 0) {
+            setCurrentStep(prev => prev - 1);
+        }
+    };
 
-        // Redirect to upload page
-        window.location.href = '/upload';
-    }
-};
+    const handleSkip = () => {
+        navigate('/upload');
+    };
 
-const handlePrevious = () =& gt; {
-    if (currentStep & gt; 0) {
-        setCurrentStep(currentStep - 1);
-    }
-};
-
-const handleSkip = () =& gt; {
-    localStorage.setItem('onboarding_completed', 'true');
-    window.location.href = '/upload';
-};
-
-const currentStepData = steps[currentStep];
-const progress = ((currentStep + 1) / steps.length) * 100;
-
-return (
-        & lt;div className = "min-h-screen bg-gradient-to-br from-green-50 to-white flex items-center justify-center p-6" & gt;
-            & lt;div className = "max-w-4xl w-full" & gt;
-{/* Progress Bar */ }
-                & lt;div className = "mb-8" & gt;
-                    & lt;div className = "flex items-center justify-between mb-2" & gt;
-                        & lt;span className = "text-sm font-medium text-gray-700" & gt;
-                            Step { currentStep + 1 } of { steps.length }
-                        & lt;/span&gt;
-                        & lt;span className = "text-sm text-gray-500" & gt; { Math.round(progress) }% complete & lt;/span&gt;
-                    & lt;/div&gt;
-                    & lt;div className = "w-full bg-gray-200 rounded-full h-2" & gt;
-                        & lt; div
-className = "bg-green-600 h-2 rounded-full transition-all duration-300"
-style = {{ width: `${progress}%` }}
-                        & gt;& lt;/div&gt;
-                    & lt;/div&gt;
-                & lt;/div&gt;
-
-{/* Step Indicators */ }
-                & lt;div className = "flex items-center justify-between mb-12" & gt;
-{
-    steps.map((step, index) =& gt; (
-                        & lt;div key = { step.id } className = "flex items-center" & gt;
-                            & lt; button
-    onClick = {() =& gt; setCurrentStep(index)
-}
-className = {`flex items-center justify-center w-12 h-12 rounded-full border-2 transition-all ${index === currentStep
-    ? 'border-green-600 bg-green-50'
-    : step.completed
-        ? 'border-green-600 bg-green-600'
-        : 'border-gray-300 bg-white'
-    }`}
-                            & gt;
-{
-    step.completed ? (
-                                    & lt;CheckCircle className = "w-6 h-6 text-white" /& gt;
-                                ) : (
-                                    & lt; Circle
-    className = {`w-6 h-6 ${index === currentStep ? 'text-green-600' : 'text-gray-400'
-        }`
-}
-                                    /&gt;
+    return (
+        <div className="min-h-screen bg-gradient-to-br from-green-50 to-white flex items-center justify-center p-6">
+            <div className="max-w-2xl w-full">
+                {/* Progress Indicator */}
+                <div className="mb-8">
+                    <div className="flex justify-between items-center mb-4">
+                        {steps.map((step, index) => (
+                            <div key={step.id} className="flex items-center">
+                                <div
+                                    className={`w-10 h-10 rounded-full flex items-center justify-center font-semibold transition-all ${index < currentStep
+                                            ? 'bg-green-600 text-white'
+                                            : index === currentStep
+                                                ? 'bg-green-100 text-green-600 border-2 border-green-600'
+                                                : 'bg-gray-100 text-gray-400'
+                                        }`}
+                                >
+                                    {index < currentStep ? (
+                                        <CheckCircle className="w-5 h-5" />
+                                    ) : (
+                                        index + 1
+                                    )}
+                                </div>
+                                {index < steps.length - 1 && (
+                                    <div
+                                        className={`w-16 h-1 mx-2 rounded ${index < currentStep ? 'bg-green-600' : 'bg-gray-200'
+                                            }`}
+                                    />
                                 )}
-                            & lt;/button&gt;
-{
-    index & lt; steps.length - 1 & amp;& amp; (
-                                & lt; div
-    className = {`w-16 h-0.5 mx-2 ${step.completed ? 'bg-green-600' : 'bg-gray-300'
-        }`
-}
-                                & gt;& lt;/div&gt;
-                            )}
-                        & lt;/div&gt;
-                    ))}
-                & lt;/div&gt;
+                            </div>
+                        ))}
+                    </div>
+                </div>
 
-{/* Main Content Card */ }
-                & lt;div className = "bg-white rounded-2xl shadow-xl border border-gray-200 p-12" & gt;
-                    & lt;div className = "text-center mb-8" & gt;
-                        & lt;div className = "flex justify-center mb-6" & gt; { currentStepData.icon }& lt;/div&gt;
-                        & lt;h1 className = "text-3xl font-bold text-gray-900 mb-4" & gt;
-{ currentStepData.title }
-                        & lt;/h1&gt;
-                        & lt;p className = "text-lg text-gray-600 max-w-2xl mx-auto" & gt;
-{ currentStepData.description }
-                        & lt;/p&gt;
-                    & lt;/div&gt;
+                {/* Content Card */}
+                <div className="bg-white rounded-2xl shadow-xl p-8 border border-gray-100">
+                    <div className="text-center mb-8">
+                        <div className="inline-flex items-center justify-center w-20 h-20 bg-green-50 rounded-full mb-6">
+                            {steps[currentStep].icon}
+                        </div>
+                        <h1 className="text-3xl font-bold text-gray-900 mb-4">
+                            {steps[currentStep].title}
+                        </h1>
+                        <p className="text-lg text-gray-600 max-w-md mx-auto">
+                            {steps[currentStep].description}
+                        </p>
+                    </div>
 
-{/* Step-specific content */ }
-                    & lt;div className = "mt-12" & gt;
-{
-    currentStep === 0 & amp;& amp; (
-                            & lt;div className = "grid grid-cols-3 gap-6 text-center" & gt;
-                                & lt;div className = "p-6 bg-green-50 rounded-xl" & gt;
-                                    & lt;div className = "text-3xl font-bold text-green-600 mb-2" & gt; AI - Powered & lt;/div&gt;
-                                    & lt;p className = "text-sm text-gray-600" & gt;
-                                        Intelligent extraction using Google Gemini
-                                    & lt;/p&gt;
-                                & lt;/div&gt;
-                                & lt;div className = "p-6 bg-green-50 rounded-xl" & gt;
-                                    & lt;div className = "text-3xl font-bold text-green-600 mb-2" & gt;GAAP Compliant & lt;/div&gt;
-                                    & lt;p className = "text-sm text-gray-600" & gt;
-                                        Automatic classification to accounting standards
-        & lt;/p&gt;
-                                & lt;/div&gt;
-                                & lt;div className = "p-6 bg-green-50 rounded-xl" & gt;
-                                    & lt;div className = "text-3xl font-bold text-green-600 mb-2" & gt;Formula Ready & lt;/div&gt;
-                                    & lt;p className = "text-sm text-gray-600" & gt;
-                                        Excel files with working formulas, not static values
-        & lt;/p&gt;
-                                & lt;/div&gt;
-                            & lt;/div&gt;
-                        )
-}
+                    {/* Step-specific content */}
+                    {currentStep === 0 && (
+                        <div className="bg-green-50 rounded-xl p-6 mb-8">
+                            <h3 className="font-semibold text-green-900 mb-3">What you can do:</h3>
+                            <ul className="space-y-2 text-green-800">
+                                <li className="flex items-center space-x-2">
+                                    <CheckCircle className="w-5 h-5" />
+                                    <span>Extract tables from PDF financial statements</span>
+                                </li>
+                                <li className="flex items-center space-x-2">
+                                    <CheckCircle className="w-5 h-5" />
+                                    <span>AI-powered GAAP classification</span>
+                                </li>
+                                <li className="flex items-center space-x-2">
+                                    <CheckCircle className="w-5 h-5" />
+                                    <span>Export to professional Excel templates</span>
+                                </li>
+                            </ul>
+                        </div>
+                    )}
 
-{
-    currentStep === 1 & amp;& amp; (
-                            & lt;div className = "bg-gray-50 rounded-xl p-8 border-2 border-dashed border-gray-300" & gt;
-                                & lt;div className = "text-center" & gt;
-                                    & lt;Upload className = "w-16 h-16 text-gray-400 mx-auto mb-4" /& gt;
-                                    & lt;p className = "text-gray-600 mb-2" & gt;
-                                        Supported formats: PDF
-        & lt;/p&gt;
-                                    & lt;p className = "text-sm text-gray-500" & gt;
-                                        Maximum file size: 50MB
-        & lt;/p&gt;
-                                & lt;/div&gt;
-                            & lt;/div&gt;
-                        )
-}
+                    {/* Navigation */}
+                    <div className="flex justify-between items-center">
+                        <button
+                            onClick={handlePrevious}
+                            disabled={currentStep === 0}
+                            className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-all ${currentStep === 0
+                                    ? 'text-gray-300 cursor-not-allowed'
+                                    : 'text-gray-600 hover:bg-gray-100'
+                                }`}
+                        >
+                            <ArrowLeft className="w-4 h-4" />
+                            <span>Previous</span>
+                        </button>
 
-{
-    currentStep === 2 & amp;& amp; (
-                            & lt;div className = "space-y-4" & gt;
-                                & lt;div className = "flex items-start space-x-4 p-4 bg-gray-50 rounded-lg" & gt;
-                                    & lt;CheckCircle className = "w-6 h-6 text-green-600 flex-shrink-0 mt-0.5" /& gt;
-                                    & lt; div & gt;
-                                        & lt;h3 className = "font-semibold text-gray-900" & gt;Table Detection & lt;/h3&gt;
-                                        & lt;p className = "text-sm text-gray-600" & gt;
-                                            Automatically identifies financial tables in your PDF
-        & lt;/p&gt;
-                                    & lt;/div&gt;
-                                & lt;/div&gt;
-                                & lt;div className = "flex items-start space-x-4 p-4 bg-gray-50 rounded-lg" & gt;
-                                    & lt;CheckCircle className = "w-6 h-6 text-green-600 flex-shrink-0 mt-0.5" /& gt;
-                                    & lt; div & gt;
-                                        & lt;h3 className = "font-semibold text-gray-900" & gt;Line Item Classification & lt;/h3&gt;
-                                        & lt;p className = "text-sm text-gray-600" & gt;
-                                            AI classifies each line item to GAAP categories
-        & lt;/p&gt;
-                                    & lt;/div&gt;
-                                & lt;/div&gt;
-                                & lt;div className = "flex items-start space-x-4 p-4 bg-gray-50 rounded-lg" & gt;
-                                    & lt;CheckCircle className = "w-6 h-6 text-green-600 flex-shrink-0 mt-0.5" /& gt;
-                                    & lt; div & gt;
-                                        & lt;h3 className = "font-semibold text-gray-900" & gt;Smart Aggregation & lt;/h3&gt;
-                                        & lt;p className = "text-sm text-gray-600" & gt;
-                                            Combines related items(e.g., "Social Security" + "Medicaid" = Revenue)
-        & lt;/p&gt;
-                                    & lt;/div&gt;
-                                & lt;/div&gt;
-                            & lt;/div&gt;
-                        )
-}
+                        <button
+                            onClick={handleSkip}
+                            className="text-gray-500 hover:text-gray-700 text-sm"
+                        >
+                            Skip onboarding
+                        </button>
 
-{
-    currentStep === 3 & amp;& amp; (
-                            & lt;div className = "bg-gradient-to-r from-green-50 to-green-100 rounded-xl p-8" & gt;
-                                & lt;div className = "flex items-center justify-between" & gt;
-                                    & lt; div & gt;
-                                        & lt;h3 className = "text-xl font-semibold text-gray-900 mb-2" & gt;
-                                            Professional Excel Templates
-        & lt;/h3&gt;
-                                        & lt;ul className = "space-y-2 text-gray-700" & gt;
-                                            & lt;li className = "flex items-center space-x-2" & gt;
-                                                & lt;CheckCircle className = "w-5 h-5 text-green-600" /& gt;
-                                                & lt; span & gt; Basic, Corporate, and Professional styles & lt;/span&gt;
-                                            & lt;/li&gt;
-                                            & lt;li className = "flex items-center space-x-2" & gt;
-                                                & lt;CheckCircle className = "w-5 h-5 text-green-600" /& gt;
-                                                & lt; span & gt;Working formulas(not static values) & lt;/span&gt;
-                                            & lt;/li&gt;
-                                            & lt;li className = "flex items-center space-x-2" & gt;
-                                                & lt;CheckCircle className = "w-5 h-5 text-green-600" /& gt;
-                                                & lt; span & gt; Audit - ready formatting & lt;/span&gt;
-                                            & lt;/li&gt;
-                                        & lt;/ul&gt;
-                                    & lt;/div&gt;
-                                    & lt;Download className = "w-24 h-24 text-green-600 opacity-20" /& gt;
-                                & lt;/div&gt;
-                            & lt;/div&gt;
-                        )
-}
-                    & lt;/div&gt;
+                        <button
+                            onClick={handleNext}
+                            className="flex items-center space-x-2 px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-500 transition-all shadow-lg hover:shadow-xl"
+                        >
+                            <span>{currentStep === steps.length - 1 ? 'Get Started' : 'Next'}</span>
+                            <ArrowRight className="w-4 h-4" />
+                        </button>
+                    </div>
+                </div>
 
-{/* Navigation Buttons */ }
-                    & lt;div className = "flex items-center justify-between mt-12" & gt;
-                        & lt; button
-onClick = { handleSkip }
-className = "text-gray-600 hover:text-gray-900 font-medium"
-    & gt;
-                            Skip tutorial
-    & lt;/button&gt;
-                        & lt;div className = "flex items-center space-x-3" & gt;
-{
-    currentStep & gt; 0 & amp;& amp; (
-                                & lt; button
-    onClick = { handlePrevious }
-    className = "flex items-center space-x-2 px-6 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 font-medium"
-        & gt;
-                                    & lt;ArrowLeft className = "w-5 h-5" /& gt;
-                                    & lt; span & gt; Previous & lt;/span&gt;
-                                & lt;/button&gt;
-                            )
-}
-                            & lt; button
-onClick = { handleNext }
-className = "flex items-center space-x-2 px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium"
-    & gt;
-                                & lt; span & gt; { currentStep === steps.length - 1 ? 'Get Started' : 'Next' }& lt;/span&gt;
-                                & lt;ArrowRight className = "w-5 h-5" /& gt;
-                            & lt;/button&gt;
-                        & lt;/div&gt;
-                    & lt;/div&gt;
-                & lt;/div&gt;
-            & lt;/div&gt;
-        & lt;/div&gt;
+                {/* Footer */}
+                <p className="text-center text-gray-500 text-sm mt-6">
+                    Step {currentStep + 1} of {steps.length}
+                </p>
+            </div>
+        </div>
     );
 };
 

@@ -4,10 +4,10 @@ import {
     CheckCircle,
     AlertCircle,
     Info,
-    X,
+    AlertTriangle,
+    Trash2,
     Check,
     RefreshCw,
-    Filter,
 } from 'lucide-react';
 import { getErrorMessage } from '../api/client';
 
@@ -21,48 +21,51 @@ interface Notification {
     action_url?: string;
 }
 
-const Notifications: React.FC = () =& gt; {
-    const [notifications, setNotifications] = useState & lt; Notification[] & gt; ([]);
+const Notifications: React.FC = () => {
+    const [notifications, setNotifications] = useState<Notification[]>([]);
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState & lt; string | null & gt; (null);
-    const [filter, setFilter] = useState & lt; 'all' | 'unread' & gt; ('all');
+    const [error, setError] = useState<string | null>(null);
+    const [filter, setFilter] = useState<'all' | 'unread'>('all');
 
-    useEffect(() =& gt; {
+    useEffect(() => {
         fetchNotifications();
     }, []);
 
-    const fetchNotifications = async() =& gt; {
+    const fetchNotifications = async () => {
         try {
             setLoading(true);
-            // TODO: Replace with actual API call
-            // const response = await fetch('/api/v1/notifications');
-            // const data = await response.json();
-
-            // Mock data
+            // Mock data for now
             setNotifications([
                 {
                     id: '1',
                     type: 'success',
-                    title: 'Document processed successfully',
-                    message: 'Your Income Statement has been extracted and is ready for review.',
-                    timestamp: new Date(Date.now() - 1000 * 60 * 5).toISOString(),
+                    title: 'Document Processed',
+                    message: 'Your Income Statement has been processed successfully.',
+                    timestamp: new Date(Date.now() - 1000 * 60 * 30).toISOString(),
                     read: false,
-                    action_url: '/extraction-review/123',
                 },
                 {
                     id: '2',
                     type: 'info',
-                    title: 'New template available',
-                    message: 'Check out our new Balance Sheet - Professional template.',
-                    timestamp: new Date(Date.now() - 1000 * 60 * 60).toISOString(),
-                    read: false,
+                    title: 'New Feature Available',
+                    message: 'Batch upload is now available. Upload multiple PDFs at once!',
+                    timestamp: new Date(Date.now() - 1000 * 60 * 60 * 2).toISOString(),
+                    read: true,
                 },
                 {
                     id: '3',
-                    type: 'success',
-                    title: 'Export completed',
-                    message: 'Your Excel file is ready for download.',
-                    timestamp: new Date(Date.now() - 1000 * 60 * 60 * 2).toISOString(),
+                    type: 'warning',
+                    title: 'Low Document Quota',
+                    message: 'You have 2 documents remaining this month.',
+                    timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString(),
+                    read: false,
+                },
+                {
+                    id: '4',
+                    type: 'error',
+                    title: 'Processing Failed',
+                    message: 'Unable to process "Financial_Report.pdf". Please try again.',
+                    timestamp: new Date(Date.now() - 1000 * 60 * 60 * 48).toISOString(),
                     read: true,
                 },
             ]);
@@ -74,189 +77,164 @@ const Notifications: React.FC = () =& gt; {
         }
     };
 
-    const markAsRead = async (id: string) =& gt; {
-        setNotifications(notifications.map(n =& gt; n.id === id ? { ...n, read: true } : n));
-        // TODO: API call to mark as read
+    const markAsRead = (id: string) => {
+        setNotifications(prev =>
+            prev.map(n => (n.id === id ? { ...n, read: true } : n))
+        );
     };
 
-    const markAllAsRead = async() =& gt; {
-        setNotifications(notifications.map(n =& gt; ({ ...n, read: true })));
-        // TODO: API call to mark all as read
+    const markAllAsRead = () => {
+        setNotifications(prev => prev.map(n => ({ ...n, read: true })));
     };
 
-    const deleteNotification = async (id: string) =& gt; {
-        setNotifications(notifications.filter(n =& gt; n.id !== id));
-        // TODO: API call to delete
+    const deleteNotification = (id: string) => {
+        setNotifications(prev => prev.filter(n => n.id !== id));
     };
 
-    const getIcon = (type: Notification['type']) =& gt; {
+    const getIcon = (type: Notification['type']) => {
         switch (type) {
             case 'success':
-                return & lt;CheckCircle className = "w-6 h-6 text-green-600" /& gt;;
+                return <CheckCircle className="w-5 h-5 text-green-500" />;
             case 'error':
-                return & lt;AlertCircle className = "w-6 h-6 text-red-600" /& gt;;
+                return <AlertCircle className="w-5 h-5 text-red-500" />;
             case 'warning':
-                return & lt;AlertCircle className = "w-6 h-6 text-yellow-600" /& gt;;
-            case 'info':
-                return & lt;Info className = "w-6 h-6 text-blue-600" /& gt;;
+                return <AlertTriangle className="w-5 h-5 text-yellow-500" />;
+            default:
+                return <Info className="w-5 h-5 text-blue-500" />;
         }
     };
 
     const filteredNotifications = filter === 'unread'
-        ? notifications.filter(n =& gt; !n.read)
+        ? notifications.filter(n => !n.read)
         : notifications;
 
-    const unreadCount = notifications.filter(n =& gt; !n.read).length;
+    const unreadCount = notifications.filter(n => !n.read).length;
+
+    const formatTime = (timestamp: string) => {
+        const date = new Date(timestamp);
+        const now = new Date();
+        const diff = now.getTime() - date.getTime();
+        const minutes = Math.floor(diff / 60000);
+        const hours = Math.floor(minutes / 60);
+        const days = Math.floor(hours / 24);
+
+        if (minutes < 60) return `${minutes}m ago`;
+        if (hours < 24) return `${hours}h ago`;
+        return `${days}d ago`;
+    };
 
     return (
-        & lt;div className = "min-h-screen bg-gray-50 p-6" & gt;
-            & lt;div className = "max-w-4xl mx-auto" & gt;
-    {/* Header */ }
-                & lt;div className = "mb-8" & gt;
-                    & lt;div className = "flex items-center justify-between" & gt;
-                        & lt;div className = "flex items-center space-x-3" & gt;
-                            & lt;Bell className = "w-8 h-8 text-green-600" /& gt;
-                            & lt; div & gt;
-                                & lt;h1 className = "text-3xl font-bold text-gray-900" & gt; Notifications & lt;/h1&gt;
-    {
-        unreadCount & gt; 0 & amp;& amp; (
-                                    & lt;p className = "text-sm text-gray-600 mt-1" & gt;
-        { unreadCount } unread notification{ unreadCount !== 1 ? 's' : '' }
-                                    & lt;/p&gt;
-                                )
-    }
-                            & lt;/div&gt;
-                        & lt;/div&gt;
-                        & lt;div className = "flex items-center space-x-3" & gt;
-    {
-        unreadCount & gt; 0 & amp;& amp; (
-                                & lt; button
-        onClick = { markAllAsRead }
-        className = "flex items-center space-x-2 px-4 py-2 text-green-600 hover:bg-green-50 rounded-lg"
-            & gt;
-                                    & lt;Check className = "w-4 h-4" /& gt;
-                                    & lt; span & gt;Mark all as read & lt;/span&gt;
-                                & lt;/button&gt;
-                            )
-    }
-                            & lt; button
-    onClick = { fetchNotifications }
-    className = "p-2 hover:bg-gray-100 rounded-lg"
-        & gt;
-                                & lt;RefreshCw className = {`w-5 h-5 ${loading ? 'animate-spin' : ''}`
-} /&gt;
-                            & lt;/button&gt;
-                        & lt;/div&gt;
-                    & lt;/div&gt;
-                & lt;/div&gt;
+        <div className="min-h-screen bg-gray-50 p-6">
+            <div className="max-w-3xl mx-auto">
+                {/* Header */}
+                <div className="flex items-center justify-between mb-6">
+                    <div className="flex items-center space-x-3">
+                        <div className="relative">
+                            <Bell className="w-8 h-8 text-green-600" />
+                            {unreadCount > 0 && (
+                                <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">
+                                    {unreadCount}
+                                </span>
+                            )}
+                        </div>
+                        <h1 className="text-3xl font-bold text-gray-900">Notifications</h1>
+                    </div>
+                    <div className="flex items-center space-x-3">
+                        <select
+                            value={filter}
+                            onChange={(e) => setFilter(e.target.value as 'all' | 'unread')}
+                            className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
+                            aria-label="Filter notifications"
+                        >
+                            <option value="all">All</option>
+                            <option value="unread">Unread</option>
+                        </select>
+                        <button
+                            onClick={markAllAsRead}
+                            className="flex items-center space-x-2 px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50"
+                        >
+                            <Check className="w-4 h-4" />
+                            <span>Mark all read</span>
+                        </button>
+                        <button
+                            onClick={fetchNotifications}
+                            className="p-2 hover:bg-gray-100 rounded-lg"
+                            aria-label="Refresh notifications"
+                        >
+                            <RefreshCw className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`} />
+                        </button>
+                    </div>
+                </div>
 
-{/* Filter */ }
-                & lt;div className = "mb-6 flex items-center space-x-2" & gt;
-                    & lt;Filter className = "w-5 h-5 text-gray-400" /& gt;
-                    & lt; button
-onClick = {() =& gt; setFilter('all')}
-className = {`px-4 py-2 rounded-lg font-medium ${filter === 'all'
-        ? 'bg-green-600 text-white'
-        : 'bg-white text-gray-700 hover:bg-gray-50'
-    }`}
-                    & gt;
-All
-    & lt;/button&gt;
-                    & lt; button
-onClick = {() =& gt; setFilter('unread')}
-className = {`px-4 py-2 rounded-lg font-medium ${filter === 'unread'
-        ? 'bg-green-600 text-white'
-        : 'bg-white text-gray-700 hover:bg-gray-50'
-    }`}
-                    & gt;
-Unread({ unreadCount })
-    & lt;/button&gt;
-                & lt;/div&gt;
+                {/* Error Alert */}
+                {error && (
+                    <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg flex items-center space-x-3">
+                        <AlertCircle className="w-5 h-5 text-red-500" />
+                        <span className="text-red-700">{error}</span>
+                    </div>
+                )}
 
-{/* Notifications List */ }
-                & lt;div className = "space-y-3" & gt;
-{
-    loading ? (
-                        & lt;div className = "flex items-center justify-center py-12" & gt;
-                            & lt;RefreshCw className = "w-8 h-8 animate-spin text-green-600" /& gt;
-                        & lt;/div&gt;
+                {/* Notifications List */}
+                <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                    {loading ? (
+                        <div className="flex items-center justify-center py-12">
+                            <RefreshCw className="w-8 h-8 animate-spin text-green-600" />
+                        </div>
                     ) : filteredNotifications.length === 0 ? (
-                        & lt;div className = "bg-white rounded-xl shadow-sm border border-gray-200 p-12 text-center" & gt;
-                            & lt;Bell className = "w-16 h-16 text-gray-300 mx-auto mb-4" /& gt;
-                            & lt;h3 className = "text-lg font-semibold text-gray-900 mb-2" & gt;
-                                No notifications
-        & lt;/h3&gt;
-                            & lt;p className = "text-gray-600" & gt;
-                                You're all caught up! We'll notify you when something important happens.
-                            & lt;/p&gt;
-                        & lt;/div&gt;
+                        <div className="text-center py-12 text-gray-500">
+                            <Bell className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                            <p>No notifications</p>
+                        </div>
                     ) : (
-        filteredNotifications.map((notification) =& gt; (
-                            & lt; div
-    key = { notification.id }
-    className = {`bg-white rounded-xl shadow-sm border border-gray-200 p-6 transition-all ${!notification.read ? 'border-l-4 border-l-green-600' : ''
-        }`
-}
-                            & gt;
-                                & lt;div className = "flex items-start justify-between" & gt;
-                                    & lt;div className = "flex items-start space-x-4 flex-1" & gt;
-                                        & lt;div className = "flex-shrink-0 mt-1" & gt;
-{ getIcon(notification.type) }
-                                        & lt;/div&gt;
-                                        & lt;div className = "flex-1 min-w-0" & gt;
-                                            & lt;div className = "flex items-center space-x-2 mb-1" & gt;
-                                                & lt;h3 className = "font-semibold text-gray-900" & gt;
-{ notification.title }
-                                                & lt;/h3&gt;
-{
-    !notification.read & amp;& amp; (
-                                                    & lt;span className = "w-2 h-2 bg-green-600 rounded-full" & gt;& lt;/span&gt;
-                                                )
-}
-                                            & lt;/div&gt;
-                                            & lt;p className = "text-gray-600 mb-2" & gt; { notification.message }& lt;/p&gt;
-                                            & lt;p className = "text-sm text-gray-500" & gt;
-{ new Date(notification.timestamp).toLocaleString() }
-                                            & lt;/p&gt;
-{
-    notification.action_url & amp;& amp; (
-                                                & lt; a
-    href = { notification.action_url }
-    className = "inline-block mt-3 text-green-600 hover:text-green-700 font-medium text-sm"
-        & gt;
-                                                    View details →
-                                                & lt;/a&gt;
-                                            )
-}
-                                        & lt;/div&gt;
-                                    & lt;/div&gt;
-                                    & lt;div className = "flex items-center space-x-2 ml-4" & gt;
-{
-    !notification.read & amp;& amp; (
-                                            & lt; button
-    onClick = {() =& gt; markAsRead(notification.id)
-}
-className = "p-2 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded-lg"
-title = "Mark as read"
-    & gt;
-                                                & lt;Check className = "w-5 h-5" /& gt;
-                                            & lt;/button&gt;
-                                        )}
-                                        & lt; button
-onClick = {() =& gt; deleteNotification(notification.id)}
-className = "p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg"
-title = "Delete"
-    & gt;
-                                            & lt;X className = "w-5 h-5" /& gt;
-                                        & lt;/button&gt;
-                                    & lt;/div&gt;
-                                & lt;/div&gt;
-                            & lt;/div&gt;
-                        ))
+                        <div className="divide-y divide-gray-100">
+                            {filteredNotifications.map(notification => (
+                                <div
+                                    key={notification.id}
+                                    className={`p-4 hover:bg-gray-50 transition-colors ${!notification.read ? 'bg-green-50/30' : ''
+                                        }`}
+                                >
+                                    <div className="flex items-start space-x-4">
+                                        <div className="flex-shrink-0 mt-1">
+                                            {getIcon(notification.type)}
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                            <div className="flex items-center justify-between">
+                                                <h3 className={`font-medium ${!notification.read ? 'text-gray-900' : 'text-gray-600'
+                                                    }`}>
+                                                    {notification.title}
+                                                </h3>
+                                                <span className="text-sm text-gray-400">
+                                                    {formatTime(notification.timestamp)}
+                                                </span>
+                                            </div>
+                                            <p className="text-gray-600 mt-1">{notification.message}</p>
+                                        </div>
+                                        <div className="flex items-center space-x-2">
+                                            {!notification.read && (
+                                                <button
+                                                    onClick={() => markAsRead(notification.id)}
+                                                    className="p-1.5 text-gray-400 hover:text-green-600 rounded-lg"
+                                                    aria-label="Mark as read"
+                                                >
+                                                    <Check className="w-4 h-4" />
+                                                </button>
+                                            )}
+                                            <button
+                                                onClick={() => deleteNotification(notification.id)}
+                                                className="p-1.5 text-gray-400 hover:text-red-600 rounded-lg"
+                                                aria-label="Delete notification"
+                                            >
+                                                <Trash2 className="w-4 h-4" />
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
                     )}
-                & lt;/div&gt;
-            & lt;/div&gt;
-        & lt;/div&gt;
+                </div>
+            </div>
+        </div>
     );
 };
 
