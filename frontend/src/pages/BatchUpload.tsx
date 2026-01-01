@@ -186,6 +186,7 @@ const BatchUpload: React.FC = () => {
           multiple
           onChange={handleFileSelect}
           className="absolute inset-0 opacity-0 cursor-pointer"
+          aria-label="Select PDF files to upload"
         />
         <FolderUp className={`w-12 h-12 mx-auto mb-4 ${isDragging ? 'text-green-600' : 'text-gray-400'}`} />
         <p className="text-gray-700 font-medium mb-1">Drop PDF files here or click to browse</p>
@@ -205,6 +206,7 @@ const BatchUpload: React.FC = () => {
           value={selectedTemplate}
           onChange={(e) => setSelectedTemplate(e.target.value)}
           className="w-full p-3 border border-gray-300 rounded-lg bg-white focus:ring-2 focus:ring-green-500 focus:border-green-500"
+          aria-label="Select template for batch processing"
         >
           <option value="">No template - extract only</option>
           <option value="lbo">LBO Model Template</option>
@@ -245,6 +247,7 @@ const BatchUpload: React.FC = () => {
                   <button
                     onClick={() => removeFile(file.id)}
                     className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                    aria-label={`Remove file ${file.file.name}`}
                   >
                     <Trash2 className="w-4 h-4" />
                   </button>

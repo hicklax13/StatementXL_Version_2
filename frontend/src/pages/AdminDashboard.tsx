@@ -164,6 +164,7 @@ const AdminDashboard: React.FC = () => {
                         <button
                             onClick={() => setError(null)}
                             className="ml-auto text-red-500 hover:text-red-700"
+                            aria-label="Dismiss error message"
                         >
                             <XCircle className="w-5 h-5" />
                         </button>
@@ -175,22 +176,20 @@ const AdminDashboard: React.FC = () => {
                     <nav className="flex space-x-8">
                         <button
                             onClick={() => setActiveTab('users')}
-                            className={`py-4 px-1 border-b-2 font-medium text-sm flex items-center space-x-2 ${
-                                activeTab === 'users'
-                                    ? 'border-green-500 text-green-600'
-                                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                            }`}
+                            className={`py-4 px-1 border-b-2 font-medium text-sm flex items-center space-x-2 ${activeTab === 'users'
+                                ? 'border-green-500 text-green-600'
+                                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                                }`}
                         >
                             <Users className="w-5 h-5" />
                             <span>User Management</span>
                         </button>
                         <button
                             onClick={() => setActiveTab('metrics')}
-                            className={`py-4 px-1 border-b-2 font-medium text-sm flex items-center space-x-2 ${
-                                activeTab === 'metrics'
-                                    ? 'border-green-500 text-green-600'
-                                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                            }`}
+                            className={`py-4 px-1 border-b-2 font-medium text-sm flex items-center space-x-2 ${activeTab === 'metrics'
+                                ? 'border-green-500 text-green-600'
+                                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                                }`}
                         >
                             <Activity className="w-5 h-5" />
                             <span>System Metrics</span>
@@ -282,6 +281,7 @@ const AdminDashboard: React.FC = () => {
                                                         className={`text-xs font-semibold px-2.5 py-1 rounded-full border-0 ${getRoleColor(
                                                             user.role
                                                         )}`}
+                                                        aria-label={`Change role for ${user.email}`}
                                                     >
                                                         <option value="admin">Admin</option>
                                                         <option value="analyst">Analyst</option>
@@ -324,11 +324,10 @@ const AdminDashboard: React.FC = () => {
                                                     <div className="flex items-center space-x-2">
                                                         <button
                                                             onClick={() => handleToggleActive(user.id, user.is_active)}
-                                                            className={`p-1.5 rounded-lg ${
-                                                                user.is_active
-                                                                    ? 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
-                                                                    : 'text-green-600 hover:text-green-700 hover:bg-green-50'
-                                                            }`}
+                                                            className={`p-1.5 rounded-lg ${user.is_active
+                                                                ? 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
+                                                                : 'text-green-600 hover:text-green-700 hover:bg-green-50'
+                                                                }`}
                                                             title={user.is_active ? 'Deactivate' : 'Activate'}
                                                         >
                                                             {user.is_active ? (
@@ -436,13 +435,12 @@ const AdminDashboard: React.FC = () => {
                                             </div>
                                             <div className="w-full bg-gray-200 rounded-full h-2">
                                                 <div
-                                                    className={`h-2 rounded-full ${
-                                                        metrics.system.cpu_percent > 80
-                                                            ? 'bg-red-500'
-                                                            : metrics.system.cpu_percent > 60
+                                                    className={`h-2 rounded-full ${metrics.system.cpu_percent > 80
+                                                        ? 'bg-red-500'
+                                                        : metrics.system.cpu_percent > 60
                                                             ? 'bg-yellow-500'
                                                             : 'bg-green-500'
-                                                    }`}
+                                                        }`}
                                                     style={{ width: `${metrics.system.cpu_percent}%` }}
                                                 ></div>
                                             </div>
@@ -458,13 +456,12 @@ const AdminDashboard: React.FC = () => {
                                             </div>
                                             <div className="w-full bg-gray-200 rounded-full h-2">
                                                 <div
-                                                    className={`h-2 rounded-full ${
-                                                        metrics.system.memory_percent > 80
-                                                            ? 'bg-red-500'
-                                                            : metrics.system.memory_percent > 60
+                                                    className={`h-2 rounded-full ${metrics.system.memory_percent > 80
+                                                        ? 'bg-red-500'
+                                                        : metrics.system.memory_percent > 60
                                                             ? 'bg-yellow-500'
                                                             : 'bg-green-500'
-                                                    }`}
+                                                        }`}
                                                     style={{ width: `${metrics.system.memory_percent}%` }}
                                                 ></div>
                                             </div>
@@ -484,13 +481,12 @@ const AdminDashboard: React.FC = () => {
                                             </div>
                                             <div className="w-full bg-gray-200 rounded-full h-2">
                                                 <div
-                                                    className={`h-2 rounded-full ${
-                                                        metrics.system.disk_percent > 90
-                                                            ? 'bg-red-500'
-                                                            : metrics.system.disk_percent > 70
+                                                    className={`h-2 rounded-full ${metrics.system.disk_percent > 90
+                                                        ? 'bg-red-500'
+                                                        : metrics.system.disk_percent > 70
                                                             ? 'bg-yellow-500'
                                                             : 'bg-green-500'
-                                                    }`}
+                                                        }`}
                                                     style={{ width: `${metrics.system.disk_percent}%` }}
                                                 ></div>
                                             </div>
