@@ -75,9 +75,9 @@ class AnalyticsService:
             if value is not None:
                 metric.total_value = (metric.total_value or 0) + value
             if metadata:
-                existing = metric.metadata or {}
+                existing = metric.extra_data or {}
                 existing.update(metadata)
-                metric.metadata = existing
+                metric.extra_data = existing
         else:
             metric = UsageMetric(
                 organization_id=organization_id,
@@ -85,7 +85,7 @@ class AnalyticsService:
                 metric_date=metric_date,
                 count=count,
                 total_value=value,
-                metadata=metadata,
+                extra_data=metadata,
             )
             self.db.add(metric)
 

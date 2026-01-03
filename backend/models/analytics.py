@@ -12,8 +12,8 @@ from datetime import datetime, date
 from enum import Enum
 from typing import Optional
 
-from sqlalchemy import Boolean, Column, DateTime, Date, Enum as SQLEnum, ForeignKey, String, Text, Integer, Float, BigInteger, Index
-from sqlalchemy.dialects.postgresql import UUID, JSONB
+from sqlalchemy import Boolean, Column, DateTime, Date, Enum as SQLEnum, ForeignKey, String, Text, Integer, Float, BigInteger, Index, JSON
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 
@@ -67,8 +67,8 @@ class UsageMetric(Base):
     count = Column(BigInteger, default=0, nullable=False)
     total_value = Column(Float, default=0.0, nullable=True)  # For things like processing time
 
-    # Metadata
-    metadata = Column(JSONB, nullable=True)
+    # Extra data (renamed from 'metadata' which is reserved in SQLAlchemy)
+    extra_data = Column(JSON, nullable=True)
 
     # Timestamps
     created_at = Column(DateTime(timezone=True), server_default=func.now())

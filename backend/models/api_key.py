@@ -10,8 +10,8 @@ from datetime import datetime
 from enum import Enum
 from typing import Optional
 
-from sqlalchemy import Boolean, Column, DateTime, Enum as SQLEnum, ForeignKey, String, Text, Integer
-from sqlalchemy.dialects.postgresql import UUID, JSONB, ARRAY
+from sqlalchemy import Boolean, Column, DateTime, Enum as SQLEnum, ForeignKey, String, Text, Integer, JSON
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 
@@ -45,7 +45,7 @@ class APIKey(Base):
     key_hash = Column(String(64), nullable=False)     # SHA-256 hash of full key
 
     # Permissions
-    scopes = Column(ARRAY(String), nullable=False, default=list)
+    scopes = Column(JSON, nullable=False, default=list)  # Store as JSON array for SQLite compatibility
 
     # Usage tracking
     last_used_at = Column(DateTime(timezone=True), nullable=True)
@@ -64,7 +64,7 @@ class APIKey(Base):
     revoked_reason = Column(String(500), nullable=True)
 
     # IP restrictions (optional)
-    allowed_ips = Column(ARRAY(String), nullable=True)  # CIDR notation allowed
+    allowed_ips = Column(JSON, nullable=True)  # CIDR notation allowed, stored as JSON array
 
     # Ownership
     organization_id = Column(UUID(as_uuid=True), ForeignKey("organizations.id", ondelete="CASCADE"), nullable=False)

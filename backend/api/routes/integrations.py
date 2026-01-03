@@ -257,11 +257,11 @@ async def quickbooks_callback(
         Integration.status == IntegrationStatus.PENDING,
     ).order_by(Integration.created_at.desc()).first()
 
-    if not integration or integration.metadata.get("state") != state:
+    if not integration or integration.extra_data.get("state") != state:
         logger.warning("quickbooks_oauth_invalid_state", state=state)
         return RedirectResponse(url="/integrations?error=invalid_state")
 
-    redirect_url = integration.metadata.get("redirect_url", "/integrations")
+    redirect_url = integration.extra_data.get("redirect_url", "/integrations")
 
     try:
         # Exchange code for tokens
@@ -443,11 +443,11 @@ async def xero_callback(
         Integration.status == IntegrationStatus.PENDING,
     ).order_by(Integration.created_at.desc()).first()
 
-    if not integration or integration.metadata.get("state") != state:
+    if not integration or integration.extra_data.get("state") != state:
         logger.warning("xero_oauth_invalid_state", state=state)
         return RedirectResponse(url="/integrations?error=invalid_state")
 
-    redirect_url = integration.metadata.get("redirect_url", "/integrations")
+    redirect_url = integration.extra_data.get("redirect_url", "/integrations")
 
     try:
         # Exchange code for tokens

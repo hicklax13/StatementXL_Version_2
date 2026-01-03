@@ -8,8 +8,8 @@ import uuid
 from datetime import datetime
 from enum import Enum
 
-from sqlalchemy import Boolean, Column, DateTime, Enum as SQLEnum, ForeignKey, String, Text, Integer
-from sqlalchemy.dialects.postgresql import UUID, JSONB, ARRAY
+from sqlalchemy import Boolean, Column, DateTime, Enum as SQLEnum, ForeignKey, String, Text, Integer, JSON
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 
@@ -74,7 +74,7 @@ class Webhook(Base):
     secret = Column(String(64), nullable=False)  # For HMAC signature verification
 
     # Event subscriptions
-    events = Column(ARRAY(String), nullable=False, default=list)
+    events = Column(JSON, nullable=False, default=list)  # Store as JSON array for SQLite compatibility
 
     # Status and health
     status = Column(SQLEnum(WebhookStatus), default=WebhookStatus.ACTIVE, nullable=False)
@@ -89,7 +89,7 @@ class Webhook(Base):
     retry_delay_seconds = Column(Integer, default=60, nullable=False)
 
     # Headers to include
-    custom_headers = Column(JSONB, nullable=True)
+    custom_headers = Column(JSON, nullable=True)
 
     # Ownership
     organization_id = Column(UUID(as_uuid=True), ForeignKey("organizations.id", ondelete="CASCADE"), nullable=False)
@@ -161,7 +161,7 @@ class WebhookDelivery(Base):
     # Event details
     event_type = Column(String(100), nullable=False)
     event_id = Column(String(100), nullable=False)  # Unique event identifier
-    payload = Column(JSONB, nullable=False)
+    payload = Column(JSON, nullable=False)
 
     # Delivery status
     status_code = Column(Integer, nullable=True)

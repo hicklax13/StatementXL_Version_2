@@ -126,7 +126,7 @@ def _entry_to_response(entry: AuditLog) -> AuditEntryResponse:
         description=entry.description,
         success=entry.success,
         error_message=entry.error_message,
-        metadata=entry.metadata,
+        metadata=entry.extra_data,
         created_at=entry.created_at,
     )
 
