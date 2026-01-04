@@ -175,7 +175,14 @@ class PerformanceMetrics:
     def get_stats(self) -> dict:
         """Get current performance statistics."""
         if not self.request_times:
-            return {"avg_ms": 0, "p95_ms": 0, "p99_ms": 0, "count": 0}
+            return {
+                "avg_ms": 0,
+                "p95_ms": 0,
+                "p99_ms": 0,
+                "count": 0,
+                "error_count": self.error_count,
+                "cache_hit_rate": 0,
+            }
         
         sorted_times = sorted(self.request_times)
         count = len(sorted_times)

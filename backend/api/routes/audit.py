@@ -16,7 +16,7 @@ from sqlalchemy import func, or_
 from sqlalchemy.orm import Session
 
 from backend.database import get_db
-from backend.models.user import User
+from backend.models.user import User, UserRole
 from backend.models.audit import (
     AuditLog,
     AuditAction,
@@ -159,7 +159,7 @@ async def get_audit_log(
     query = db.query(AuditLog)
 
     # Non-admins can only see their own organization's logs
-    if not current_user.is_superuser:
+    if current_user.role != UserRole.ADMIN:
         if current_user.default_organization_id:
             query = query.filter(
                 or_(
@@ -292,6 +292,41 @@ async def get_audit_stats(
     )
 
 
+# =============================================================================
+# Available Actions/Types Endpoints
+# NOTE: These must be defined BEFORE /{entry_id} to avoid route conflicts
+# =============================================================================
+
+@router.get(
+    "/audit/actions",
+    summary="List audit actions",
+    description="Get list of all possible audit action types.",
+)
+async def list_audit_actions() -> dict:
+    """List all audit action types."""
+    return {
+        "actions": [
+            {"value": a.value, "name": a.name}
+            for a in AuditAction
+        ]
+    }
+
+
+@router.get(
+    "/audit/resource-types",
+    summary="List resource types",
+    description="Get list of all possible audit resource types.",
+)
+async def list_resource_types() -> dict:
+    """List all resource types."""
+    return {
+        "resource_types": [
+            {"value": r.value, "name": r.name}
+            for r in AuditResourceType
+        ]
+    }
+
+
 @router.get(
     "/audit/export",
     summary="Export audit log",
@@ -376,7 +411,7 @@ async def get_audit_entry(
         raise NotFoundError("Audit entry", entry_id)
 
     # Check access permissions
-    if not current_user.is_superuser:
+    if current_user.role != UserRole.ADMIN:
         if entry.organization_id != current_user.default_organization_id and entry.user_id != current_user.id:
             raise ForbiddenError("You don't have access to this audit entry")
 
@@ -501,7 +536,7 @@ async def get_compliance_request(
         raise NotFoundError("Compliance request", request_id)
 
     # Check ownership
-    if comp_request.user_id != current_user.id and not current_user.is_superuser:
+    if comp_request.user_id != current_user.id and current_user.role != UserRole.ADMIN:
         raise ForbiddenError("You don't have access to this request")
 
     return ComplianceRequestResponse(
@@ -514,37 +549,3 @@ async def get_compliance_request(
         created_at=comp_request.created_at,
         completed_at=comp_request.completed_at,
     )
-
-
-# =============================================================================
-# Available Actions/Types Endpoints
-# =============================================================================
-
-@router.get(
-    "/audit/actions",
-    summary="List audit actions",
-    description="Get list of all possible audit action types.",
-)
-async def list_audit_actions() -> dict:
-    """List all audit action types."""
-    return {
-        "actions": [
-            {"value": a.value, "name": a.name}
-            for a in AuditAction
-        ]
-    }
-
-
-@router.get(
-    "/audit/resource-types",
-    summary="List resource types",
-    description="Get list of all possible audit resource types.",
-)
-async def list_resource_types() -> dict:
-    """List all resource types."""
-    return {
-        "resource_types": [
-            {"value": r.value, "name": r.name}
-            for r in AuditResourceType
-        ]
-    }

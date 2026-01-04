@@ -22,7 +22,7 @@ from sqlalchemy.pool import StaticPool
 
 from backend.database import Base, get_db
 from backend.main import app
-from backend.models.user import User
+from backend.models.user import User, UserRole
 from backend.models.organization import Organization, OrganizationMember, OrganizationRole
 from backend.models.api_key import APIKey
 
@@ -124,8 +124,9 @@ def test_user(db_session: Session) -> User:
     user = User(
         id=uuid.uuid4(),
         email="test@example.com",
-        hashed_password="$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/X4.V6P4rOhFBJqPHi",  # "testpassword"
+        password_hash="$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/X4.V6P4rOhFBJqPHi",  # "testpassword"
         full_name="Test User",
+        role=UserRole.ANALYST,
         is_active=True,
         is_verified=True,
     )
@@ -141,11 +142,11 @@ def test_admin_user(db_session: Session) -> User:
     user = User(
         id=uuid.uuid4(),
         email="admin@example.com",
-        hashed_password="$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/X4.V6P4rOhFBJqPHi",
+        password_hash="$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/X4.V6P4rOhFBJqPHi",
         full_name="Admin User",
+        role=UserRole.ADMIN,
         is_active=True,
         is_verified=True,
-        is_superuser=True,
     )
     db_session.add(user)
     db_session.commit()
