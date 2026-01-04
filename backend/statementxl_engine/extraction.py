@@ -46,13 +46,13 @@ class ExtractionLayer:
     # Text density threshold for OCR detection
     OCR_TEXT_DENSITY_THRESHOLD = 0.05  # If < 5% of page has text, try OCR
 
-    # Patterns for units detection
+    # Patterns for units detection (all lowercase since we search in lowercased text)
     UNITS_PATTERNS = [
         (r"\$\s*in\s*thousands", ScaleFactor.THOUSANDS),
         (r"\$\s*000", ScaleFactor.THOUSANDS),
         (r"in\s*thousands", ScaleFactor.THOUSANDS),
         (r"\$\s*in\s*millions", ScaleFactor.MILLIONS),
-        (r"\$\s*MM", ScaleFactor.MILLIONS),
+        (r"\$\s*mm", ScaleFactor.MILLIONS),
         (r"in\s*millions", ScaleFactor.MILLIONS),
         (r"\$\s*in\s*billions", ScaleFactor.BILLIONS),
         (r"in\s*billions", ScaleFactor.BILLIONS),
