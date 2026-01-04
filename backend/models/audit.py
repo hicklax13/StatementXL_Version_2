@@ -13,8 +13,8 @@ from datetime import datetime
 from enum import Enum
 from typing import Optional, Dict, Any
 
-from sqlalchemy import Boolean, Column, DateTime, Enum as SQLEnum, ForeignKey, String, Text, Integer, Index
-from sqlalchemy.dialects.postgresql import UUID, JSONB, INET
+from sqlalchemy import Boolean, Column, DateTime, Enum as SQLEnum, ForeignKey, String, Text, Integer, Index, JSON
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 
@@ -129,7 +129,7 @@ class AuditLog(Base):
     api_key_id = Column(UUID(as_uuid=True), ForeignKey("api_keys.id", ondelete="SET NULL"), nullable=True)
 
     # Request context
-    ip_address = Column(INET, nullable=True)
+    ip_address = Column(String(45), nullable=True)  # IPv6 compatible, use String for SQLite
     user_agent = Column(String(500), nullable=True)
     request_id = Column(String(100), nullable=True, index=True)  # Correlation ID
     request_method = Column(String(10), nullable=True)
@@ -137,9 +137,9 @@ class AuditLog(Base):
 
     # Event details
     description = Column(Text, nullable=True)
-    old_value = Column(JSONB, nullable=True)  # Previous state
-    new_value = Column(JSONB, nullable=True)  # New state
-    metadata = Column(JSONB, nullable=True)   # Additional context
+    old_value = Column(JSON, nullable=True)  # Previous state
+    new_value = Column(JSON, nullable=True)  # New state
+    extra_data = Column(JSON, nullable=True)   # Additional context (renamed from 'metadata')
 
     # Status
     success = Column(Boolean, default=True, nullable=False)
@@ -258,12 +258,12 @@ class ComplianceRequest(Base):
 
     # Request details
     reason = Column(Text, nullable=True)
-    scope = Column(JSONB, nullable=True)  # What data to include/delete
+    scope = Column(JSON, nullable=True)  # What data to include/delete
 
     # Processing
     processed_by_user_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
     processed_at = Column(DateTime(timezone=True), nullable=True)
-    result = Column(JSONB, nullable=True)  # Processing result/report
+    result = Column(JSON, nullable=True)  # Processing result/report
     error_message = Column(Text, nullable=True)
 
     # For data exports

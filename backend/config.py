@@ -17,6 +17,7 @@ class Settings(BaseSettings):
         env_file=".env",
         env_file_encoding="utf-8",
         case_sensitive=False,
+        extra="ignore",  # Allow extra env vars not defined in Settings
     )
 
     # Database (SQLite for local dev, PostgreSQL for production)

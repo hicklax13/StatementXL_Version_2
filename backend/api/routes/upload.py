@@ -11,7 +11,7 @@ from pathlib import Path
 from typing import List
 
 import structlog
-from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
+from fastapi import APIRouter, Depends, File, HTTPException, Request, UploadFile, status
 from sqlalchemy.orm import Session
 
 from backend.config import get_settings
@@ -139,6 +139,7 @@ def convert_table_to_response(table: ExtractedTable) -> TableResponse:
 )
 @upload_rate_limit()
 async def upload_pdf(
+    request: Request,
     file: UploadFile = File(..., description="PDF file to process"),
     db: Session = Depends(get_db),
     _quota_check: bool = Depends(check_document_quota),

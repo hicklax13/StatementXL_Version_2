@@ -75,9 +75,9 @@ class AnalyticsService:
             if value is not None:
                 metric.total_value = (metric.total_value or 0) + value
             if metadata:
-                existing = metric.metadata or {}
+                existing = metric.extra_data or {}
                 existing.update(metadata)
-                metric.metadata = existing
+                metric.extra_data = existing
         else:
             metric = UsageMetric(
                 organization_id=organization_id,
@@ -85,7 +85,7 @@ class AnalyticsService:
                 metric_date=metric_date,
                 count=count,
                 total_value=value,
-                metadata=metadata,
+                extra_data=metadata,
             )
             self.db.add(metric)
 
@@ -363,7 +363,7 @@ class AnalyticsService:
             "avg_processing_time_ms": avg_stats.avg_duration if avg_stats else None,
             "avg_pages_per_document": avg_stats.avg_pages if avg_stats else None,
             "avg_classification_confidence": avg_stats.avg_confidence if avg_stats else None,
-            "total_rows_extracted": avg_stats.total_rows if avg_stats else 0,
+            "total_rows_extracted": int(avg_stats.total_rows or 0) if avg_stats else 0,
             "by_statement_type": {
                 t: c for t, c in by_type if t is not None
             },

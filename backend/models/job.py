@@ -7,8 +7,8 @@ import uuid
 from datetime import datetime
 from enum import Enum
 
-from sqlalchemy import Boolean, Column, DateTime, Enum as SQLEnum, Float, ForeignKey, Integer, String, Text
-from sqlalchemy.dialects.postgresql import UUID, JSONB
+from sqlalchemy import Boolean, Column, DateTime, Enum as SQLEnum, Float, ForeignKey, Integer, String, Text, JSON
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 
@@ -52,8 +52,8 @@ class Job(Base):
     completed_steps = Column(Integer, default=0, nullable=False)
 
     # Input/Output
-    input_data = Column(JSONB, nullable=True)  # Job parameters
-    result_data = Column(JSONB, nullable=True)  # Job results
+    input_data = Column(JSON, nullable=True)  # Job parameters
+    result_data = Column(JSON, nullable=True)  # Job results
     error_message = Column(Text, nullable=True)
 
     # Relationships

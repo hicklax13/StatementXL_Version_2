@@ -218,12 +218,34 @@ class InvalidTokenError(AuthenticationError):
         super().__init__(message, **kwargs)
 
 
+# Generic Errors
+class NotFoundError(StatementXLError):
+    """Generic resource not found error."""
+    error_code = "SXL-404"
+    http_status = 404
+
+    def __init__(self, resource: str = "Resource", resource_id: str = None, **kwargs):
+        message = f"{resource} not found"
+        if resource_id:
+            message = f"{resource} {resource_id} not found"
+        super().__init__(message, details={"resource": resource, "resource_id": resource_id}, **kwargs)
+
+
+class ForbiddenError(StatementXLError):
+    """Access forbidden error."""
+    error_code = "SXL-403"
+    http_status = 403
+
+    def __init__(self, message: str = "Access forbidden", **kwargs):
+        super().__init__(message, **kwargs)
+
+
 # Authorization Errors (SXL-6XX)
 class AuthorizationError(StatementXLError):
     """User not authorized for this action."""
     error_code = "SXL-600"
     http_status = 403
-    
+
     def __init__(self, message: str = "You do not have permission to perform this action", **kwargs):
         super().__init__(message, **kwargs)
 

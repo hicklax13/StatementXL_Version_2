@@ -17,29 +17,29 @@ class TestUploadEndpoint:
         assert response.status_code == 200
         assert response.json()["status"] == "healthy"
 
-    def test_upload_invalid_content_type(self, client: TestClient):
+    def test_upload_invalid_content_type(self, authenticated_client: TestClient):
         """Test upload rejects non-PDF files."""
         # Create a fake text file
         content = b"This is not a PDF"
         files = {"file": ("test.txt", io.BytesIO(content), "text/plain")}
 
-        response = client.post("/api/v1/upload", files=files)
+        response = authenticated_client.post("/api/v1/upload", files=files)
 
         assert response.status_code == 400
         assert "Invalid file type" in response.json()["detail"]
 
-    def test_upload_invalid_extension(self, client: TestClient):
+    def test_upload_invalid_extension(self, authenticated_client: TestClient):
         """Test upload rejects wrong file extension."""
         content = b"This is not a PDF"
         # Content-type is PDF but extension is not
         files = {"file": ("test.docx", io.BytesIO(content), "application/pdf")}
 
-        response = client.post("/api/v1/upload", files=files)
+        response = authenticated_client.post("/api/v1/upload", files=files)
 
         assert response.status_code == 400
         assert "Invalid file extension" in response.json()["detail"]
 
-    def test_upload_valid_pdf(self, client: TestClient, sample_pdf_content: bytes):
+    def test_upload_valid_pdf(self, authenticated_client: TestClient, sample_pdf_content: bytes):
         """Test successful PDF upload."""
         files = {"file": ("test.pdf", io.BytesIO(sample_pdf_content), "application/pdf")}
 
@@ -52,7 +52,7 @@ class TestUploadEndpoint:
             )
             mock_detector.return_value = mock_instance
 
-            response = client.post("/api/v1/upload", files=files)
+            response = authenticated_client.post("/api/v1/upload", files=files)
 
         assert response.status_code == 200
         data = response.json()
@@ -61,7 +61,7 @@ class TestUploadEndpoint:
         assert "tables" in data
         assert "processing_time_ms" in data
 
-    def test_upload_response_schema(self, client: TestClient, sample_pdf_content: bytes):
+    def test_upload_response_schema(self, authenticated_client: TestClient, sample_pdf_content: bytes):
         """Test upload response matches schema."""
         files = {"file": ("test.pdf", io.BytesIO(sample_pdf_content), "application/pdf")}
 
@@ -73,7 +73,7 @@ class TestUploadEndpoint:
             )
             mock_detector.return_value = mock_instance
 
-            response = client.post("/api/v1/upload", files=files)
+            response = authenticated_client.post("/api/v1/upload", files=files)
 
         assert response.status_code == 200
         data = response.json()

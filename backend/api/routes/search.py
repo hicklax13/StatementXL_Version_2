@@ -350,8 +350,9 @@ async def get_suggestions(
     suggestions = {}
 
     if entity in ("all", "documents"):
+        # Note: Document model doesn't have user_id, so we just filter by filename
+        # In production, add user association to Document model
         docs = db.query(Document.filename).filter(
-            Document.user_id == current_user.id,
             Document.filename.ilike(f"%{q}%"),
         ).limit(limit).all()
         suggestions["documents"] = [d.filename for d in docs]

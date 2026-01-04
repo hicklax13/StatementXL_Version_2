@@ -180,165 +180,8 @@ async def get_unread_count(
     return {"unread_count": count}
 
 
-@router.get(
-    "/{notification_id}",
-    response_model=NotificationResponse,
-    summary="Get notification",
-)
-async def get_notification(
-    notification_id: uuid.UUID,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_active_user),
-) -> NotificationResponse:
-    """Get a specific notification."""
-    service = get_notification_service(db)
-
-    notifications = service.get_notifications(
-        user_id=current_user.id,
-        limit=1,
-    )
-
-    # Find the specific notification
-    from backend.models.notification import Notification
-    notification = db.query(Notification).filter(
-        Notification.id == notification_id,
-        Notification.user_id == current_user.id,
-    ).first()
-
-    if not notification:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Notification not found",
-        )
-
-    return NotificationResponse(
-        id=str(notification.id),
-        type=notification.type.value,
-        priority=notification.priority.value,
-        title=notification.title,
-        message=notification.message,
-        action_url=notification.action_url,
-        action_label=notification.action_label,
-        related_entity_type=notification.related_entity_type,
-        related_entity_id=str(notification.related_entity_id) if notification.related_entity_id else None,
-        sender_id=str(notification.sender_id) if notification.sender_id else None,
-        group_key=notification.group_key,
-        group_count=notification.group_count,
-        is_read=notification.is_read,
-        read_at=notification.read_at.isoformat() if notification.read_at else None,
-        data=notification.data or {},
-        created_at=notification.created_at.isoformat(),
-    )
-
-
-@router.post(
-    "/{notification_id}/read",
-    summary="Mark as read",
-)
-async def mark_as_read(
-    notification_id: uuid.UUID,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_active_user),
-) -> dict:
-    """Mark a notification as read."""
-    service = get_notification_service(db)
-    notification = service.mark_as_read(notification_id, current_user.id)
-
-    if not notification:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Notification not found",
-        )
-
-    return {"message": "Notification marked as read"}
-
-
-@router.post(
-    "/read-all",
-    summary="Mark all as read",
-)
-async def mark_all_as_read(
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_active_user),
-) -> dict:
-    """Mark all notifications as read."""
-    service = get_notification_service(db)
-    count = service.mark_all_as_read(current_user.id)
-
-    return {"message": f"Marked {count} notifications as read", "count": count}
-
-
-@router.post(
-    "/read-batch",
-    summary="Mark batch as read",
-)
-async def mark_batch_as_read(
-    request: MarkReadRequest,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_active_user),
-) -> dict:
-    """Mark multiple notifications as read."""
-    service = get_notification_service(db)
-
-    count = 0
-    for notification_id in request.notification_ids:
-        try:
-            result = service.mark_as_read(
-                uuid.UUID(notification_id),
-                current_user.id,
-            )
-            if result:
-                count += 1
-        except ValueError:
-            pass
-
-    return {"message": f"Marked {count} notifications as read", "count": count}
-
-
-@router.post(
-    "/{notification_id}/archive",
-    summary="Archive notification",
-)
-async def archive_notification(
-    notification_id: uuid.UUID,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_active_user),
-) -> dict:
-    """Archive a notification."""
-    service = get_notification_service(db)
-    notification = service.archive_notification(notification_id, current_user.id)
-
-    if not notification:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Notification not found",
-        )
-
-    return {"message": "Notification archived"}
-
-
-@router.delete(
-    "/{notification_id}",
-    status_code=status.HTTP_204_NO_CONTENT,
-    summary="Delete notification",
-)
-async def delete_notification(
-    notification_id: uuid.UUID,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_active_user),
-) -> None:
-    """Delete a notification."""
-    service = get_notification_service(db)
-    deleted = service.delete_notification(notification_id, current_user.id)
-
-    if not deleted:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Notification not found",
-        )
-
-
 # ==================== Preference Endpoints ====================
+# NOTE: These must be defined BEFORE /{notification_id} to avoid route conflicts
 
 @router.get(
     "/preferences",
@@ -458,6 +301,7 @@ async def bulk_update_preferences(
 
 
 # ==================== Push Subscription Endpoints ====================
+# NOTE: These must be defined BEFORE /{notification_id} to avoid route conflicts
 
 @router.post(
     "/push/subscribe",
@@ -539,6 +383,7 @@ async def list_push_subscriptions(
 
 
 # ==================== Test Endpoint ====================
+# NOTE: Must be defined BEFORE /{notification_id} to avoid route conflicts
 
 @router.post(
     "/test",
@@ -565,3 +410,167 @@ async def send_test_notification(
         "message": "Test notification sent",
         "notification_id": str(notification.id),
     }
+
+
+# ==================== Batch Read Endpoints ====================
+# NOTE: Must be defined BEFORE /{notification_id} to avoid route conflicts
+
+@router.post(
+    "/read-all",
+    summary="Mark all as read",
+)
+async def mark_all_as_read(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_active_user),
+) -> dict:
+    """Mark all notifications as read."""
+    service = get_notification_service(db)
+    count = service.mark_all_as_read(current_user.id)
+
+    return {"message": f"Marked {count} notifications as read", "count": count}
+
+
+@router.post(
+    "/read-batch",
+    summary="Mark batch as read",
+)
+async def mark_batch_as_read(
+    request: MarkReadRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_active_user),
+) -> dict:
+    """Mark multiple notifications as read."""
+    service = get_notification_service(db)
+
+    count = 0
+    for notification_id in request.notification_ids:
+        try:
+            result = service.mark_as_read(
+                uuid.UUID(notification_id),
+                current_user.id,
+            )
+            if result:
+                count += 1
+        except ValueError:
+            pass
+
+    return {"message": f"Marked {count} notifications as read", "count": count}
+
+
+# ==================== Individual Notification Endpoints ====================
+# NOTE: /{notification_id} routes must come AFTER all /specific-path routes
+
+@router.get(
+    "/{notification_id}",
+    response_model=NotificationResponse,
+    summary="Get notification",
+)
+async def get_notification(
+    notification_id: uuid.UUID,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_active_user),
+) -> NotificationResponse:
+    """Get a specific notification."""
+    service = get_notification_service(db)
+
+    notifications = service.get_notifications(
+        user_id=current_user.id,
+        limit=1,
+    )
+
+    # Find the specific notification
+    from backend.models.notification import Notification
+    notification = db.query(Notification).filter(
+        Notification.id == notification_id,
+        Notification.user_id == current_user.id,
+    ).first()
+
+    if not notification:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Notification not found",
+        )
+
+    return NotificationResponse(
+        id=str(notification.id),
+        type=notification.type.value,
+        priority=notification.priority.value,
+        title=notification.title,
+        message=notification.message,
+        action_url=notification.action_url,
+        action_label=notification.action_label,
+        related_entity_type=notification.related_entity_type,
+        related_entity_id=str(notification.related_entity_id) if notification.related_entity_id else None,
+        sender_id=str(notification.sender_id) if notification.sender_id else None,
+        group_key=notification.group_key,
+        group_count=notification.group_count,
+        is_read=notification.is_read,
+        read_at=notification.read_at.isoformat() if notification.read_at else None,
+        data=notification.data or {},
+        created_at=notification.created_at.isoformat(),
+    )
+
+
+@router.post(
+    "/{notification_id}/read",
+    summary="Mark as read",
+)
+async def mark_as_read(
+    notification_id: uuid.UUID,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_active_user),
+) -> dict:
+    """Mark a notification as read."""
+    service = get_notification_service(db)
+    notification = service.mark_as_read(notification_id, current_user.id)
+
+    if not notification:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Notification not found",
+        )
+
+    return {"message": "Notification marked as read"}
+
+
+@router.post(
+    "/{notification_id}/archive",
+    summary="Archive notification",
+)
+async def archive_notification(
+    notification_id: uuid.UUID,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_active_user),
+) -> dict:
+    """Archive a notification."""
+    service = get_notification_service(db)
+    notification = service.archive_notification(notification_id, current_user.id)
+
+    if not notification:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Notification not found",
+        )
+
+    return {"message": "Notification archived"}
+
+
+@router.delete(
+    "/{notification_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="Delete notification",
+)
+async def delete_notification(
+    notification_id: uuid.UUID,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_active_user),
+) -> None:
+    """Delete a notification."""
+    service = get_notification_service(db)
+    deleted = service.delete_notification(notification_id, current_user.id)
+
+    if not deleted:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Notification not found",
+        )

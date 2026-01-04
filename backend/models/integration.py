@@ -7,8 +7,8 @@ import uuid
 from datetime import datetime
 from enum import Enum
 
-from sqlalchemy import Boolean, Column, DateTime, Enum as SQLEnum, ForeignKey, String, Text
-from sqlalchemy.dialects.postgresql import UUID, JSONB
+from sqlalchemy import Boolean, Column, DateTime, Enum as SQLEnum, ForeignKey, String, Text, JSON
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 
@@ -62,8 +62,8 @@ class Integration(Base):
     is_active = Column(Boolean, default=True, nullable=False)
 
     # Metadata
-    settings = Column(JSONB, nullable=True)  # Integration-specific settings
-    metadata = Column(JSONB, nullable=True)  # OAuth state, redirect URLs, etc.
+    settings = Column(JSON, nullable=True)  # Integration-specific settings
+    extra_data = Column(JSON, nullable=True)  # OAuth state, redirect URLs, etc. (renamed from 'metadata')
 
     # Relationships
     organization_id = Column(UUID(as_uuid=True), ForeignKey("organizations.id", ondelete="CASCADE"), nullable=False)
