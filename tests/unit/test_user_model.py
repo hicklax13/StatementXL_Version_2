@@ -18,19 +18,28 @@ class TestUserModel:
         user = User(email="test@example.com")
         assert repr(user) == "<User test@example.com>"
 
-    def test_user_default_role(self):
-        """Test that default role is ANALYST."""
-        user = User(email="test@example.com", password_hash="hash")
+    def test_user_default_role(self, db_session):
+        """Test that default role is ANALYST when saved to DB."""
+        user = User(email="defaults_role@example.com", password_hash="hash")
+        db_session.add(user)
+        db_session.commit()
+        db_session.refresh(user)
         assert user.role == UserRole.ANALYST
 
-    def test_user_default_active_status(self):
-        """Test that users are active by default."""
-        user = User(email="test@example.com", password_hash="hash")
+    def test_user_default_active_status(self, db_session):
+        """Test that users are active by default when saved to DB."""
+        user = User(email="defaults_active@example.com", password_hash="hash")
+        db_session.add(user)
+        db_session.commit()
+        db_session.refresh(user)
         assert user.is_active is True
 
-    def test_user_default_verified_status(self):
-        """Test that users are not verified by default."""
-        user = User(email="test@example.com", password_hash="hash")
+    def test_user_default_verified_status(self, db_session):
+        """Test that users are not verified by default when saved to DB."""
+        user = User(email="defaults_verified@example.com", password_hash="hash")
+        db_session.add(user)
+        db_session.commit()
+        db_session.refresh(user)
         assert user.is_verified is False
 
 

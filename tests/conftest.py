@@ -165,7 +165,6 @@ def test_organization(db_session: Session, test_user: User) -> Organization:
         id=uuid.uuid4(),
         name="Test Organization",
         slug="test-org",
-        owner_id=test_user.id,
     )
     db_session.add(org)
     db_session.commit()
@@ -194,10 +193,12 @@ def test_organization(db_session: Session, test_user: User) -> Organization:
 @pytest.fixture
 def auth_headers(test_user: User) -> Dict[str, str]:
     """Generate authentication headers for test user."""
-    from backend.auth.jwt import create_access_token
+    from backend.auth.utils import create_access_token
 
     token = create_access_token(
-        data={"sub": str(test_user.id)},
+        user_id=str(test_user.id),
+        email=test_user.email,
+        role=test_user.role.value,
         expires_delta=timedelta(hours=1),
     )
     return {"Authorization": f"Bearer {token}"}
@@ -206,18 +207,23 @@ def auth_headers(test_user: User) -> Dict[str, str]:
 @pytest.fixture
 def admin_auth_headers(test_admin_user: User) -> Dict[str, str]:
     """Generate authentication headers for admin user."""
-    from backend.auth.jwt import create_access_token
+    from backend.auth.utils import create_access_token
 
     token = create_access_token(
-        data={"sub": str(test_admin_user.id)},
+        user_id=str(test_admin_user.id),
+        email=test_admin_user.email,
+        role=test_admin_user.role.value,
         expires_delta=timedelta(hours=1),
     )
     return {"Authorization": f"Bearer {token}"}
 
 
 @pytest.fixture
-def authenticated_client(client: TestClient, auth_headers: Dict[str, str]) -> TestClient:
-    """Create a test client with authentication headers pre-configured."""
+def authenticated_client(client: TestClient, auth_headers: Dict[str, str], test_organization: Organization) -> TestClient:
+    """Create a test client with authentication headers pre-configured.
+
+    Note: Depends on test_organization to ensure user belongs to an organization.
+    """
     client.headers.update(auth_headers)
     return client
 
