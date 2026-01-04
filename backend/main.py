@@ -248,6 +248,10 @@ app.include_router(onboarding.router, prefix="/api/v1/onboarding", tags=["Onboar
 from backend.api.routes import monitoring
 app.include_router(monitoring.router, tags=["Monitoring"])
 
+# StatementXL Engine routes (GPT-5.2-like extraction and mapping)
+from backend.api.routes import engine
+app.include_router(engine.router, prefix="/api/v1", tags=["Engine"])
+
 # Mount static files (Frontend)
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse

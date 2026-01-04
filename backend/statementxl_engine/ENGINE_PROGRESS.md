@@ -39,40 +39,42 @@ The engine implements a reproducible, evidence-first financial statement extract
    - Sign detection (parentheses = negative)
    - Confidence calculation
 
-### In Progress
-
-4. **Mapping Layer** (`mapping.py`) - NEXT
+4. **Mapping Layer** (`mapping.py`) ✅
    - Template profiling (detect grids, eligible cells)
-   - Label matching (exact, synonym, fuzzy, embedding)
+   - Label matching (exact, synonym, fuzzy via Levenshtein)
    - Period alignment
-   - Granularity bridging (aggregate/disaggregate)
+   - Greedy assignment with scoring
    - Conflict resolution (deterministic tie-breakers)
 
-### Pending
-
-5. **Validation Layer** (`validation.py`)
-   - Reconciliation checks (BS: A = L + E, etc.)
-   - Formula consistency
+5. **Validation Layer** (`validation.py`) ✅
+   - Reconciliation checks (BS: A = L + E, IS: GP = Rev - COGS, etc.)
+   - Materiality thresholds (1% or $1000)
    - Cross-statement validation
 
-6. **Writeback Layer** (`writeback.py`)
+6. **Writeback Layer** (`writeback.py`) ✅
    - Template-safe Excel updates
    - Only modify eligible cells
-   - Never touch formulas
+   - Never touch formulas (enforced check)
 
-7. **Audit Sheet** (`audit_sheet.py`)
-   - Generate Audit sheet in output
-   - Lineage table with all required columns
+7. **Audit Sheet** (`audit_sheet.py`) ✅
+   - Generate Audit sheet with all required sections
+   - Lineage table with 17 columns
+   - Metadata, sections, scale factors, periods, exceptions, recon results
 
-8. **Orchestrator** (`orchestrator.py`)
+8. **Orchestrator** (`orchestrator.py`) ✅
    - `run_engine()` entry point
-   - Pipeline coordination
-   - Error handling
+   - 8-pass pipeline coordination
+   - Statement section classification (deterministic)
+   - Error handling with audit logging
+
+### In Progress
 
 9. **Tests** (`tests/`)
    - Unit tests for each layer
    - Integration tests
    - Golden run fixture
+
+### Pending
 
 10. **Wire into Backend**
     - API endpoint integration
@@ -83,14 +85,14 @@ The engine implements a reproducible, evidence-first financial statement extract
 ```
 backend/statementxl_engine/
 ├── __init__.py           # Package exports
-├── models.py             # Evidence model and data structures
-├── extraction.py         # PDF extraction layer
-├── normalization.py      # Units/signs/periods/labels normalization
-├── mapping.py            # Template mapping layer (TODO)
-├── validation.py         # Reconciliation layer (TODO)
-├── writeback.py          # Template writeback layer (TODO)
-├── audit_sheet.py        # Audit sheet generation (TODO)
-├── orchestrator.py       # Main entry point (TODO)
+├── models.py             # Evidence model and data structures ✅
+├── extraction.py         # PDF extraction layer ✅
+├── normalization.py      # Units/signs/periods/labels normalization ✅
+├── mapping.py            # Template mapping layer ✅
+├── validation.py         # Reconciliation layer ✅
+├── writeback.py          # Template writeback layer ✅
+├── audit_sheet.py        # Audit sheet generation ✅
+├── orchestrator.py       # Main entry point ✅
 └── ENGINE_PROGRESS.md    # This file
 ```
 
